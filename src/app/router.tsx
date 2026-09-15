@@ -15,6 +15,9 @@ import { ModulePlaceholder } from './routes/ModulePlaceholder';
  */
 const GuestsPage = lazy(() => import('@/modules/guests/GuestsPage').then((m) => ({ default: m.GuestsPage })));
 const Demo = lazy(() => import('./routes/Demo').then((m) => ({ default: m.Demo })));
+const RundownPage = lazy(() => import('@/modules/rundown/RundownPage').then((m) => ({ default: m.RundownPage })));
+const CallerMode = lazy(() => import('@/modules/rundown/CallerMode').then((m) => ({ default: m.CallerMode })));
+const StageDisplay = lazy(() => import('@/modules/rundown/StageDisplay').then((m) => ({ default: m.StageDisplay })));
 
 const lazyRoute = (element: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
 
@@ -23,12 +26,6 @@ const NOT_YET_BUILT = [
     path: 'seating',
     title: 'Seating Chart Builder',
     description: 'Lands in phase 4: a drag-and-drop room canvas with zones, tiers and adjacency rules.',
-  },
-  {
-    path: 'rundown',
-    title: 'Run of Show',
-    description:
-      'Lands in phase 3: a time-aware cue grid with the auto-drift cascade, show caller mode and stage displays.',
   },
   {
     path: 'checkin',
@@ -59,6 +56,8 @@ export const router = createBrowserRouter(
             { index: true, element: <Navigate to="overview" replace /> },
             { path: 'overview', element: <EventOverview /> },
             { path: 'guests', element: lazyRoute(<GuestsPage />) },
+            { path: 'rundown', element: lazyRoute(<RundownPage />) },
+            { path: 'rundown/caller', element: lazyRoute(<CallerMode />) },
             ...NOT_YET_BUILT.map((module) => ({
               path: module.path,
               element: <ModulePlaceholder title={module.title} description={module.description} />,
@@ -67,6 +66,10 @@ export const router = createBrowserRouter(
         },
       ],
     },
+    // Stage-facing surfaces live outside the app shell: no nav, no chrome,
+    // shareable as a plain link to a screen at the back of the room.
+    { path: '/show/:eventId/timer', element: lazyRoute(<StageDisplay />), errorElement: <RootBoundary /> },
+    { path: '/show/:eventId/prompter', element: lazyRoute(<StageDisplay />), errorElement: <RootBoundary /> },
     { path: '*', element: <Navigate to="/" replace /> },
   ],
   { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || undefined },

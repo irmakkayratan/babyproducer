@@ -42,6 +42,9 @@ test.describe('foundation', () => {
   test('a deep link resolves through the SPA fallback', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Start blank/ }).click();
+    // Wait for the navigation to land before reading the URL, or under load
+    // we deep-link back to the landing page and test nothing.
+    await expect(page).toHaveURL(/\/w\/[A-Z0-9]+$/);
     const url = page.url();
     await page.goto(url);
     await expect(page.getByRole('heading', { name: 'No events yet' })).toBeVisible();

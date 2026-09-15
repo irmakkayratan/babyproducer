@@ -1,1 +1,1 @@
-{"root":["./vite.config.ts","./playwright.config.ts","./tests/e2e/guests.spec.ts","./tests/e2e/smoke.spec.ts"],"version":"5.9.3"}
+{"root":["./vite.config.ts","./playwright.config.ts","./tests/e2e/guests.spec.ts","./tests/e2e/rundown.spec.ts","./tests/e2e/smoke.spec.ts"],"version":"5.9.3"}

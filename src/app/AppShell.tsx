@@ -34,7 +34,7 @@ export function AppShell() {
       <div className="flex min-h-dvh">
         <aside
           className={cn(
-            'sticky top-0 hidden h-dvh shrink-0 flex-col border-r bg-card/40 transition-[width] duration-200 md:flex',
+            'sticky top-0 hidden h-dvh shrink-0 flex-col border-r bg-card/40 transition-[width] duration-200 md:flex print:!hidden',
             collapsed ? 'w-16' : 'w-[264px]',
           )}
         >
@@ -98,7 +98,7 @@ export function AppShell() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-background/85 px-4 backdrop-blur-sm sm:px-6">
+          <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-background/85 px-4 backdrop-blur-sm print:hidden sm:px-6">
             <div className="min-w-0 truncate text-sm text-muted-foreground">
               {activeEvent ? activeEvent.name : (workspace?.name ?? '')}
             </div>

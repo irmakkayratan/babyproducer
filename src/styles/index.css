@@ -228,3 +228,23 @@
     opacity: 0;
   }
 }
+
+/* Paper is a real output here: the stage manager's copy lives on a clipboard. */
+@media print {
+  :root {
+    --background: white;
+    --foreground: black;
+    --muted-foreground: #444;
+    --border: #bbb;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  @page {
+    margin: 12mm;
+    size: landscape;
+  }
+}
