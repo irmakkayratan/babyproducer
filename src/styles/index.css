@@ -248,3 +248,18 @@
     size: landscape;
   }
 }
+
+/* A badge prints on 4×3" stock, alone on the page. */
+@media print {
+  body:has(.badge-print) > *:not(:has(.badge-print)) {
+    display: none;
+  }
+
+  .badge-print {
+    width: 4in;
+    height: 3in;
+    border: none;
+    box-shadow: none;
+    page-break-after: always;
+  }
+}
