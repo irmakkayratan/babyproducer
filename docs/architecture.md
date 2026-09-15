@@ -53,8 +53,10 @@ export const useStore = create<AppStore>()(
     })),
     {
       name: 'atelier',
-      storage: createJSONStorage(() => idbStorage), // Dexie-backed, not localStorage
-      partialize: (s) => ({ ui: pickPersistableUi(s.ui), activeEventId: s.activeEventId }),
+      // Only small, boring preferences persist here; every domain record
+      // lives in IndexedDB (data/db.ts), not in the store.
+      storage: createJSONStorage(() => localStorage),
+      partialize: (s) => ({ scheme: s.scheme, sidebarCollapsed: s.sidebarCollapsed, activeEventId: s.activeEventId }),
       version: SCHEMA_VERSION,
       migrate: migrateStore,
     },
@@ -65,7 +67,7 @@ export const useStore = create<AppStore>()(
 Rules:
 
 - **`immer` for nested writes.** Moving a guest between seats or re-ordering a cue is written as a mutation and stays immutable underneath.
-- **`partialize` is explicit.** UI transients (open drawers, hovered row, toasts) are never persisted; domain data is not persisted *through Zustand* at all — it lives in Dexie and the store holds the working set.
+- **`partialize` is explicit.** UI transients (open drawers, hovered row, crossfades) are never persisted. Domain data is not persisted through Zustand at all — it lives in Dexie and the store holds the working set, so the persisted blob stays a few hundred bytes of preferences.
 - **Selectors, not whole-store subscriptions.** Components subscribe with `useStore(s => s.guests.byId[id])`; the guest table subscribes to ids only and rows subscribe individually.
 - **Derived values are computed, not stored.** Cue start times, MIV scores, and room capacity are pure functions of state, memoized — never duplicated into state where they can drift.
 
