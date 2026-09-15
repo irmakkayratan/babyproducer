@@ -14,6 +14,7 @@ import { createRng, type Rng } from '@/lib/rng';
 import { qrToken, ulid } from '@/lib/id';
 import { brandName, handleFor, outletName, personName } from './names';
 import { buildPreset } from './rooms';
+import { ACTIVATION_SOURCES, generateTelemetry, SHOW_SOURCES } from './telemetry';
 import { allSeats } from '@/modules/seating/geometry';
 import { SCENARIOS, type ScenarioSpec } from './scenarios';
 
@@ -271,6 +272,19 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
       rng,
     );
 
+    // Sensor feeds run from doors to the end of the event; an upcoming event
+    // gets the window it will have, so the dashboard is never empty.
+    const telemetry = generateTelemetry(
+      event.id,
+      spec.id === 'lumen' ? ACTIVATION_SOURCES : SHOW_SOURCES,
+      {
+        start: doors,
+        end,
+        stepMinutes: spec.durationHours > 4 ? 15 : 5,
+        seed: spec.seed,
+      },
+    );
+
     const isPast = end.getTime() < now.getTime();
     const arrivals = isPast ? generateArrivals(spec, guests, doors, rng, 'demo-device') : [];
     const arrivedIds = new Set(arrivals.map((a) => a.guestId));
@@ -280,13 +294,18 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
       else if (isPast && guest.statusId === 'confirmed') guest.statusId = 'no-show';
     }
 
-    await db.transaction('rw', [db.companies, db.guests, db.arrivals, db.events, db.seatingMaps], async () => {
+    await db.transaction(
+      'rw',
+      [db.companies, db.guests, db.arrivals, db.events, db.seatingMaps, db.telemetry],
+      async () => {
       await db.companies.bulkPut(companies);
       await db.guests.bulkPut(guests);
       if (arrivals.length) await db.arrivals.bulkPut(arrivals);
       if (seating) await db.seatingMaps.put(seating);
+      await db.telemetry.bulkPut(telemetry);
       await db.events.update(event.id, { statusId: isPast ? 'complete' : 'planning' });
-    });
+      },
+    );
 
     onProgress?.({ scenario: spec.name, step: 'Done', done: index + 1, total });
   }
