@@ -22,5 +22,5 @@
     "paths": { "@/*": ["./src/*"] },
     "baseUrl": "."
   },
-  "include": ["src", "tests"]
+  "include": ["src", "tests/setup.ts", "tests/unit", "tests/component"]
 }

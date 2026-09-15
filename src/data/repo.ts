@@ -8,6 +8,7 @@ import { getTemplate } from './templates';
 import type {
   Event,
   EventTemplate,
+  MetricConfig,
   SchemaConfig,
   ThemeOverride,
   Venue,
@@ -40,12 +41,13 @@ export async function createWorkspace(input: {
 }): Promise<Workspace> {
   const template = input.template;
   const schema = template ? applyTemplateToSchema(defaultSchema(), template, true) : defaultSchema();
+  const metrics = template ? applyTemplateWeights(defaultMetrics(), template) : defaultMetrics();
   const workspace: Workspace = stamp({
     id: ulid(),
     name: input.name,
     brand: { ...defaultBrand(), ...(template ? { accent: template.accent } : {}) },
     schema,
-    metrics: defaultMetrics(),
+    metrics,
     enabledModules: template?.enabledModules ?? defaultModules(),
     demo: input.demo ?? false,
   });
@@ -91,6 +93,25 @@ export function applyTemplateToSchema(
     next.fields = [...schema.fields, ...template.schemaPatch.fields.filter((f) => !existingIds.has(f.id))];
   }
   return next;
+}
+
+/**
+ * Weight tables a template supplies fill in only where the user has not set a
+ * value, so re-applying a template never overwrites a tuned weight.
+ */
+export function applyTemplateWeights(metrics: MetricConfig[], template: EventTemplate): MetricConfig[] {
+  if (!template.metricWeights) return metrics;
+  return metrics.map((metric) => {
+    const patch = template.metricWeights?.[metric.id];
+    if (!patch) return metric;
+    return {
+      ...metric,
+      weightTables: metric.weightTables.map((table) => {
+        const entries = patch[table.id];
+        return entries ? { ...table, entries: { ...entries, ...table.entries } } : table;
+      }),
+    };
+  });
 }
 
 function sameVocab(a: Vocab[], b: Vocab[]): boolean {
@@ -160,6 +181,7 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
       await db.workspaces.put({
         ...workspace,
         schema: applyTemplateToSchema(workspace.schema, template),
+        metrics: applyTemplateWeights(workspace.metrics, template),
         updatedAt: now(),
         rev: workspace.rev + 1,
       });

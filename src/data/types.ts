@@ -420,6 +420,8 @@ export interface EventTemplate {
   rundownColumns: RundownColumn[];
   enabledModules: ModuleKey[];
   metricIds: string[];
+  /** Seeds weight-table entries: { metricId: { tableId: { key: weight } } }. */
+  metricWeights?: Record<string, Record<string, Record<string, number>>>;
   seatingPreset?: 'runway' | 'theatre' | 'banquet' | 'open-floor' | 'none';
   builtin?: boolean;
 }

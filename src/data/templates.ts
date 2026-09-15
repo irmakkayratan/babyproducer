@@ -35,6 +35,14 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     seatingPreset: 'runway',
     enabledModules: ['guests', 'seating', 'rundown', 'checkin', 'command', 'metrics'],
     metricIds: ['miv', 'emv'],
+    metricWeights: {
+      miv: {
+        // Authority, not volume: a critic at a top-tier title outweighs a
+        // larger account with no standing. Every number here is editable.
+        mediaRate: { celebrity: 0.09, influencer: 0.05, media: 0.045, buyer: 0.012, partner: 0.02, owned: 0.03 },
+        mediaQuality: { 'a-list': 2.4, 'front-row': 1.7, press: 1.35, buyer: 0.9, standing: 0.6 },
+      },
+    },
     rundownColumns: [
       col('music', 'Music'),
       col('lighting', 'Lighting'),
@@ -78,6 +86,12 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     seatingPreset: 'open-floor',
     enabledModules: ['guests', 'checkin', 'command', 'metrics', 'rundown'],
     metricIds: ['miv', 'emv'],
+    metricWeights: {
+      miv: {
+        mediaRate: { creator: 0.055, media: 0.04, vip: 0.08, public: 0.004, partner: 0.02 },
+        mediaQuality: { hosted: 1.8, rsvp: 1.1, 'walk-in': 0.5 },
+      },
+    },
     rundownColumns: [
       col('station', 'Station'),
       col('staffing', 'Staffing'),
@@ -116,6 +130,12 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     seatingPreset: 'theatre',
     enabledModules: ['guests', 'seating', 'rundown', 'checkin', 'command', 'metrics'],
     metricIds: ['emv'],
+    metricWeights: {
+      miv: {
+        mediaRate: { analyst: 0.06, press: 0.05, customer: 0.008, partner: 0.02, internal: 0.005 },
+        mediaQuality: { 'keynote-row': 1.9, reserved: 1.2, general: 0.7 },
+      },
+    },
     rundownColumns: [
       col('slides', 'Slides'),
       col('mics', 'Mics', 140),
@@ -180,6 +200,12 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     seatingPreset: 'banquet',
     enabledModules: ['guests', 'seating', 'rundown', 'checkin', 'metrics'],
     metricIds: ['miv'],
+    metricWeights: {
+      miv: {
+        mediaRate: { donor: 0.05, board: 0.04, press: 0.045, guest: 0.01 },
+        mediaQuality: { 'head-table': 2, major: 1.5, table: 0.8 },
+      },
+    },
     rundownColumns: [
       col('service', 'Service'),
       col('audio', 'Audio'),

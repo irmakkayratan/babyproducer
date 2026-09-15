@@ -47,6 +47,9 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
+    // The manifest lets the budget check measure the eager shell only,
+    // rather than counting lazily loaded module chunks against it.
+    manifest: true,
   },
   test: {
     environment: 'jsdom',

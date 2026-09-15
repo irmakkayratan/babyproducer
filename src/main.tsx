@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { router } from './app/router';
 import { useStore } from './store';
@@ -12,6 +13,7 @@ function Root() {
   return (
     <TooltipProvider delayDuration={300}>
       <RouterProvider router={router} />
+      <Toaster position="bottom-right" theme="system" richColors closeButton />
     </TooltipProvider>
   );
 }
@@ -24,6 +26,14 @@ async function start() {
     const store = useStore.getState();
     if (event.type === 'event:changed' || event.type === 'workspace:changed' || event.type === 'demo:reset') {
       void store.bootstrap();
+    }
+    // A check-in at another desk must appear here immediately, and a duplicate
+    // scan on this tab must then be refused.
+    if (event.type === 'guest:checked-in' && store.guestsEventId === event.eventId) {
+      void store.applyRemoteGuestChange([event.guestId]);
+    }
+    if (event.type === 'guest:changed' && store.guestsEventId === event.eventId) {
+      void store.applyRemoteGuestChange(event.guestIds);
     }
   });
 

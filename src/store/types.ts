@@ -1,8 +1,9 @@
 import type { StateCreator } from 'zustand';
+import type { GuestSlice } from './slices/guests';
 import type { UiSlice } from './slices/ui';
 import type { WorkspaceSlice } from './slices/workspace';
 
-export type AppStore = WorkspaceSlice & UiSlice;
+export type AppStore = WorkspaceSlice & GuestSlice & UiSlice;
 
 /**
  * Slices are written against the whole store (so one slice may read another)

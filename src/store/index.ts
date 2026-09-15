@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { useShallow } from 'zustand/react/shallow';
+import { createGuestSlice } from './slices/guests';
 import { createUiSlice } from './slices/ui';
 import { createWorkspaceSlice } from './slices/workspace';
 import type { AppStore } from './types';
@@ -19,6 +20,7 @@ export const useStore = create<AppStore>()(
   persist(
     immer((...a) => ({
       ...createWorkspaceSlice(...a),
+      ...createGuestSlice(...a),
       ...createUiSlice(...a),
     })),
     {
@@ -31,6 +33,8 @@ export const useStore = create<AppStore>()(
         tourCompleted: state.tourCompleted,
         activeWorkspaceId: state.activeWorkspaceId,
         activeEventId: state.activeEventId,
+        density: state.density,
+        hiddenColumns: state.hiddenColumns,
       }),
     },
   ),
