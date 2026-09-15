@@ -9,10 +9,12 @@
 import { db } from '@/data/db';
 import { createEvent, createWorkspace } from '@/data/repo';
 import { getTemplate } from '@/data/templates';
-import type { Arrival, Company, Guest, Workspace } from '@/data/types';
+import type { Arrival, Company, Guest, SeatingMap, SeatingRule, Workspace } from '@/data/types';
 import { createRng, type Rng } from '@/lib/rng';
 import { qrToken, ulid } from '@/lib/id';
 import { brandName, handleFor, outletName, personName } from './names';
+import { buildPreset } from './rooms';
+import { allSeats } from '@/modules/seating/geometry';
 import { SCENARIOS, type ScenarioSpec } from './scenarios';
 
 const DEMO_WORKSPACE_NAME = 'Demo Productions';
@@ -142,6 +144,78 @@ function generateArrivals(spec: ScenarioSpec, guests: Guest[], doors: Date, rng:
   return arrivals;
 }
 
+/**
+ * A seated room, with the politics that make seating interesting: a pair who
+ * must not sit near each other, a pair who must sit together, and a front row
+ * reserved for the top tier.
+ */
+function generateSeating(
+  spec: ScenarioSpec,
+  eventId: string,
+  templatePreset: 'runway' | 'theatre' | 'banquet' | 'open-floor' | 'none',
+  guests: Guest[],
+  rng: Rng,
+): SeatingMap | null {
+  const map = buildPreset(templatePreset, eventId, { capacity: spec.capacity, rng });
+  if (!map) return null;
+
+  const tierOrder = Object.keys(spec.guests.tierMix);
+  const seatable = guests
+    .filter((guest) => guest.statusId !== 'declined')
+    .sort((a, b) => tierOrder.indexOf(a.tierId ?? '') - tierOrder.indexOf(b.tierId ?? ''));
+
+  const positions = allSeats(map);
+  const assignments = new Map<string, string>();
+  // Leave a few seats open: a real chart always has last-minute gaps.
+  const fill = Math.floor(positions.length * 0.92);
+  for (let i = 0; i < Math.min(fill, seatable.length); i++) {
+    assignments.set(positions[i].seat.id, seatable[i].id);
+    seatable[i].seatId = positions[i].seat.id;
+  }
+
+  const topTier = tierOrder[0];
+  const frontRowZone = map.zones[0]?.id;
+  const topTierGuests = seatable.filter((guest) => guest.tierId === topTier).slice(0, 4);
+  const rules: SeatingRule[] = [];
+  if (topTierGuests.length >= 4) {
+    rules.push({
+      id: 'keep-apart-demo',
+      type: 'keep-apart',
+      label: `${topTierGuests[0].name} and ${topTierGuests[1].name} must not be seated near each other`,
+      subjects: [topTierGuests[0].id, topTierGuests[1].id],
+      severity: 'warn',
+    });
+    rules.push({
+      id: 'together-demo',
+      type: 'seat-together',
+      label: `${topTierGuests[2].name} and ${topTierGuests[3].name} are attending together`,
+      subjects: [topTierGuests[2].id, topTierGuests[3].id],
+      severity: 'warn',
+    });
+  }
+  if (frontRowZone && topTier) {
+    rules.push({
+      id: 'front-row-demo',
+      type: 'tier-in-zone',
+      label: `${map.zones[0].label} is held for the top tier`,
+      subjects: [],
+      tierId: topTier,
+      zoneId: frontRowZone,
+      severity: 'warn',
+    });
+  }
+
+  return {
+    ...map,
+    rules,
+    elements: map.elements.map((element) =>
+      'seats' in element
+        ? { ...element, seats: element.seats.map((seat) => ({ ...seat, guestId: assignments.get(seat.id) })) }
+        : element,
+    ),
+  };
+}
+
 export interface SeedProgress {
   scenario: string;
   step: string;
@@ -189,6 +263,14 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
     const companies = generateCompanies(spec, event.id, rng, iso);
     const guests = generateGuests(spec, event.id, companies, rng, iso);
 
+    const seating = generateSeating(
+      spec,
+      event.id,
+      (getTemplate(spec.templateId).seatingPreset ?? 'none') as 'runway' | 'theatre' | 'banquet' | 'open-floor' | 'none',
+      guests,
+      rng,
+    );
+
     const isPast = end.getTime() < now.getTime();
     const arrivals = isPast ? generateArrivals(spec, guests, doors, rng, 'demo-device') : [];
     const arrivedIds = new Set(arrivals.map((a) => a.guestId));
@@ -198,10 +280,11 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
       else if (isPast && guest.statusId === 'confirmed') guest.statusId = 'no-show';
     }
 
-    await db.transaction('rw', [db.companies, db.guests, db.arrivals, db.events], async () => {
+    await db.transaction('rw', [db.companies, db.guests, db.arrivals, db.events, db.seatingMaps], async () => {
       await db.companies.bulkPut(companies);
       await db.guests.bulkPut(guests);
       if (arrivals.length) await db.arrivals.bulkPut(arrivals);
+      if (seating) await db.seatingMaps.put(seating);
       await db.events.update(event.id, { statusId: isPast ? 'complete' : 'planning' });
     });
 

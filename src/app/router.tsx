@@ -17,16 +17,12 @@ const GuestsPage = lazy(() => import('@/modules/guests/GuestsPage').then((m) => 
 const Demo = lazy(() => import('./routes/Demo').then((m) => ({ default: m.Demo })));
 const RundownPage = lazy(() => import('@/modules/rundown/RundownPage').then((m) => ({ default: m.RundownPage })));
 const CallerMode = lazy(() => import('@/modules/rundown/CallerMode').then((m) => ({ default: m.CallerMode })));
+const SeatingPage = lazy(() => import('@/modules/seating/SeatingPage').then((m) => ({ default: m.SeatingPage })));
 const StageDisplay = lazy(() => import('@/modules/rundown/StageDisplay').then((m) => ({ default: m.StageDisplay })));
 
 const lazyRoute = (element: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
 
 const NOT_YET_BUILT = [
-  {
-    path: 'seating',
-    title: 'Seating Chart Builder',
-    description: 'Lands in phase 4: a drag-and-drop room canvas with zones, tiers and adjacency rules.',
-  },
   {
     path: 'checkin',
     title: 'Check-in',
@@ -56,6 +52,7 @@ export const router = createBrowserRouter(
             { index: true, element: <Navigate to="overview" replace /> },
             { path: 'overview', element: <EventOverview /> },
             { path: 'guests', element: lazyRoute(<GuestsPage />) },
+            { path: 'seating', element: lazyRoute(<SeatingPage />) },
             { path: 'rundown', element: lazyRoute(<RundownPage />) },
             { path: 'rundown/caller', element: lazyRoute(<CallerMode />) },
             ...NOT_YET_BUILT.map((module) => ({
