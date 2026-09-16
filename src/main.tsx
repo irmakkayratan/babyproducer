@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { router } from './app/router';
 import { useStore } from './store';
 import { requestPersistentStorage } from './data/db';
@@ -14,6 +15,7 @@ function Root() {
     <TooltipProvider delayDuration={300}>
       <RouterProvider router={router} />
       <Toaster position="bottom-right" theme="system" richColors closeButton />
+      <UpdatePrompt />
     </TooltipProvider>
   );
 }

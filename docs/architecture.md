@@ -17,8 +17,8 @@
 | State | **Zustand** with `immer` + `persist` + `subscribeWithSelector` | Slice pattern; no provider tree; selector-level subscriptions avoid whole-tree re-renders in the 5k-row table |
 | Durable data | **Dexie (IndexedDB)** | Async, quota in the hundreds of MB, stores blobs (cover art, badge assets) and large guest lists; versioned migrations |
 | Collaboration | **Yjs** + `y-indexeddb` + `y-broadcastchannel` | CRDT merge for the rundown; offline edits reconcile without conflict UI |
-| Tables | **TanStack Table + TanStack Virtual** | Headless — styles stay shadcn; virtualization is the only way to hit the perf budget |
-| Drag & drop | **dnd-kit** (seating, cue reorder), **react-grid-layout** (dashboard) | dnd-kit is accessible and keyboard-operable; RGL is the industry answer for resizable widget grids |
+| Tables | **TanStack Virtual** + an in-repo column model | Virtualization is the only way to hit the perf budget; the column model is ~100 lines and avoids a second table abstraction |
+| Drag & drop | **Native HTML5 DnD** (seating), **react-grid-layout** (dashboard) | Native drag costs nothing at 1,200 seats; the keyboard path is written explicitly rather than inherited, and RGL is the industry answer for resizable widget grids |
 | Charts | **Recharts** via the shadcn `Chart` wrapper | Token-driven colors flip with the theme, no conditional classnames |
 | Forms | **react-hook-form + Zod** | Zod schemas are generated from custom-field definitions at runtime |
 | Routing | **React Router 7** (data router) | Deep links, nested layouts, route-level code splitting |
@@ -27,6 +27,8 @@
 | Tests | **Vitest + Testing Library + Playwright** | Unit for engines, component for interactions, E2E for offline/multi-tab |
 
 Deliberately excluded: Redux (verbosity), React Context for app state (re-render cost), Next.js (SSR is unusable on Pages), any component kit we cannot restyle.
+
+**Two deviations from the original plan, both made while building.** TanStack Table was dropped: with saved views and custom fields the column model is ours anyway, and a headless table library on top added indirection without removing code. dnd-kit was dropped for seating: its selling point is keyboard accessibility, but the seating module needs an explicit keyboard path regardless (select a seat, press Enter, search a guest), and native drag handles a 1,200-seat room with no measurement pass.
 
 ## 3. State architecture — slice pattern
 
@@ -174,7 +176,7 @@ export interface SyncProvider {
 | Shell < 250KB gz | Route-level code splitting; Recharts, dnd-kit, react-grid-layout and the scanner lazy-load with their routes |
 | 5,000-row table at 60fps | TanStack Virtual; row components subscribe to their own record only; column visibility from saved views trims work |
 | 500-cue recompute < 16ms | Timing is a single O(n) pass over a typed array of durations, memoized on `[showStart, durations, anchors]` |
-| 400-seat canvas drag at 60fps | Transform-only drag (no layout), `will-change`, pointer events on a single canvas layer, commit to state on drop |
+| 400-seat canvas drag at 60fps | Native HTML5 drag (no per-seat drag listeners or measurement), absolute positioning, commit to state on drop |
 | Cold start < 2s | Precached shell, seed data loaded lazily and in a worker, fonts self-hosted with `font-display: swap` |
 
 Guarded by a Playwright performance test that fails CI if the seeded 5,000-guest table drops frames on scroll or the bundle exceeds budget.

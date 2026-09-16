@@ -8,7 +8,7 @@
 import type * as Y from 'yjs';
 import type { Cue, RundownColumn } from '@/data/types';
 import { createRng } from '@/lib/rng';
-import { ulid } from '@/lib/id';
+import { seededIds } from '@/lib/id';
 import { insertCue, setMeta } from '@/modules/rundown/doc';
 
 interface BlockSpec {
@@ -91,6 +91,7 @@ export function seedRundown(
   if (!shape) return;
 
   const rng = createRng(`${options.seed}-rundown`);
+  const makeId = seededIds(rng.next);
   setMeta(doc, {
     eventId: options.eventId,
     showStart: options.doorsAt ?? options.showStart,
@@ -110,7 +111,7 @@ export function seedRundown(
           cells.models = `Model ${pass + 1}`;
         }
         const cue: Partial<Cue> = {
-          id: ulid(Date.now(), rng.next),
+          id: makeId(),
           label: repeat > 1 ? `${spec.label} ${pass + 1}` : spec.label,
           durationSec: rng.int(spec.minSec, spec.maxSec),
           itemTypeId: spec.itemTypeId,

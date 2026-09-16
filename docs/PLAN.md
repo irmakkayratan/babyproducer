@@ -1,7 +1,7 @@
 # Atelier — Event Production OS
 ## Master Build Plan
 
-> **Status:** Plan for approval. No application code has been written yet.
+> **Status:** Built. Phases P0–P8 are implemented, tested and deployed from this branch; this document remains the specification the code is measured against.
 > **Working title:** *Atelier* (the product name is a single brand token — see [customization.md](./customization.md#1-brand--identity)).
 > **Source of record:** `Event Production App Research` (industry analysis of Cvent, Bizzabo, Launchmetrics, Shoflo/LASSO, Rundown Studio, Stagetimer, CreatorIQ, and experiential/EMV-MIV practice).
 
@@ -120,7 +120,7 @@ Nine phases, each independently shippable and deployable. Effort is expressed in
 | **P5** | Onsite (M5) | Kiosk mode, QR generation + camera scanning, offline mutation queue, duplicate guards, badge printing | 2 |
 | **P6** | Command Center + Metrics (M6, M7) | Widget registry, react-grid-layout, telemetry simulator, MIV/EMV engines, recap report + export | 3 |
 | **P7** | Studio (M8) | Consolidated customization surface, schema editor, formula builder, brand tokens, module toggles, template authoring, JSON import/export | 3 |
-| **P8** | Demo & polish | Three seeded productions, guided tour, simulate-live, a11y audit (WCAG 2.2 AA), perf budgets, empty states, docs, README, launch | 3 |
+| **P8** | Demo & polish | Three seeded productions, guided tour, demo banner with reset and fork, diagnostics, update prompt, a11y audit (WCAG 2.2 AA), perf budgets, docs | 3 |
 
 **Total: ~24 build sessions.** P0→P3 already constitutes a genuinely useful product; P8 is what makes it demo-ready for a stranger with a link.
 

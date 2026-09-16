@@ -213,7 +213,13 @@ export function SeatingPage() {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <div className="min-h-0 flex-1 overflow-auto bg-muted/20 p-6 scrollbar-thin" data-testid="seating-scroll">
+        <div
+          className="min-h-0 flex-1 overflow-auto bg-muted/20 p-6 scrollbar-thin"
+          data-testid="seating-scroll"
+          tabIndex={0}
+          role="region"
+          aria-label="Room plan"
+        >
           <SeatingCanvas
             map={map}
             guests={guestsById}
@@ -263,7 +269,13 @@ export function SeatingPage() {
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin" data-testid="unseated-list">
+          <div
+            className="min-h-0 flex-1 overflow-y-auto scrollbar-thin"
+            data-testid="unseated-list"
+            tabIndex={0}
+            role="region"
+            aria-label="Unseated guests"
+          >
             {unseated.length === 0 ? (
               <p className="p-4 text-sm text-muted-foreground">Everyone matching is seated.</p>
             ) : (

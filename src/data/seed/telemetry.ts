@@ -8,7 +8,7 @@
  */
 import type { TelemetrySeries } from '@/data/types';
 import { createRng, type Rng } from '@/lib/rng';
-import { ulid } from '@/lib/id';
+import { seededIds } from '@/lib/id';
 
 export interface TelemetrySourceSpec {
   source: string;
@@ -131,11 +131,12 @@ export function generateTelemetry(
   options: { start: Date; end: Date; stepMinutes?: number; seed: string },
 ): TelemetrySeries[] {
   const rng = createRng(`${options.seed}-telemetry`);
+  const makeId = seededIds(rng.next);
   const stepMs = (options.stepMinutes ?? 5) * 60_000;
   const points = Math.max(12, Math.min(600, Math.round((options.end.getTime() - options.start.getTime()) / stepMs)));
 
   return specs.map((spec) => ({
-    id: ulid(Date.now(), rng.next),
+    id: makeId(),
     eventId,
     source: spec.source,
     metric: spec.metric,

@@ -7,7 +7,7 @@
  */
 import type { SeatingElement, SeatingMap, Zone } from '@/data/types';
 import type { Rng } from '@/lib/rng';
-import { ulid } from '@/lib/id';
+import { seededIds, ulid } from '@/lib/id';
 import { makeRow, makeStage, makeTable } from '@/modules/seating/geometry';
 
 const ZONES: Record<string, Zone[]> = {
@@ -45,9 +45,11 @@ export function buildPreset(
 ): SeatingMap | null {
   if (preset === 'none') return null;
   const { capacity, rng } = options;
+  // With a seeded rng, ids come from the seed so the room rebuilds identically.
+  const makeId = rng ? seededIds(rng.next) : ulid;
   const iso = new Date().toISOString();
   const base = {
-    id: ulid(undefined, rng?.next),
+    id: makeId(),
     eventId,
     createdAt: iso,
     updatedAt: iso,
@@ -65,7 +67,7 @@ export function buildPreset(
 
     const elements: SeatingElement[] = [
       makeStage({ kind: 'runway', label: 'Runway', x: runwayX, y: 80, w: 120, h: height - 180 }),
-      makeStage({ kind: 'entrance', label: 'Entrance', x: 40, y: height - 70, w: 120, h: 40 }),
+      makeStage({ kind: 'entrance', label: 'Entrance', x: 40, y: height - 70, w: 120, h: 40, makeId }),
     ];
     for (let bank = 0; bank < 2; bank++) {
       const xBase = bank === 0 ? 80 : runwayX + 180;
@@ -77,6 +79,7 @@ export function buildPreset(
             x: xBase,
             y: 120 + row * 46,
             zoneId: row === 0 ? 'front-row' : row === 1 ? 'second-row' : 'riser',
+            makeId,
           }),
         );
       }
@@ -93,7 +96,7 @@ export function buildPreset(
 
   if (preset === 'theatre') {
     const rows = capacity ? Math.max(6, Math.min(24, Math.ceil(capacity / 18))) : 8;
-    const elements: SeatingElement[] = [makeStage({ kind: 'stage', label: 'Stage', x: 280, y: 60, w: 440, h: 90 })];
+    const elements: SeatingElement[] = [makeStage({ kind: 'stage', label: 'Stage', x: 280, y: 60, w: 440, h: 90, makeId })];
     for (let row = 0; row < rows; row++) {
       const seats = capacity ? Math.ceil(capacity / rows) : 12 + Math.min(row, 4);
       elements.push(
@@ -103,6 +106,7 @@ export function buildPreset(
           x: 500 - (seats * 28) / 2,
           y: 220 + row * 46,
           zoneId: row < 2 ? 'reserved' : 'general',
+          makeId,
         }),
       );
     }
@@ -120,7 +124,7 @@ export function buildPreset(
     const tables = capacity ? Math.max(4, Math.ceil(capacity / 8)) : 12;
     const columns = 4;
     const tableRows = Math.ceil(tables / columns);
-    const elements: SeatingElement[] = [makeStage({ kind: 'stage', label: 'Stage', x: 380, y: 40, w: 240, h: 70 })];
+    const elements: SeatingElement[] = [makeStage({ kind: 'stage', label: 'Stage', x: 380, y: 40, w: 240, h: 70, makeId })];
     let index = 0;
     for (let row = 0; row < tableRows; row++) {
       for (let column = 0; column < columns && index < tables; column++) {
@@ -132,6 +136,7 @@ export function buildPreset(
             x: 160 + column * 200,
             y: 220 + row * 200,
             zoneId: row === 0 ? 'head' : 'floor',
+            makeId,
           }),
         );
       }
@@ -152,8 +157,8 @@ export function buildPreset(
     canvas: { width: 900, height: 650, gridSize: 10 },
     zones: ZONES['open-floor'],
     elements: [
-      makeStage({ kind: 'entrance', label: 'Entrance', x: 40, y: 560, w: 120, h: 40 }),
-      makeStage({ kind: 'bar', label: 'Bar', x: 600, y: 80, w: 220, h: 60 }),
+      makeStage({ kind: 'entrance', label: 'Entrance', x: 40, y: 560, w: 120, h: 40, makeId }),
+      makeStage({ kind: 'bar', label: 'Bar', x: 600, y: 80, w: 220, h: 60, makeId }),
     ],
     rules: [],
   };

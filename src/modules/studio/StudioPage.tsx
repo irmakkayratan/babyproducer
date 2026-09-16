@@ -16,6 +16,7 @@ import { exportWorkspace, importWorkspace } from '@/data/io/workspace';
 import { VocabEditor } from './VocabEditor';
 import { FieldEditor } from './FieldEditor';
 import { MetricEditor } from './MetricEditor';
+import { Diagnostics } from './Diagnostics';
 import { cn } from '@/lib/utils';
 
 const ACCENTS = [
@@ -156,6 +157,7 @@ export function StudioPage() {
             ref={fileRef}
             type="file"
             accept="application/json,.json"
+            aria-label="Import a workspace JSON file"
             className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -173,6 +175,7 @@ export function StudioPage() {
           <TabsTrigger value="metrics">Metrics</TabsTrigger>
           <TabsTrigger value="brand">Brand</TabsTrigger>
           <TabsTrigger value="modules">Modules</TabsTrigger>
+          <TabsTrigger value="data">Data</TabsTrigger>
         </TabsList>
 
         <TabsContent value="vocabulary" className="mt-6 space-y-5">
@@ -308,6 +311,9 @@ export function StudioPage() {
               })}
             </div>
           </section>
+        </TabsContent>
+        <TabsContent value="data" className="mt-6 space-y-5">
+          <Diagnostics />
         </TabsContent>
       </Tabs>
     </div>

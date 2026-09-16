@@ -74,9 +74,12 @@ export function seatCount(map: SeatingMap): number {
   return map.elements.reduce((total, element) => total + ('seats' in element ? element.seats.length : 0), 0);
 }
 
-function makeSeats(count: number, labelPrefix: string, tierHint?: string): Seat[] {
+/** Ids come from the caller so seeded rooms can be rebuilt identically. */
+export type IdFactory = () => string;
+
+function makeSeats(count: number, labelPrefix: string, tierHint: string | undefined, makeId: IdFactory): Seat[] {
   return Array.from({ length: count }, (_, index) => ({
-    id: ulid(),
+    id: makeId(),
     label: `${labelPrefix}${index + 1}`,
     tierHint,
   }));
@@ -89,10 +92,12 @@ export function makeRow(options: {
   y: number;
   zoneId?: string;
   tierHint?: string;
+  makeId?: IdFactory;
 }): SeatingElement {
+  const makeId = options.makeId ?? ulid;
   return {
     kind: 'row',
-    id: ulid(),
+    id: makeId(),
     label: options.label,
     zoneId: options.zoneId,
     x: options.x,
@@ -100,7 +105,7 @@ export function makeRow(options: {
     w: options.seats * (SEAT_SIZE + SEAT_GAP),
     h: SEAT_SIZE,
     rotation: 0,
-    seats: makeSeats(options.seats, `${options.label}-`, options.tierHint),
+    seats: makeSeats(options.seats, `${options.label}-`, options.tierHint, makeId),
   };
 }
 
@@ -111,11 +116,13 @@ export function makeTable(options: {
   y: number;
   shape?: 'round' | 'rect';
   zoneId?: string;
+  makeId?: IdFactory;
 }): SeatingElement {
   const shape = options.shape ?? 'round';
+  const makeId = options.makeId ?? ulid;
   return {
     kind: 'table',
-    id: ulid(),
+    id: makeId(),
     label: options.label,
     zoneId: options.zoneId,
     shape,
@@ -124,7 +131,7 @@ export function makeTable(options: {
     w: shape === 'round' ? 90 : 160,
     h: shape === 'round' ? 90 : 70,
     rotation: 0,
-    seats: makeSeats(options.seats, `${options.label}.`),
+    seats: makeSeats(options.seats, `${options.label}.`, undefined, makeId),
   };
 }
 
@@ -135,8 +142,10 @@ export function makeStage(options: {
   y: number;
   w: number;
   h: number;
+  makeId?: IdFactory;
 }): SeatingElement {
-  return { ...options, id: ulid(), rotation: 0 };
+  const { makeId = ulid, ...element } = options;
+  return { ...element, id: makeId(), rotation: 0 };
 }
 
 export { SEAT_SIZE, SEAT_GAP };

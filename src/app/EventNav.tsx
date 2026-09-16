@@ -33,7 +33,7 @@ export function EventNav({ event, collapsed }: { event: Event; collapsed: boolea
   return (
     <div className="mt-4">
       {!collapsed && (
-        <p className="truncate px-2.5 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+        <p className="truncate px-2.5 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {event.name}
         </p>
       )}

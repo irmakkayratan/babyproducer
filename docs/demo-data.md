@@ -30,7 +30,7 @@ The proof the app is not fashion-only. Corporate vocabulary (Analyst / Press / C
 
 ## 3. Generation strategy
 
-- **Deterministic.** A seeded PRNG (`mulberry32`, fixed seed per scenario) drives every name, number and timestamp, so the demo is byte-identical on every machine. Tests and screenshots are therefore stable.
+- **Deterministic.** A seeded PRNG (`mulberry32`, fixed seed per scenario) drives every name, number and timestamp. Record **ids** are seeded too — they are ULIDs built from a fixed epoch plus the scenario's RNG rather than the wall clock — because identical values in a different order are not the same demo. A reset rebuilds the same records in the same order, verified by both a unit test and an end-to-end one.
 - **Plausible, not random.** Follower counts are log-normal; engagement rate is inversely correlated with follower count; RSVP conversion varies by tier; arrival times follow a pre-show spike curve; cue durations cluster by item type; telemetry is a smoothed random walk with day/hour seasonality and injected anomalies.
 - **Clearly fictional.** Invented names and brands with no real-person or real-brand data. Avatars are generated locally (deterministic gradient + initials) — no external image requests, which also keeps the app fully offline.
 - **Cheap to load.** Scenario data generates in a Web Worker from a compact spec (roughly 20KB of JSON parameters, not megabytes of records), streaming into Dexie with a determinate progress bar. Full seed of all three scenarios targets under 1.5 seconds.

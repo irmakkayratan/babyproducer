@@ -10,8 +10,9 @@ import { db } from '@/data/db';
 import { createEvent, createWorkspace } from '@/data/repo';
 import { getTemplate } from '@/data/templates';
 import type { Arrival, Company, Guest, SeatingMap, SeatingRule, Workspace } from '@/data/types';
+import { exportWorkspace, importWorkspace } from '@/data/io/workspace';
 import { createRng, type Rng } from '@/lib/rng';
-import { qrToken, ulid } from '@/lib/id';
+import { qrToken, seededIds } from '@/lib/id';
 import { brandName, handleFor, outletName, personName } from './names';
 import { buildPreset } from './rooms';
 import { ACTIVATION_SOURCES, generateTelemetry, SHOW_SOURCES } from './telemetry';
@@ -49,10 +50,11 @@ function contentQualityFor(voiceId: string, rng: Rng): number {
 }
 
 function generateCompanies(spec: ScenarioSpec, eventId: string, rng: Rng, iso: string): Company[] {
+  const makeId = seededIds(rng.next);
   return Array.from({ length: spec.guests.companyCount }, () =>
     stamp(
       {
-        id: ulid(Date.now(), rng.next),
+        id: makeId(),
         eventId,
         name: rng.bool(0.5) ? brandName(rng) : outletName(rng),
         fields: {},
@@ -70,6 +72,7 @@ function generateGuests(
   iso: string,
 ): Guest[] {
   const { guests: mix } = spec;
+  const makeId = seededIds(rng.next);
   return Array.from({ length: mix.count }, () => {
     const voiceId = rng.weighted(mix.voiceMix);
     const tierId = rng.weighted(mix.tierMix);
@@ -81,7 +84,7 @@ function generateGuests(
 
     return stamp(
       {
-        id: ulid(Date.now(), rng.next),
+        id: makeId(),
         eventId,
         name,
         handle: rng.bool(0.86) ? handleFor(name, rng) : undefined,
@@ -115,6 +118,7 @@ function generateGuests(
  */
 function generateArrivals(spec: ScenarioSpec, guests: Guest[], doors: Date, rng: Rng, deviceId: string): Arrival[] {
   const arrivals: Arrival[] = [];
+  const makeId = seededIds(rng.next);
   const windowMs = spec.arrivals.curve === 'walk-in-heavy' ? 8 * 3600_000 : 75 * 60_000;
 
   for (const guest of guests) {
@@ -132,7 +136,7 @@ function generateArrivals(spec: ScenarioSpec, guests: Guest[], doors: Date, rng:
     }
 
     arrivals.push({
-      id: ulid(Date.now(), rng.next),
+      id: makeId(),
       eventId: guest.eventId,
       guestId: guest.id,
       at: new Date(doors.getTime() + offset).toISOString(),
@@ -339,4 +343,24 @@ export async function removeDemoWorkspace(workspaceId: string): Promise<void> {
 /** Reset only ever touches workspaces flagged as demo. */
 export async function resetDemoData(): Promise<Workspace> {
   return seedDemoWorkspace();
+}
+
+/**
+ * Deep-copies a demo workspace into one the user owns, with fresh ids and the
+ * demo flag cleared — so they can start from a realistic production rather
+ * than an empty grid, and resetting the demo later leaves their copy alone.
+ */
+export async function forkDemoWorkspace(workspaceId: string): Promise<Workspace> {
+  const source = await db.workspaces.get(workspaceId);
+  if (!source) throw new Error('Workspace not found');
+
+  const payload = await exportWorkspace(workspaceId, { includeData: true });
+  const result = await importWorkspace(
+    // The export carries the demo flag; import clears it, and the name should
+    // read as the user's own rather than "(imported)".
+    { ...payload, workspace: { ...payload.workspace, name: source.name.replace(/^Demo /, '') } },
+  );
+  const forked = await db.workspaces.get(result.workspaceId);
+  if (!forked) throw new Error('Copy failed');
+  return forked;
 }

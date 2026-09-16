@@ -66,7 +66,7 @@ export function WorkspaceHome() {
       ) : (
         <div className="mt-8 space-y-10">
           <EventGrid title="Upcoming" events={upcoming} />
-          {past.length > 0 && <EventGrid title="Past" events={past} dimmed />}
+          {past.length > 0 && <EventGrid title="Past" events={past} past />}
         </div>
       )}
 
@@ -78,11 +78,11 @@ export function WorkspaceHome() {
 function EventGrid({
   title,
   events,
-  dimmed,
+  past,
 }: {
   title: string;
   events: ReturnType<typeof useStore.getState>['events'];
-  dimmed?: boolean;
+  past?: boolean;
 }) {
   if (events.length === 0) return null;
   return (
@@ -93,15 +93,15 @@ function EventGrid({
           <Link
             key={event.id}
             to={`/w/${event.workspaceId}/events/${event.id}/overview`}
-            className={`group overflow-hidden rounded-lg border bg-card transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
-              dimmed ? 'opacity-70 hover:opacity-100' : ''
-            }`}
+            // Past events are marked, not dimmed: a blanket opacity drags the
+            // text below the contrast floor.
+            className="group overflow-hidden rounded-lg border bg-card transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <EventCoverArt event={event} className="aspect-square w-full" />
+            <EventCoverArt event={event} className={past ? 'aspect-[2/1] w-full' : 'aspect-square w-full'} />
             <div className="space-y-2 p-4">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-medium leading-snug">{event.name}</h3>
-                <Badge variant="muted">{event.kind}</Badge>
+                <Badge variant="muted">{past ? 'Complete' : event.kind}</Badge>
               </div>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <CalendarClock className="size-3.5" />

@@ -64,13 +64,21 @@ export function GuestTable({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
-      <div
-        className="sticky top-0 z-10 grid items-center border-b bg-card/95 text-xs font-medium text-muted-foreground backdrop-blur-sm"
-        style={{ gridTemplateColumns: gridTemplate }}
-        role="row"
-      >
-        <div className="flex h-9 items-center justify-center">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border"
+      role="grid"
+      aria-label="Guest list"
+      aria-rowcount={guests.length + 1}
+      aria-colcount={columns.length + 2}
+    >
+      <div role="rowgroup">
+        <div
+          className="sticky top-0 z-10 grid items-center border-b bg-card/95 text-xs font-medium text-muted-foreground backdrop-blur-sm"
+          style={{ gridTemplateColumns: gridTemplate }}
+          role="row"
+          aria-rowindex={1}
+        >
+        <div className="flex h-9 items-center justify-center" role="columnheader">
           <Checkbox
             checked={allSelected ? true : selection.length > 0 ? 'indeterminate' : false}
             aria-label="Select all guests"
@@ -80,25 +88,40 @@ export function GuestTable({
         {columns.map((column) => {
           const sorted = sort.find((entry) => entry.id === column.id);
           return (
-            <button
+            <div
               key={column.id}
-              type="button"
-              onClick={() => headerClick(column)}
-              className={cn(
-                'flex h-9 items-center gap-1 px-2 text-left hover:text-foreground',
-                column.align === 'right' && 'justify-end',
-                !column.sortable && 'cursor-default',
-              )}
+              role="columnheader"
+              aria-sort={sorted ? (sorted.desc ? 'descending' : 'ascending') : column.sortable ? 'none' : undefined}
             >
-              {column.label}
-              {sorted && (sorted.desc ? <ArrowDown className="size-3" /> : <ArrowUp className="size-3" />)}
-            </button>
+              <button
+                type="button"
+                onClick={() => headerClick(column)}
+                className={cn(
+                  'flex h-9 w-full items-center gap-1 px-2 text-left hover:text-foreground',
+                  column.align === 'right' && 'justify-end',
+                  !column.sortable && 'cursor-default',
+                )}
+              >
+                {column.label}
+                {sorted && (sorted.desc ? <ArrowDown className="size-3" /> : <ArrowUp className="size-3" />)}
+              </button>
+            </div>
           );
         })}
-        <div className="sticky right-0 bg-card/95 px-2 text-right backdrop-blur-sm">Check-in</div>
+          <div className="sticky right-0 bg-card/95 px-2 text-right backdrop-blur-sm" role="columnheader">
+            Check-in
+          </div>
+        </div>
       </div>
 
-      <div ref={parentRef} className="min-h-0 flex-1 overflow-auto scrollbar-thin" data-testid="guest-table-scroll">
+      <div
+        ref={parentRef}
+        className="min-h-0 flex-1 overflow-auto scrollbar-thin"
+        data-testid="guest-table-scroll"
+        tabIndex={0}
+        role="rowgroup"
+        aria-label="Guests"
+      >
         <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const guest = guests[virtualRow.index];
@@ -107,6 +130,7 @@ export function GuestTable({
               <div
                 key={guest.id}
                 role="row"
+                aria-rowindex={virtualRow.index + 2}
                 data-testid="guest-row"
                 className={cn(
                   'absolute inset-x-0 grid cursor-pointer items-center border-b border-border/60 text-sm transition-colors hover:bg-accent/40',
@@ -119,7 +143,11 @@ export function GuestTable({
                 }}
                 onClick={() => openGuest(guest.id)}
               >
-                <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="flex items-center justify-center"
+                  role="gridcell"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Checkbox
                     checked={selected.has(guest.id)}
                     aria-label={`Select ${guest.name}`}
@@ -129,12 +157,14 @@ export function GuestTable({
                 {columns.map((column) => (
                   <div
                     key={column.id}
+                    role="gridcell"
                     className={cn('min-w-0 truncate px-2', column.align === 'right' && 'text-right')}
                   >
                     {column.render(guest, context)}
                   </div>
                 ))}
                 <div
+                  role="gridcell"
                   className="sticky right-0 bg-background/95 px-2 text-right backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >

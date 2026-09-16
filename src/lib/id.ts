@@ -24,6 +24,21 @@ export function ulid(now: number = Date.now(), random: () => number = Math.rando
   return encodeTime(now) + randomChars(16, random);
 }
 
+/**
+ * A fixed timestamp for seeded data.
+ *
+ * Demo ids are derived entirely from the scenario seed, so a reset rebuilds
+ * the same records in the same order — which is what makes screenshots and
+ * tests stable.
+ */
+export const SEED_EPOCH = Date.UTC(2027, 0, 1);
+
+/** Deterministic id factory bound to a seeded RNG. */
+export function seededIds(random: () => number): () => string {
+  let counter = 0;
+  return () => ulid(SEED_EPOCH + counter++, random);
+}
+
 /** Short, stable, URL-safe token for badge QR codes. */
 export function qrToken(random: () => number = Math.random): string {
   return randomChars(12, random);

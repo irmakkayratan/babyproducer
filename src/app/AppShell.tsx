@@ -13,6 +13,8 @@ import { ThemeProvider } from './ThemeProvider';
 import { useStore } from '@/store';
 import { cn } from '@/lib/utils';
 import { EventNav } from './EventNav';
+import { DemoBanner } from '@/modules/workspace/DemoBanner';
+import { GuidedTour } from '@/modules/workspace/GuidedTour';
 
 export function AppShell() {
   const { workspaceId } = useParams();
@@ -114,9 +116,11 @@ export function AppShell() {
               </Button>
             </div>
           </header>
+          {workspace?.demo && <DemoBanner workspaceId={workspace.id} workspaceName={workspace.name} />}
           <main className="min-w-0 flex-1">
             <Outlet />
           </main>
+          <GuidedTour />
         </div>
       </div>
     </ThemeProvider>
