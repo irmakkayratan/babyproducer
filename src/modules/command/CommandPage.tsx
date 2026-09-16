@@ -201,7 +201,7 @@ export function CommandPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] flex-col">
+    <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2.5 sm:px-6">
         <p className="mr-auto text-sm text-muted-foreground">
           {dashboard.name} · {dashboard.widgets.length} widgets · layout saved on this device

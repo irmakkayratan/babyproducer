@@ -171,7 +171,7 @@ export function SeatingPage() {
   const total = seatCount(map);
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] flex-col">
+    <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2.5 print:hidden sm:px-6">
         <div className="mr-auto flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           <span>

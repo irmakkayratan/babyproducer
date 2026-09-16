@@ -99,7 +99,7 @@ export function AppShell() {
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex h-dvh min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-background/85 px-4 backdrop-blur-sm print:hidden sm:px-6">
             <div className="min-w-0 truncate text-sm text-muted-foreground">
               {activeEvent ? activeEvent.name : (workspace?.name ?? '')}
@@ -117,7 +117,7 @@ export function AppShell() {
             </div>
           </header>
           {workspace?.demo && <DemoBanner workspaceId={workspace.id} workspaceName={workspace.name} />}
-          <main className="min-w-0 flex-1">
+          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
             <Outlet />
           </main>
           <GuidedTour />

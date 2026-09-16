@@ -122,7 +122,7 @@ export function GuestsPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] flex-col gap-3 p-4 sm:p-6">
+    <div className="flex h-full flex-col gap-3 p-4 sm:p-6">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-52 flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

@@ -114,7 +114,7 @@ export function CheckinPage() {
   if (!event || !workspace) return null;
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] flex-col bg-background" data-testid="checkin">
+    <div className="flex h-full flex-col bg-background" data-testid="checkin">
       <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2.5 sm:px-6">
         <div className="mr-auto flex items-center gap-3 text-sm">
           <span className="font-medium" data-numeric>

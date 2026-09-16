@@ -98,7 +98,7 @@ export function RundownPage() {
   if (!event) return null;
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] flex-col print:block print:h-auto">
+    <div className="flex h-full flex-col print:block print:h-auto">
       <PrintSheet
         eventName={event.name}
         venue={event.venue.name}
