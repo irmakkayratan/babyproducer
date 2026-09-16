@@ -1,0 +1,265 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* Dark is the default: these surfaces run in dark venues.
+   [data-theme="light"] opts into the planning palette. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root,
+[data-theme='dark'] {
+  --background: hsl(240 8% 5%);
+  --foreground: hsl(30 12% 96%);
+  --card: hsl(240 7% 7.5%);
+  --card-foreground: hsl(30 12% 96%);
+  --popover: hsl(240 7% 9%);
+  --popover-foreground: hsl(30 12% 96%);
+  --muted: hsl(240 6% 13%);
+  --muted-foreground: hsl(240 5% 60%);
+  --accent: hsl(240 6% 15%);
+  --accent-foreground: hsl(30 12% 96%);
+  --border: hsl(240 6% 16%);
+  --input: hsl(240 6% 19%);
+
+  --primary: hsl(258 85% 68%);
+  --primary-foreground: hsl(240 10% 6%);
+  --secondary: hsl(240 6% 14%);
+  --secondary-foreground: hsl(30 12% 96%);
+
+  --destructive: hsl(2 75% 60%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --success: hsl(152 55% 48%);
+  --warning: hsl(38 92% 60%);
+  --ring: hsl(258 85% 68%);
+
+  --chart-1: hsl(258 85% 68%);
+  --chart-2: hsl(190 85% 55%);
+  --chart-3: hsl(38 92% 60%);
+  --chart-4: hsl(152 55% 48%);
+  --chart-5: hsl(325 75% 65%);
+  --chart-6: hsl(220 70% 62%);
+  --chart-7: hsl(12 80% 62%);
+  --chart-8: hsl(60 60% 60%);
+
+  /* Guest tiers resolve to these slots at runtime from SchemaConfig,
+     so a user-created tier is a first-class citizen of the palette. */
+  --tier-1: hsl(45 85% 62%);
+  --tier-2: hsl(258 85% 68%);
+  --tier-3: hsl(190 85% 55%);
+  --tier-4: hsl(152 55% 48%);
+  --tier-5: hsl(325 75% 65%);
+  --tier-6: hsl(240 5% 55%);
+
+  --drift-under: hsl(152 55% 48%);
+  --drift-over: hsl(2 75% 60%);
+
+  --radius: 0.75rem;
+  --shell-gradient: hsl(258 85% 68%);
+
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --background: hsl(40 22% 99%);
+  --foreground: hsl(240 10% 8%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(240 10% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(240 10% 8%);
+  --muted: hsl(240 8% 96%);
+  --muted-foreground: hsl(240 4% 44%);
+  --accent: hsl(240 8% 95%);
+  --accent-foreground: hsl(240 10% 8%);
+  --border: hsl(240 8% 90%);
+  --input: hsl(240 8% 87%);
+
+  --primary: hsl(258 78% 58%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(240 8% 95%);
+  --secondary-foreground: hsl(240 10% 8%);
+
+  --destructive: hsl(2 72% 52%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --success: hsl(152 60% 36%);
+  --warning: hsl(32 90% 45%);
+  --ring: hsl(258 78% 58%);
+
+  --chart-1: hsl(258 78% 58%);
+  --chart-2: hsl(190 80% 40%);
+  --chart-3: hsl(32 90% 48%);
+  --chart-4: hsl(152 60% 36%);
+  --chart-5: hsl(325 70% 52%);
+  --chart-6: hsl(220 70% 52%);
+  --chart-7: hsl(12 75% 52%);
+  --chart-8: hsl(55 70% 42%);
+
+  --tier-1: hsl(38 85% 45%);
+  --tier-2: hsl(258 78% 58%);
+  --tier-3: hsl(190 80% 40%);
+  --tier-4: hsl(152 60% 36%);
+  --tier-5: hsl(325 70% 52%);
+  --tier-6: hsl(240 5% 45%);
+
+  --drift-under: hsl(152 60% 36%);
+  --drift-over: hsl(2 72% 52%);
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+
+  --color-tier-1: var(--tier-1);
+  --color-tier-2: var(--tier-2);
+  --color-tier-3: var(--tier-3);
+  --color-tier-4: var(--tier-4);
+  --color-tier-5: var(--tier-5);
+  --color-tier-6: var(--tier-6);
+
+  --color-drift-under: var(--drift-under);
+  --color-drift-over: var(--drift-over);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.4rem);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, ui-serif, serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04';
+    letter-spacing: -0.011em;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+
+  /* Digits must never jitter in a timer, a table or a rundown. */
+  .tabular,
+  table,
+  time,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+}
+
+/* Every animation explains a state change — and none of them run for
+   people who asked the platform to stop moving things. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes atelier-crossfade {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Paper is a real output here: the stage manager's copy lives on a clipboard. */
+@media print {
+  :root {
+    --background: white;
+    --foreground: black;
+    --muted-foreground: #444;
+    --border: #bbb;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  @page {
+    margin: 12mm;
+    size: landscape;
+  }
+}
+
+/* A badge prints on 4×3" stock, alone on the page. */
+@media print {
+  body:has(.badge-print) > *:not(:has(.badge-print)) {
+    display: none;
+  }
+
+  .badge-print {
+    width: 4in;
+    height: 3in;
+    border: none;
+    box-shadow: none;
+    page-break-after: always;
+  }
+}

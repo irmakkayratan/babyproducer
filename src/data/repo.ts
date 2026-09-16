@@ -1,0 +1,232 @@
+/**
+ * Repository layer: every durable read and write goes through here, so slices
+ * stay thin and the Dexie surface is testable on its own.
+ */
+import { db, getMeta, setMeta } from './db';
+import { defaultBrand, defaultMetrics, defaultModules, defaultSchema, DEFAULT_RUNDOWN_COLUMNS } from './defaults';
+import { getTemplate } from './templates';
+import type {
+  Event,
+  EventTemplate,
+  MetricConfig,
+  SchemaConfig,
+  ThemeOverride,
+  Venue,
+  Vocab,
+  Workspace,
+} from './types';
+import { ulid } from '@/lib/id';
+
+const now = () => new Date().toISOString();
+
+function stamp<T extends object>(value: T): T & { createdAt: string; updatedAt: string; rev: number } {
+  const t = now();
+  return { ...value, createdAt: t, updatedAt: t, rev: 1 };
+}
+
+/* ------------------------------------------------------------- workspaces */
+
+export async function listWorkspaces(): Promise<Workspace[]> {
+  return db.workspaces.toArray();
+}
+
+export async function getWorkspace(id: string): Promise<Workspace | undefined> {
+  return db.workspaces.get(id);
+}
+
+export async function createWorkspace(input: {
+  name: string;
+  demo?: boolean;
+  template?: EventTemplate;
+}): Promise<Workspace> {
+  const template = input.template;
+  const schema = template ? applyTemplateToSchema(defaultSchema(), template, true) : defaultSchema();
+  const metrics = template ? applyTemplateWeights(defaultMetrics(), template) : defaultMetrics();
+  const workspace: Workspace = stamp({
+    id: ulid(),
+    name: input.name,
+    brand: { ...defaultBrand(), ...(template ? { accent: template.accent } : {}) },
+    schema,
+    metrics,
+    enabledModules: template?.enabledModules ?? defaultModules(),
+    demo: input.demo ?? false,
+  });
+  await db.workspaces.put(workspace);
+  return workspace;
+}
+
+export async function updateWorkspace(
+  id: string,
+  patch: Partial<Omit<Workspace, 'id'>>,
+): Promise<Workspace | undefined> {
+  const existing = await db.workspaces.get(id);
+  if (!existing) return undefined;
+  const next: Workspace = { ...existing, ...patch, updatedAt: now(), rev: existing.rev + 1 };
+  await db.workspaces.put(next);
+  return next;
+}
+
+/**
+ * A workspace still using untouched defaults adopts a template's vocabulary
+ * wholesale; one the user has already shaped only gains the entries it lacks.
+ * Either way nothing the user wrote is ever discarded.
+ */
+export function applyTemplateToSchema(
+  schema: SchemaConfig,
+  template: EventTemplate,
+  freshWorkspace = false,
+): SchemaConfig {
+  const defaults = defaultSchema();
+  const next: SchemaConfig = { ...schema };
+  const keys = ['voices', 'tiers', 'guestStatuses', 'eventStatuses', 'cueTypes', 'platforms'] as const;
+
+  for (const key of keys) {
+    const patch = template.schemaPatch[key] as Vocab[] | undefined;
+    if (!patch?.length) continue;
+    const current = schema[key];
+    const isPristine = freshWorkspace || sameVocab(current, defaults[key]);
+    next[key] = isPristine ? [...patch] : unionVocab(current, patch);
+  }
+
+  if (template.schemaPatch.fields?.length) {
+    const existingIds = new Set(schema.fields.map((f) => f.id));
+    next.fields = [...schema.fields, ...template.schemaPatch.fields.filter((f) => !existingIds.has(f.id))];
+  }
+  return next;
+}
+
+/**
+ * Weight tables a template supplies fill in only where the user has not set a
+ * value, so re-applying a template never overwrites a tuned weight.
+ */
+export function applyTemplateWeights(metrics: MetricConfig[], template: EventTemplate): MetricConfig[] {
+  if (!template.metricWeights) return metrics;
+  return metrics.map((metric) => {
+    const patch = template.metricWeights?.[metric.id];
+    if (!patch) return metric;
+    return {
+      ...metric,
+      weightTables: metric.weightTables.map((table) => {
+        const entries = patch[table.id];
+        return entries ? { ...table, entries: { ...entries, ...table.entries } } : table;
+      }),
+    };
+  });
+}
+
+function sameVocab(a: Vocab[], b: Vocab[]): boolean {
+  return a.length === b.length && a.every((entry, i) => entry.id === b[i].id && entry.label === b[i].label);
+}
+
+function unionVocab(current: Vocab[], patch: Vocab[]): Vocab[] {
+  const byId = new Map(current.map((entry) => [entry.id, entry]));
+  let order = current.length;
+  for (const entry of patch) {
+    if (!byId.has(entry.id)) byId.set(entry.id, { ...entry, order: order++ });
+  }
+  return [...byId.values()].sort((a, b) => a.order - b.order);
+}
+
+/* ----------------------------------------------------------------- events */
+
+export async function listEvents(workspaceId: string): Promise<Event[]> {
+  const events = await db.events.where('workspaceId').equals(workspaceId).toArray();
+  return events.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}
+
+export async function getEvent(id: string): Promise<Event | undefined> {
+  return db.events.get(id);
+}
+
+export interface CreateEventInput {
+  workspaceId: string;
+  name: string;
+  templateId?: string;
+  startsAt: string;
+  endsAt?: string;
+  doorsAt?: string;
+  timezone?: string;
+  venue?: Venue;
+  capacity?: number | null;
+  theme?: ThemeOverride | null;
+}
+
+export async function createEvent(input: CreateEventInput): Promise<Event> {
+  const template = getTemplate(input.templateId ?? 'blank');
+  const startsAt = input.startsAt;
+  const endsAt = input.endsAt ?? new Date(new Date(startsAt).getTime() + 3 * 3600_000).toISOString();
+
+  const event: Event = stamp({
+    id: ulid(),
+    workspaceId: input.workspaceId,
+    name: input.name,
+    kind: template.kind,
+    statusId: 'planning',
+    startsAt,
+    endsAt,
+    doorsAt: input.doorsAt,
+    timezone: input.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+    venue: input.venue ?? { name: '' },
+    capacity: input.capacity ?? null,
+    theme: input.theme ?? { accent: template.accent },
+    fields: {},
+    moduleOverrides: {},
+    templateId: template.id,
+  });
+
+  await db.transaction('rw', db.events, db.workspaces, db.rundowns, async () => {
+    await db.events.put(event);
+    const workspace = await db.workspaces.get(input.workspaceId);
+    if (workspace) {
+      await db.workspaces.put({
+        ...workspace,
+        schema: applyTemplateToSchema(workspace.schema, template),
+        metrics: applyTemplateWeights(workspace.metrics, template),
+        updatedAt: now(),
+        rev: workspace.rev + 1,
+      });
+    }
+  });
+
+  // The rundown document itself is created lazily by the rundown module; its
+  // column set comes from the template.
+  await setMeta(`rundown:columns:${event.id}`, template.rundownColumns ?? DEFAULT_RUNDOWN_COLUMNS);
+  return event;
+}
+
+export async function updateEvent(id: string, patch: Partial<Omit<Event, 'id'>>): Promise<Event | undefined> {
+  const existing = await db.events.get(id);
+  if (!existing) return undefined;
+  const next: Event = { ...existing, ...patch, updatedAt: now(), rev: existing.rev + 1 };
+  await db.events.put(next);
+  return next;
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  await db.transaction(
+    'rw',
+    [db.events, db.guests, db.companies, db.seatingMaps, db.arrivals, db.telemetry, db.dashboards, db.rundowns],
+    async () => {
+      await Promise.all([
+        db.events.delete(id),
+        db.guests.where('eventId').equals(id).delete(),
+        db.companies.where('eventId').equals(id).delete(),
+        db.seatingMaps.where('eventId').equals(id).delete(),
+        db.arrivals.where('eventId').equals(id).delete(),
+        db.telemetry.where('eventId').equals(id).delete(),
+        db.dashboards.where('eventId').equals(id).delete(),
+        db.rundowns.delete(id),
+      ]);
+    },
+  );
+}
+
+/* -------------------------------------------------------------- bootstrap */
+
+/** First run: make sure there is somewhere to work. */
+export async function ensureBootstrapped(): Promise<{ workspaces: Workspace[]; firstRun: boolean }> {
+  const workspaces = await listWorkspaces();
+  if (workspaces.length > 0) return { workspaces, firstRun: false };
+  const firstRunDone = await getMeta('firstRunDone', false);
+  return { workspaces, firstRun: !firstRunDone };
+}
