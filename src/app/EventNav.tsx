@@ -1,5 +1,15 @@
 import { NavLink } from 'react-router-dom';
-import { Armchair, BarChart3, FileText, LayoutDashboard, ListOrdered, ScanLine, Users } from 'lucide-react';
+import {
+  Armchair,
+  BarChart3,
+  ClipboardCheck,
+  FileText,
+  LayoutDashboard,
+  ListOrdered,
+  Receipt,
+  ScanLine,
+  Users,
+} from 'lucide-react';
 import type { Event, ModuleKey } from '@/data/types';
 import { useStore } from '@/store';
 import { cn } from '@/lib/utils';
@@ -9,9 +19,11 @@ const MODULE_NAV: Array<{ key: ModuleKey | 'overview'; to: string; label: string
   { key: 'guests', to: 'guests', label: 'Guests', icon: Users },
   { key: 'seating', to: 'seating', label: 'Seating', icon: Armchair },
   { key: 'rundown', to: 'rundown', label: 'Run of Show', icon: ListOrdered },
+  { key: 'advancing', to: 'advancing', label: 'Advancing', icon: ClipboardCheck },
   { key: 'checkin', to: 'checkin', label: 'Check-in', icon: ScanLine },
   { key: 'command', to: 'command', label: 'Command', icon: BarChart3 },
   { key: 'metrics', to: 'recap', label: 'Recap', icon: FileText },
+  { key: 'settlement', to: 'settlement', label: 'Settlement', icon: Receipt },
 ];
 
 /** Nav is derived from enabled modules: disabling one removes it everywhere. */

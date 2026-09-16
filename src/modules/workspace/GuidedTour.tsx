@@ -32,6 +32,12 @@ const STOPS: Stop[] = [
     action: 'Edit a duration',
   },
   {
+    title: 'Advance the show',
+    body: 'Everything agreed before the day, with what is still missing at the top. Confirm a line and the readiness figure moves with it.',
+    route: (w, e) => `/w/${w}/events/${e}/advancing`,
+    action: 'Confirm something',
+  },
+  {
     title: 'Work the door',
     body: 'Type a name — misspell it if you like. Check someone in and it appears instantly in any other tab, which then refuses the duplicate.',
     route: (w, e) => `/w/${w}/events/${e}/checkin`,
@@ -42,6 +48,12 @@ const STOPS: Stop[] = [
     body: 'Rearrange the widgets, add one, resize it. The layout is yours and it survives a reload.',
     route: (w, e) => `/w/${w}/events/${e}/command`,
     action: 'Rearrange a widget',
+  },
+  {
+    title: 'Settle the night',
+    body: 'Enter what sold and what it cost; the deal is applied for you and the statement is one click from a PDF. Change a number and every total follows.',
+    route: (w, e) => `/w/${w}/events/${e}/settlement`,
+    action: 'Change a ticket count',
   },
   {
     title: 'Now make it yours',

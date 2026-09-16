@@ -136,3 +136,37 @@ Each module lists functionality, the interaction design ("vibe"), the technical 
 - [ ] Export a workspace, import it into a fresh browser profile, and get an identical app.
 - [ ] Archiving a field preserves existing data and hides it everywhere.
 - [ ] A test asserts the blank-workspace default schema contains no fashion-specific vocabulary.
+
+---
+
+## M9 · Advancing (Pre-Production Logistics)
+
+**Functionality.** The pre-production pass: a checklist of everything that has to be agreed with the venue, the local crew and the travelling party before anyone gets on a plane — schedule (load-in, rehearsal, doors, start, curfew), technical rider, hospitality, travel, accommodation, ground transport, credentials and paperwork. Items carry a status, an owner, a deadline and the answer itself; travel, stay, transfer and schedule items also carry structured logistics (carrier, reference, times, room count), which feeds a chronological day sheet. Parties and production contacts live on the same sheet. Outputs: a printable advance sheet and a CSV.
+
+**Design.** Readiness first, checklist second. The page opens with a percentage, the counts behind it and a **Still missing** panel listing required, unanswered items with the soonest deadline first — because an advance lives or dies on the three lines nobody has answered yet, and those are exactly what a mail thread hides. The status control is the primary interaction: one wide, colour-coded button per row that cycles Missing → Requested → Confirmed → Not needed.
+
+**Technical.** One `AdvanceSheet` row per event holding parties, contacts and items; every mutation is a read-modify-write of that row, so renaming a party never has to touch twenty item rows. The checklist is instantiated from `defaultAdvanceChecklist()` plus the event template's additions, with `perParty` entries repeated for each travelling party — adding a support act a week out backfills its own travel, hotel and transfer lines. Sections are a vocabulary list (`schema.advanceSections`), so the headings are the user's. Readiness, blockers, overdue and the day sheet are derived in `modules/advancing/model.ts`, never stored.
+
+**Acceptance**
+- [x] Readiness counts confirmed against everything that still applies; `na` leaves the denominator.
+- [x] A required, unanswered item appears in the missing panel and can be confirmed from there.
+- [x] Adding a party repeats the per-party questions for them; removing it takes only its own items.
+- [x] An item whose section has been renamed away keeps its own heading instead of vanishing.
+- [x] The advance sheet prints as one ink-light page: parties, day sheet, every section, contacts.
+
+---
+
+## M10 · Settlement (Financial Reconciliation)
+
+**Functionality.** The money side of the same event: ticket scaling by price band (allotment, sold, comps), other income, off-the-top deductions (tax, ticketing, rights), show costs by category, and one deal block per party being settled with. Deals cover the four shapes the industry actually writes down — flat fee, straight percentage, guarantee **versus** a percentage, and guarantee **plus** a share of the overage — each against gross, adjusted gross or net after costs. Deposits and withholding come off the balance due. Outputs: a statement that prints to PDF and a CSV an accounts department can open. Attendance can be pulled from the check-in desk's count.
+
+**Design.** Four figures pinned above everything — gross receipts, net after costs, balance due, house result — then inputs on one tab and the statement on the other. Each deal shows its terms as a sentence next to the number it produced ("€12,000 versus 70% of net after costs (€16,190) — the percentage applies"), because the argument at the settlement table is always about which side of a *versus* won.
+
+**Technical.** `computeSettlement()` in `modules/settlement/math.ts` is pure and total: the sheet stores inputs only and every figure on the statement is derived, the same principle as the rundown's start times and for the same reason. Deductions cascade — each percentage reads the balance the line above it left — and percentages are levied on the box office rather than on total receipts, which is what "% of gross" means on a printed settlement. Money rounds to the cent at each reported figure; blank and NaN inputs resolve to zero rather than poisoning a total. Finalizing makes the sheet read-only until it is explicitly reopened.
+
+**Acceptance**
+- [x] Comps fill a seat and earn nothing: they count toward per-head costs and not toward gross.
+- [x] A *versus* deal pays the greater side and the statement names which one applied.
+- [x] Deposits and withholding reduce the balance due without reducing what the house is charged.
+- [x] Changing one ticket count moves every figure that depends on it, on screen and in the export.
+- [x] An empty or half-filled sheet reports zeros, never NaN.

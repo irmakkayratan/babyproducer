@@ -28,7 +28,7 @@ Three hard requirements from the brief drive every decision below:
 ### Non-goals (v1)
 
 - No server, no accounts, no multi-tenant auth (an optional sync adapter is designed for but not built — [architecture.md](./architecture.md#9-optional-sync-adapter)).
-- No real payments, ticketing settlement, or contracts.
+- No payment rails and no ticketing integrations. The settlement module computes and documents what is owed; moving money, and pulling box office reports from a ticketing provider, stay outside it. Contracts live wherever they already live — the advance tracks whether one is signed, not its text.
 - No live social-API scraping. MIV/EMV are computed from data the user supplies or the demo seeds — the engine is real, the follower counts are not.
 - No native iOS/Android build. The PWA covers onsite handhelds and kiosks.
 
@@ -58,9 +58,11 @@ Three hard requirements from the brief drive every decision below:
     /seating              Seating chart builder (canvas, zones, rules)
     /rundown              Run of Show grid (CRDT, auto-drift, departments)
     /rundown/caller       Show Caller mode (full-screen, keyboard-first)
+    /advancing            Advancing tracker (checklist, parties, day sheet, advance sheet)
     /checkin              Onsite check-in / kiosk mode (QR + search + walk-ins)
     /command              Experiential Command Center (resizable widget grid)
     /recap                Post-event report (attendance, MIV/EMV, dwell, export)
+    /settlement           Settlement sheet (box office, costs, deals, payouts, PDF)
     /settings             Event-level: theme, fields, statuses, modules, sharing
   /studio                 Workspace-level customization (schema, metrics, brand, templates)
 /show/:eventId/timer      Public stage display (countdown + producer messages)
@@ -91,12 +93,14 @@ Each module is specified with data model, interactions, and acceptance criteria 
 | M6 | **Command Center** | Resizable widget grid, simulated sensor telemetry, thresholds/alerts | Rearranged layout survives reload; widget registry is extensible without touching the grid |
 | M7 | **Metrics & Recap** | MIV/EMV engines with editable weights, formula builder, export | Change a voice-authority weight and every score, chart and report updates consistently |
 | M8 | **Studio (customization)** | Custom fields, statuses, tiers, rundown columns, brand tokens, module toggles, import/export | A user turns the fashion demo into a corporate keynote tool without writing code |
+| M9 | **Advancing** | Pre-production checklist with readiness, parties, structured logistics, day sheet, printable advance sheet | What is still missing is answered before the checklist is; confirming a line moves readiness everywhere |
+| M10 | **Settlement** | Box office, deductions, costs and deal terms resolved into payouts and a printable statement | Change one ticket count and every derived figure follows, on screen and in the PDF |
 
 ---
 
 ## 6. Demo experience
 
-Detailed in [demo-data.md](./demo-data.md). In short: three complete, deterministic sample productions —
+Detailed in [demo-data.md](./demo-data.md). In short: four complete, deterministic sample productions —
 
 1. **"AURELIA — SS27 Runway"** — Paris fashion show. 420 guests across Celebrity/Influencer/Media/Buyer/Partner voices, front-row politics, RFID-style check-in, 68-cue rundown with music and lighting departments, seated in a 3-zone runway map.
 2. **"LUMEN Beauty — Pop-Up Activation"** — 4-day retail activation. Foot-traffic telemetry, dwell time, LED volume and RFID trigger widgets, walk-in-heavy check-in, creator content log.

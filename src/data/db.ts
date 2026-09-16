@@ -7,7 +7,9 @@
  * that silently drops a live guest list is the worst failure this app can have.
  */
 import Dexie, { type Table } from 'dexie';
+import { defaultSchema } from './defaults';
 import type {
+  AdvanceSheet,
   Arrival,
   Asset,
   Company,
@@ -16,7 +18,9 @@ import type {
   EventTemplate,
   Guest,
   SavedView,
+  SchemaConfig,
   SeatingMap,
+  SettlementSheet,
   TelemetrySeries,
   Workspace,
 } from './types';
@@ -32,7 +36,7 @@ export interface MetaRecord {
   value: unknown;
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export class AtelierDb extends Dexie {
   workspaces!: Table<Workspace, string>;
@@ -45,6 +49,8 @@ export class AtelierDb extends Dexie {
   dashboards!: Table<Dashboard, string>;
   assets!: Table<Asset, string>;
   rundowns!: Table<RundownDoc, string>;
+  advanceSheets!: Table<AdvanceSheet, string>;
+  settlements!: Table<SettlementSheet, string>;
   templates!: Table<EventTemplate, string>;
   views!: Table<SavedView, string>;
   meta!: Table<MetaRecord, string>;
@@ -66,7 +72,42 @@ export class AtelierDb extends Dexie {
       views: 'id, workspaceId, entity, [workspaceId+entity]',
       meta: 'key',
     });
+
+    // v2 adds advancing and settlement. Both are additive: two new tables and
+    // three vocabulary lists backfilled onto existing workspaces, so a device
+    // that has been running v1 for a season opens with its data intact.
+    this.version(2)
+      .stores({
+        advanceSheets: 'id, eventId',
+        settlements: 'id, eventId',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table<Workspace>('workspaces')
+          .toCollection()
+          .modify((workspace) => {
+            workspace.schema = backfillSchema(workspace.schema);
+            for (const moduleKey of ['advancing', 'settlement'] as const) {
+              if (!workspace.enabledModules.includes(moduleKey)) workspace.enabledModules.push(moduleKey);
+            }
+          });
+      });
   }
+}
+
+/**
+ * Vocabulary a workspace predates. Reading a schema anywhere in the app goes
+ * through here, because an import or an export written before v2 arrives with
+ * the same gaps a migrated record would have had.
+ */
+export function backfillSchema(schema: SchemaConfig): SchemaConfig {
+  const defaults = defaultSchema();
+  return {
+    ...schema,
+    advanceSections: schema.advanceSections?.length ? schema.advanceSections : defaults.advanceSections,
+    partyRoles: schema.partyRoles?.length ? schema.partyRoles : defaults.partyRoles,
+    expenseCategories: schema.expenseCategories?.length ? schema.expenseCategories : defaults.expenseCategories,
+  };
 }
 
 export const db = new AtelierDb();

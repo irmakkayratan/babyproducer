@@ -39,6 +39,14 @@ describe('workspace export', () => {
     expect(payload.data?.guests).toHaveLength(1);
   });
 
+  it('carries the advance and the settlement with the event', async () => {
+    const { workspace } = await seedWorkspace();
+    const payload = await exportWorkspace(workspace.id, { includeData: true });
+
+    expect(payload.data?.advanceSheets?.[0].items.length).toBeGreaterThan(0);
+    expect(payload.data?.settlements).toHaveLength(1);
+  });
+
   it('survives a JSON round trip', async () => {
     const { workspace } = await seedWorkspace();
     const payload = await exportWorkspace(workspace.id, { includeData: true });
@@ -74,6 +82,40 @@ describe('workspace import', () => {
     expect(guests).toHaveLength(1);
     expect(guests[0].name).toBe('Exported Guest');
     expect(guests[0].id).not.toBe((await db.guests.where('eventId').notEqual(events[0].id).toArray())[0]?.id);
+  });
+
+  it('reattaches an imported advance and settlement to the imported event', async () => {
+    const { workspace } = await seedWorkspace();
+    const payload = JSON.parse(JSON.stringify(await exportWorkspace(workspace.id, { includeData: true })));
+    const result = await importWorkspace(payload);
+
+    const events = await db.events.where('workspaceId').equals(result.workspaceId).toArray();
+    const advance = await db.advanceSheets.where('eventId').equals(events[0].id).first();
+    const settlement = await db.settlements.where('eventId').equals(events[0].id).first();
+
+    expect(advance?.items.length).toBeGreaterThan(0);
+    expect(settlement).toBeDefined();
+    // The original keeps its own copies rather than having them moved.
+    expect(await db.advanceSheets.count()).toBe(2);
+  });
+
+  it('opens an export written before advancing and settlement existed', async () => {
+    const { workspace } = await seedWorkspace();
+    const payload = JSON.parse(JSON.stringify(await exportWorkspace(workspace.id, { includeData: true })));
+
+    // A v1 file: no new tables, and a schema with none of the new vocabulary.
+    payload.version = 1;
+    delete payload.data.advanceSheets;
+    delete payload.data.settlements;
+    delete payload.workspace.schema.advanceSections;
+    delete payload.workspace.schema.partyRoles;
+    delete payload.workspace.schema.expenseCategories;
+
+    const result = await importWorkspace(payload);
+    const imported = await db.workspaces.get(result.workspaceId);
+
+    expect(imported?.schema.advanceSections.length).toBeGreaterThan(0);
+    expect(imported?.schema.expenseCategories.length).toBeGreaterThan(0);
   });
 
   it('never flags an imported workspace as demo data', async () => {

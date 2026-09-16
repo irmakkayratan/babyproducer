@@ -7,7 +7,8 @@ Everything here lives in the browser (Dexie/IndexedDB). Ids are ULIDs — sortab
 ```
 Workspace
  ├─ BrandTokens          theme, fonts, logo, app name
- ├─ SchemaConfig         custom fields, statuses, tiers, rundown columns
+ ├─ SchemaConfig         custom fields, statuses, tiers, advance sections, party roles,
+ │                      expense categories, rundown columns
  ├─ MetricConfig[]       MIV/EMV/custom scoring definitions
  ├─ EventTemplate[]      reusable event blueprints
  └─ Event[]
@@ -16,6 +17,8 @@ Workspace
      ├─ Interaction[]    ──┘
      ├─ Rundown          (Yjs doc: cues, columns, prompter text)
      ├─ SeatingMap[]     zones → tables/rows → seats → assignments
+     ├─ AdvanceSheet     parties, contacts, checklist items (one row per event)
+     ├─ SettlementSheet  scaling, deductions, costs, deal terms (inputs only)
      ├─ Arrival[]        check-in events (append-only)
      ├─ Dashboard[]      widget layouts
      ├─ TelemetrySeries[] simulated sensor feeds
@@ -281,6 +284,19 @@ db.version(1).stores({
   meta:       'key',                     // schemaVersion, deviceId, flags
 });
 ```
+
+Version 2 adds advancing and settlement:
+
+```ts
+db.version(2)
+  .stores({
+    advanceSheets: 'id, eventId',        // parties + contacts + checklist items
+    settlements:   'id, eventId',        // box office, costs and deal terms
+  })
+  .upgrade(/* backfills the three new vocabulary lists onto every workspace */);
+```
+
+Both are one row per event rather than a row per line. An advance and a settlement are each a single document several people edit over weeks, and keeping them whole means a party rename or a re-ordered price band is one write instead of twenty — at the cost of read-modify-write on every change, which is the right trade at this size. Reading a workspace also passes its schema through `backfillSchema()`, so a record written before a vocabulary list existed still opens.
 
 Compound indexes (`[eventId+statusId]`, `[eventId+at]`) are added with the queries that need them. Every subsequent version ships an `upgrade()` that is unit-tested against a fixture database of the previous version — a schema migration that silently drops a live guest list is the worst failure this app can have.
 

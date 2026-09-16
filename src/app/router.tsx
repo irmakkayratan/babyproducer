@@ -23,6 +23,12 @@ const RecapPage = lazy(() => import('@/modules/recap/RecapPage').then((m) => ({ 
 const CommandPage = lazy(() => import('@/modules/command/CommandPage').then((m) => ({ default: m.CommandPage })));
 const CheckinPage = lazy(() => import('@/modules/checkin/CheckinPage').then((m) => ({ default: m.CheckinPage })));
 const SeatingPage = lazy(() => import('@/modules/seating/SeatingPage').then((m) => ({ default: m.SeatingPage })));
+const AdvancingPage = lazy(() =>
+  import('@/modules/advancing/AdvancingPage').then((m) => ({ default: m.AdvancingPage })),
+);
+const SettlementPage = lazy(() =>
+  import('@/modules/settlement/SettlementPage').then((m) => ({ default: m.SettlementPage })),
+);
 const StageDisplay = lazy(() => import('@/modules/rundown/StageDisplay').then((m) => ({ default: m.StageDisplay })));
 
 const lazyRoute = (element: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
@@ -52,7 +58,9 @@ export const router = createBrowserRouter(
             { path: 'overview', element: <EventOverview /> },
             { path: 'guests', element: moduleRoute('guests', <GuestsPage />) },
             { path: 'seating', element: moduleRoute('seating', <SeatingPage />) },
+            { path: 'advancing', element: moduleRoute('advancing', <AdvancingPage />) },
             { path: 'checkin', element: moduleRoute('checkin', <CheckinPage />) },
+            { path: 'settlement', element: moduleRoute('settlement', <SettlementPage />) },
             { path: 'command', element: moduleRoute('command', <CommandPage />) },
             { path: 'recap', element: moduleRoute('metrics', <RecapPage />) },
             { path: 'rundown', element: moduleRoute('rundown', <RundownPage />) },

@@ -15,8 +15,10 @@ import { formatNumber } from '@/lib/utils';
 const QUICK_LINKS = [
   { module: 'guests', to: 'guests', label: 'Guest list' },
   { module: 'rundown', to: 'rundown', label: 'Run of show' },
+  { module: 'advancing', to: 'advancing', label: 'Advancing' },
   { module: 'seating', to: 'seating', label: 'Seating' },
   { module: 'checkin', to: 'checkin', label: 'Check-in' },
+  { module: 'settlement', to: 'settlement', label: 'Settlement' },
 ] as const;
 
 const ACCENTS = [

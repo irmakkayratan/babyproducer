@@ -11,7 +11,15 @@ beforeEach(async () => {
 async function snapshot() {
   const guests = await db.guests.toArray();
   const seating = await db.seatingMaps.toArray();
+  const advance = await db.advanceSheets.toArray();
+  const settlements = await db.settlements.toArray();
   return {
+    advance: advance.flatMap((sheet) =>
+      sheet.items.map((item) => `${item.id}|${item.label}|${item.status}|${item.detail ?? ''}`),
+    ),
+    settlements: settlements.flatMap((sheet) =>
+      sheet.scaling.map((tier) => `${tier.id}|${tier.label}|${tier.sold}|${tier.comps}`),
+    ),
     // Ids included on purpose: identical values in a different order is not
     // the same demo, and ordering is what a reader actually sees.
     guests: guests.map((guest) => `${guest.id}|${guest.name}|${guest.tierId}|${guest.audience?.followers}`),
@@ -31,6 +39,8 @@ describe('demo determinism', () => {
 
     expect(second.guests).toEqual(first.guests);
     expect(second.seats).toEqual(first.seats);
+    expect(second.advance).toEqual(first.advance);
+    expect(second.settlements).toEqual(first.settlements);
   }, 30_000);
 
   it('produces the expected shape for every scenario', async () => {
@@ -45,6 +55,12 @@ describe('demo determinism', () => {
       expect(guests).toHaveLength(spec.guests.count);
       expect(guests.every((guest) => guest.qrToken.length > 0)).toBe(true);
       expect(await db.telemetry.where('eventId').equals(event!.id).count()).toBeGreaterThan(0);
+
+      // Both halves of the production exist for every scenario: the advance it
+      // was run through, and the sheet it settles on.
+      const advance = await db.advanceSheets.where('eventId').equals(event!.id).first();
+      expect(advance?.items.length, `advance for ${spec.id}`).toBeGreaterThan(20);
+      expect(await db.settlements.where('eventId').equals(event!.id).first()).toBeDefined();
     }
   }, 30_000);
 

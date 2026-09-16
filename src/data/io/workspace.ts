@@ -6,21 +6,23 @@
  * JSON file. It is also the backup story, and the migration path if a hosted
  * backend is ever added.
  */
-import { db } from '@/data/db';
+import { backfillSchema, db } from '@/data/db';
 import type {
+  AdvanceSheet,
   Arrival,
   Company,
   Dashboard,
   Event,
   Guest,
   SeatingMap,
+  SettlementSheet,
   TelemetrySeries,
   Workspace,
 } from '@/data/types';
 import { ulid } from '@/lib/id';
 
 export const EXPORT_FORMAT = 'atelier.workspace';
-export const EXPORT_VERSION = 1;
+export const EXPORT_VERSION = 2;
 
 export interface WorkspaceExport {
   format: typeof EXPORT_FORMAT;
@@ -36,6 +38,9 @@ export interface WorkspaceExport {
     telemetry: TelemetrySeries[];
     dashboards: Dashboard[];
     rundowns: Array<{ eventId: string; update: number[] }>;
+    /** Added in v2; a v1 export simply has neither. */
+    advanceSheets?: AdvanceSheet[];
+    settlements?: SettlementSheet[];
   };
 }
 
@@ -57,15 +62,18 @@ export async function exportWorkspace(
   };
   if (!options.includeData) return base;
 
-  const [guests, companies, seatingMaps, arrivals, telemetry, dashboards, rundowns] = await Promise.all([
-    db.guests.where('eventId').anyOf(eventIds).toArray(),
-    db.companies.where('eventId').anyOf(eventIds).toArray(),
-    db.seatingMaps.where('eventId').anyOf(eventIds).toArray(),
-    db.arrivals.where('eventId').anyOf(eventIds).toArray(),
-    db.telemetry.where('eventId').anyOf(eventIds).toArray(),
-    db.dashboards.where('eventId').anyOf(eventIds).toArray(),
-    db.rundowns.where('eventId').anyOf(eventIds).toArray(),
-  ]);
+  const [guests, companies, seatingMaps, arrivals, telemetry, dashboards, rundowns, advanceSheets, settlements] =
+    await Promise.all([
+      db.guests.where('eventId').anyOf(eventIds).toArray(),
+      db.companies.where('eventId').anyOf(eventIds).toArray(),
+      db.seatingMaps.where('eventId').anyOf(eventIds).toArray(),
+      db.arrivals.where('eventId').anyOf(eventIds).toArray(),
+      db.telemetry.where('eventId').anyOf(eventIds).toArray(),
+      db.dashboards.where('eventId').anyOf(eventIds).toArray(),
+      db.rundowns.where('eventId').anyOf(eventIds).toArray(),
+      db.advanceSheets.where('eventId').anyOf(eventIds).toArray(),
+      db.settlements.where('eventId').anyOf(eventIds).toArray(),
+    ]);
 
   return {
     ...base,
@@ -76,6 +84,8 @@ export async function exportWorkspace(
       arrivals,
       telemetry,
       dashboards,
+      advanceSheets,
+      settlements,
       // Uint8Array does not survive JSON; a plain array does.
       rundowns: rundowns.map((doc) => ({ eventId: doc.eventId, update: Array.from(doc.update) })),
     },
@@ -124,6 +134,8 @@ export async function importWorkspace(
   const now = new Date().toISOString();
   const workspace: Workspace = {
     ...payload.workspace,
+    // An export written before a vocabulary list existed still has to open.
+    schema: backfillSchema(payload.workspace.schema),
     id: workspaceId,
     name: mode === 'new' ? `${payload.workspace.name} (imported)` : payload.workspace.name,
     demo: false,
@@ -138,7 +150,19 @@ export async function importWorkspace(
 
   await db.transaction(
     'rw',
-    [db.workspaces, db.events, db.guests, db.companies, db.seatingMaps, db.arrivals, db.telemetry, db.dashboards, db.rundowns],
+    [
+      db.workspaces,
+      db.events,
+      db.guests,
+      db.companies,
+      db.seatingMaps,
+      db.arrivals,
+      db.telemetry,
+      db.dashboards,
+      db.rundowns,
+      db.advanceSheets,
+      db.settlements,
+    ],
     async () => {
       await db.workspaces.put(workspace);
       await db.events.bulkPut(events);
@@ -198,6 +222,20 @@ export async function importWorkspace(
           eventId: remap(doc.eventId),
           update: Uint8Array.from(doc.update),
           updatedAt: now,
+        })),
+      );
+      await db.advanceSheets.bulkPut(
+        (data.advanceSheets ?? []).map((sheet) => ({
+          ...sheet,
+          id: remap(sheet.id),
+          eventId: remap(sheet.eventId),
+        })),
+      );
+      await db.settlements.bulkPut(
+        (data.settlements ?? []).map((sheet) => ({
+          ...sheet,
+          id: remap(sheet.id),
+          eventId: remap(sheet.eventId),
         })),
       );
     },

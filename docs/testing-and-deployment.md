@@ -4,7 +4,7 @@
 
 | Layer | Tool | What it covers |
 | --- | --- | --- |
-| **Unit** | Vitest | Timing engine (drift cascade, hard/soft anchors, DST boundaries), formula parser (including hostile inputs), custom-field → Zod generation, CSV mapping and coercion, seeded generators (determinism), seating rule predicates, Dexie migrations against prior-version fixtures, arrival reduction and duplicate guards |
+| **Unit** | Vitest | Timing engine (drift cascade, hard/soft anchors, DST boundaries), formula parser (including hostile inputs), the settlement engine (every deal shape, cascading deductions, rounding, half-filled sheets), advance readiness and checklist instantiation, custom-field → Zod generation, CSV mapping and coercion, seeded generators (determinism), seating rule predicates, Dexie migrations against prior-version fixtures, arrival reduction and duplicate guards |
 | **Component** | Vitest + Testing Library | Table filtering/sorting/virtualization, guest sheet, import wizard, cue grid editing, seating keyboard path, kiosk scan states, widget settings forms, field renderers per kind |
 | **Integration** | Vitest (jsdom + fake-indexeddb) | Store ↔ Dexie ↔ syncBus round trips; Yjs merge of two docs edited offline; optimistic update then failure rollback |
 | **E2E** | Playwright (Chromium preinstalled) | The real proofs, below |
@@ -24,6 +24,8 @@ These are the claims the product makes, so they are tested end to end:
 7. **Import/export fidelity** — export a workspace, wipe storage, import, assert deep equality of schema, brand, views and data.
 8. **Demo integrity** — load demo, run Simulate Live at 60×, reset, assert the seed is byte-identical to the original.
 9. **Install & cold start** — PWA installs; a cold offline load boots the shell and restores the last event.
+10. **Advance readiness** — confirm a required line from the missing panel and assert the readiness figure moves; add a party and assert the per-party questions repeat; assert an answer survives a reload.
+11. **Settlement arithmetic** — change what sold and assert the balance due follows; raise a guarantee past the percentage and assert the statement names the side that applied; finalize and assert the sheet is read-only until reopened.
 
 ## 3. Definition of done (every phase)
 

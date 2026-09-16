@@ -32,9 +32,17 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run build && npx vite preview --port 4173 --strictPort',
+    // Bind the preview server explicitly to IPv4. Vite's default host is
+    // `localhost`, which on a dual-stack CI runner resolves to ::1 first — so
+    // the server listens on IPv6 loopback while Playwright polls 127.0.0.1 and
+    // waits out its whole timeout against a port nothing is on.
+    command: 'npm run build && npx vite preview --host 127.0.0.1 --port 4173 --strictPort',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    // Let the server say where it is listening: without this, a start-up
+    // failure reads as nothing but a timeout three minutes later.
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 });

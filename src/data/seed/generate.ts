@@ -7,14 +7,17 @@
  * is what makes screenshots and tests stable.
  */
 import { db } from '@/data/db';
-import { createEvent, createWorkspace } from '@/data/repo';
+import { createEvent, createWorkspace, updateWorkspace } from '@/data/repo';
 import { getTemplate } from '@/data/templates';
+import { ALL_MODULES } from '@/data/types';
 import type { Arrival, Company, Guest, SeatingMap, SeatingRule, Workspace } from '@/data/types';
 import { exportWorkspace, importWorkspace } from '@/data/io/workspace';
 import { createRng, type Rng } from '@/lib/rng';
 import { qrToken, seededIds } from '@/lib/id';
 import { brandName, handleFor, outletName, personName } from './names';
 import { buildPreset } from './rooms';
+import { generateAdvanceSheet } from './advancing';
+import { generateSettlement } from './settlement';
 import { ACTIVATION_SOURCES, generateTelemetry, SHOW_SOURCES } from './telemetry';
 import { allSeats } from '@/modules/seating/geometry';
 import { SCENARIOS, type ScenarioSpec } from './scenarios';
@@ -243,6 +246,10 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
     template: getTemplate('runway-show'),
   });
 
+  // The demo is the product tour, so it runs every module rather than the
+  // subset its first template happens to enable.
+  await updateWorkspace(workspace.id, { enabledModules: [...ALL_MODULES] });
+
   const now = new Date();
   const total = SCENARIOS.length;
 
@@ -291,6 +298,13 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
 
     const isPast = end.getTime() < now.getTime();
     const arrivals = isPast ? generateArrivals(spec, guests, doors, rng, 'demo-device') : [];
+
+    // Advancing and settlement: the two halves of the same production, before
+    // and after. Both records already exist from `createEvent`; these replace
+    // them with a scenario's worth of history.
+    const seedIds = seededIds(rng.next);
+    const advanceSheet = generateAdvanceSheet(spec, event, doors, rng, seedIds, now.getTime());
+    const settlement = generateSettlement(spec, event, rng, seedIds, isPast);
     const arrivedIds = new Set(arrivals.map((a) => a.guestId));
 
     for (const guest of guests) {
@@ -300,14 +314,27 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
 
     await db.transaction(
       'rw',
-      [db.companies, db.guests, db.arrivals, db.events, db.seatingMaps, db.telemetry],
+      [
+        db.companies,
+        db.guests,
+        db.arrivals,
+        db.events,
+        db.seatingMaps,
+        db.telemetry,
+        db.advanceSheets,
+        db.settlements,
+      ],
       async () => {
-      await db.companies.bulkPut(companies);
-      await db.guests.bulkPut(guests);
-      if (arrivals.length) await db.arrivals.bulkPut(arrivals);
-      if (seating) await db.seatingMaps.put(seating);
-      await db.telemetry.bulkPut(telemetry);
-      await db.events.update(event.id, { statusId: isPast ? 'complete' : 'planning' });
+        await db.companies.bulkPut(companies);
+        await db.guests.bulkPut(guests);
+        if (arrivals.length) await db.arrivals.bulkPut(arrivals);
+        if (seating) await db.seatingMaps.put(seating);
+        await db.telemetry.bulkPut(telemetry);
+        await db.advanceSheets.where('eventId').equals(event.id).delete();
+        await db.advanceSheets.put(advanceSheet);
+        await db.settlements.where('eventId').equals(event.id).delete();
+        await db.settlements.put(settlement);
+        await db.events.update(event.id, { statusId: isPast ? 'complete' : 'planning' });
       },
     );
 
@@ -323,7 +350,19 @@ export async function removeDemoWorkspace(workspaceId: string): Promise<void> {
 
   await db.transaction(
     'rw',
-    [db.workspaces, db.events, db.guests, db.companies, db.arrivals, db.seatingMaps, db.telemetry, db.dashboards, db.rundowns],
+    [
+      db.workspaces,
+      db.events,
+      db.guests,
+      db.companies,
+      db.arrivals,
+      db.seatingMaps,
+      db.telemetry,
+      db.dashboards,
+      db.rundowns,
+      db.advanceSheets,
+      db.settlements,
+    ],
     async () => {
       for (const id of eventIds) {
         await db.guests.where('eventId').equals(id).delete();
@@ -332,6 +371,8 @@ export async function removeDemoWorkspace(workspaceId: string): Promise<void> {
         await db.seatingMaps.where('eventId').equals(id).delete();
         await db.telemetry.where('eventId').equals(id).delete();
         await db.dashboards.where('eventId').equals(id).delete();
+        await db.advanceSheets.where('eventId').equals(id).delete();
+        await db.settlements.where('eventId').equals(id).delete();
         await db.rundowns.delete(id);
       }
       await db.events.bulkDelete(eventIds);

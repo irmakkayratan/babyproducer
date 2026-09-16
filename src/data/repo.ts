@@ -2,7 +2,9 @@
  * Repository layer: every durable read and write goes through here, so slices
  * stay thin and the Dexie surface is testable on its own.
  */
-import { db, getMeta, setMeta } from './db';
+import { backfillSchema, db, getMeta, setMeta } from './db';
+import { buildAdvanceSheet } from './advancing';
+import { buildSettlementSheet } from './settlement';
 import { defaultBrand, defaultMetrics, defaultModules, defaultSchema, DEFAULT_RUNDOWN_COLUMNS } from './defaults';
 import { getTemplate } from './templates';
 import type {
@@ -27,11 +29,13 @@ function stamp<T extends object>(value: T): T & { createdAt: string; updatedAt: 
 /* ------------------------------------------------------------- workspaces */
 
 export async function listWorkspaces(): Promise<Workspace[]> {
-  return db.workspaces.toArray();
+  const workspaces = await db.workspaces.toArray();
+  return workspaces.map((workspace) => ({ ...workspace, schema: backfillSchema(workspace.schema) }));
 }
 
 export async function getWorkspace(id: string): Promise<Workspace | undefined> {
-  return db.workspaces.get(id);
+  const workspace = await db.workspaces.get(id);
+  return workspace && { ...workspace, schema: backfillSchema(workspace.schema) };
 }
 
 export async function createWorkspace(input: {
@@ -77,13 +81,25 @@ export function applyTemplateToSchema(
   freshWorkspace = false,
 ): SchemaConfig {
   const defaults = defaultSchema();
-  const next: SchemaConfig = { ...schema };
-  const keys = ['voices', 'tiers', 'guestStatuses', 'eventStatuses', 'cueTypes', 'platforms'] as const;
+  const next: SchemaConfig = backfillSchema(schema);
+  const keys = [
+    'voices',
+    'tiers',
+    'guestStatuses',
+    'eventStatuses',
+    'cueTypes',
+    'platforms',
+    'advanceSections',
+    'partyRoles',
+    'expenseCategories',
+  ] as const;
 
   for (const key of keys) {
     const patch = template.schemaPatch[key] as Vocab[] | undefined;
     if (!patch?.length) continue;
-    const current = schema[key];
+    // Read through the backfilled copy: a workspace written before a
+    // vocabulary list existed has no entry to compare against.
+    const current = next[key];
     const isPristine = freshWorkspace || sameVocab(current, defaults[key]);
     next[key] = isPristine ? [...patch] : unionVocab(current, patch);
   }
@@ -174,8 +190,13 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
     templateId: template.id,
   });
 
-  await db.transaction('rw', db.events, db.workspaces, db.rundowns, async () => {
+  await db.transaction('rw', db.events, db.workspaces, db.advanceSheets, db.settlements, async () => {
     await db.events.put(event);
+    // Advancing and settlement start with the event, not with the first visit
+    // to their tab: the checklist is what turns a booking into a production,
+    // and the deal is agreed long before the box office opens.
+    await db.advanceSheets.put(buildAdvanceSheet(event));
+    await db.settlements.put(buildSettlementSheet(event));
     const workspace = await db.workspaces.get(input.workspaceId);
     if (workspace) {
       await db.workspaces.put({
@@ -205,10 +226,23 @@ export async function updateEvent(id: string, patch: Partial<Omit<Event, 'id'>>)
 export async function deleteEvent(id: string): Promise<void> {
   await db.transaction(
     'rw',
-    [db.events, db.guests, db.companies, db.seatingMaps, db.arrivals, db.telemetry, db.dashboards, db.rundowns],
+    [
+      db.events,
+      db.guests,
+      db.companies,
+      db.seatingMaps,
+      db.arrivals,
+      db.telemetry,
+      db.dashboards,
+      db.rundowns,
+      db.advanceSheets,
+      db.settlements,
+    ],
     async () => {
       await Promise.all([
         db.events.delete(id),
+        db.advanceSheets.where('eventId').equals(id).delete(),
+        db.settlements.where('eventId').equals(id).delete(),
         db.guests.where('eventId').equals(id).delete(),
         db.companies.where('eventId').equals(id).delete(),
         db.seatingMaps.where('eventId').equals(id).delete(),

@@ -168,3 +168,56 @@ export function liveDriftSec(
   if (!current) return 0;
   return Math.round((now - new Date(current.plannedStart).getTime()) / 1000);
 }
+
+/* ------------------------------------------------------- form field values */
+
+/**
+ * `<input type="date">` and `type="datetime-local"` speak local wall-clock
+ * strings, not ISO instants. These convert in both directions and return
+ * undefined for a cleared field, so an emptied date erases rather than
+ * becoming the epoch.
+ */
+export function toDateInputValue(iso?: ISODate): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+export function toDateTimeInputValue(iso?: ISODate): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${toDateInputValue(iso)}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function fromInputValue(value: string): ISODate | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
+/** "Tue 14 Mar, 18:30" — the format a day sheet is read in. */
+export function formatDayTime(iso: ISODate, timezone?: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: timezone,
+  }).format(new Date(iso));
+}
+
+export function formatDay(iso: ISODate, timezone?: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    day: 'numeric',
+    month: 'short',
+    timeZone: timezone,
+  }).format(new Date(iso));
+}

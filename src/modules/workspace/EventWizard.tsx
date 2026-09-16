@@ -68,7 +68,10 @@ export function EventWizard({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      {/* The template list grows as templates are added, so the dialog is
+          capped to the viewport and the form scrolls inside it — the submit
+          button never leaves the screen. */}
+      <DialogContent className="flex max-h-[90vh] max-w-xl flex-col">
         <DialogHeader>
           <DialogTitle>New event</DialogTitle>
           <DialogDescription>
@@ -76,7 +79,7 @@ export function EventWizard({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={submit} className="space-y-5">
+        <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
           <div className="space-y-2">
             <Label htmlFor="event-name">Name</Label>
             <Input
@@ -151,7 +154,7 @@ export function EventWizard({
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 bg-background pt-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
