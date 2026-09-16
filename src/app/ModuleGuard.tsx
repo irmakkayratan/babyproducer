@@ -5,7 +5,7 @@ import { useStore } from '@/store';
 /**
  * A module switched off in Studio disappears completely: no nav entry, and its
  * routes stop resolving. A deep link into a disabled module lands on the event
- * overview rather than a screen the workspace has opted out of.
+ * overview, so nobody lands on a screen the workspace has opted out of.
  */
 export function ModuleGuard({ module, children }: { module: ModuleKey; children: React.ReactNode }) {
   const { workspaceId, eventId } = useParams();

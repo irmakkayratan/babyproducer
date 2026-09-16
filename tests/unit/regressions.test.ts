@@ -3,7 +3,7 @@
  *
  * Each case below is a bug that shipped: the app typechecked, linted and passed
  * every existing test while doing the wrong thing. They are grouped by the
- * failure they guard against rather than by module, because that is what makes
+ * failure they guard against, because that is what makes
  * a broken one legible when it fails in CI.
  */
 import { describe, it, expect } from 'vitest';
@@ -70,16 +70,16 @@ describe('a blank clock segment is not a zero-length cue', () => {
 });
 
 describe('date formatting never takes a page down', () => {
-  it('returns a placeholder rather than throwing on a bad value', () => {
+  it('returns a placeholder when the value is unreadable', () => {
     expect(() => formatClock('nonsense')).not.toThrow();
-    expect(formatClock('nonsense')).toBe('—');
+    expect(formatClock('nonsense')).toBe('-');
     expect(() => formatDay('nonsense')).not.toThrow();
     expect(() => formatEventWindow('nonsense', 'nonsense')).not.toThrow();
   });
 
   it('falls back to the device zone when the event names one that does not exist', () => {
     expect(() => formatClock('2027-03-01T18:00:00.000Z', 'Not/AZone')).not.toThrow();
-    expect(formatClock('2027-03-01T18:00:00.000Z', 'Not/AZone')).not.toBe('—');
+    expect(formatClock('2027-03-01T18:00:00.000Z', 'Not/AZone')).not.toBe('-');
   });
 });
 
@@ -100,7 +100,7 @@ describe('a settlement is not lost to a bad currency code', () => {
       finalized: false,
     }) as unknown as SettlementSheet;
 
-  it('computes rather than throwing when the code is not a currency', () => {
+  it('still computes when the code is not a currency', () => {
     expect(() => computeSettlement(sheet('XX'))).not.toThrow();
     expect(computeSettlement(sheet('XX')).ticketGross).toBe(4000);
   });
@@ -140,7 +140,7 @@ describe('a malformed workspace file is refused, not crashed on', () => {
 
   it('fails with the message a person can act on', async () => {
     await expect(importWorkspace({ ...base, events: 'nope' })).rejects.toThrow(
-      'That file is not an Atelier workspace export.',
+      'That file is not a BabyProducer workspace export.',
     );
   });
 
@@ -315,7 +315,7 @@ describe('one event has exactly one rundown document', () => {
 });
 
 describe('a new cue gets its defaults', () => {
-  it('ignores explicitly undefined fields rather than writing them', () => {
+  it('ignores explicitly undefined fields', () => {
     const doc = new Y.Doc();
     insertCue(doc, 0, { id: undefined, label: undefined, durationSec: undefined });
     const [cue] = readCues(doc);

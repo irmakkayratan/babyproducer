@@ -54,7 +54,7 @@ export function GuestSheet({
               <div className="min-w-0 flex-1">
                 <SheetTitle className="truncate">{guest.name}</SheetTitle>
                 <p className="truncate text-sm text-muted-foreground">
-                  {guest.handle ?? guest.email ?? guest.company ?? '—'}
+                  {guest.handle ?? guest.email ?? guest.company ?? '-'}
                 </p>
               </div>
               {arrived ? (
@@ -106,8 +106,8 @@ export function GuestSheet({
                     ))}
                   </dl>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    Axes are scaled against the strongest guest in this room, so the shape reads as relative
-                    standing rather than absolute magnitude.
+                    Axes are scaled against the strongest guest in this room, so the shape shows you where
+                    someone stands relative to everyone else here.
                   </p>
                 </section>
               )}

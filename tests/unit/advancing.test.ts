@@ -94,7 +94,7 @@ describe('readiness', () => {
     expect(summary.readiness).toBeCloseTo(0.5, 5);
   });
 
-  it('treats an empty advance as complete rather than dividing by zero', () => {
+  it('treats an empty advance as complete, with no division by zero', () => {
     expect(summarizeAdvance({ items: [] }, NOW).readiness).toBe(1);
   });
 

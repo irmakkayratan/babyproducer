@@ -8,9 +8,9 @@ import { cn, initials } from '@/lib/utils';
 /**
  * The room.
  *
- * Dragging is native HTML5 drag-and-drop — cheap enough for a thousand seats —
- * and every action has a keyboard equivalent: seats are focusable, Enter opens
- * the assignment search, Backspace clears.
+ * Dragging is native HTML5 drag-and-drop, which is cheap enough for a thousand
+ * seats. Every action has a keyboard equivalent too: seats are focusable, Enter
+ * opens the assignment search, and Backspace clears.
  */
 export function SeatingCanvas({
   map,
@@ -100,7 +100,11 @@ export function SeatingCanvas({
       {positions.map(({ seat, element, x, y }) => {
         const guest = seat.guestId ? guests.get(seat.guestId) : undefined;
         const color = guest?.tierId ? tierColor.get(guest.tierId) : zoneColor.get(element.zoneId ?? '');
-        const background = color?.startsWith('tier-') ? `var(--${color})` : color;
+        const isToken = color?.startsWith('tier-') ?? false;
+        const background = isToken ? `var(--${color})` : color;
+        // A seat label sits on the tier fill, and the greys run from white down
+        // to near-black, so the ink has to follow the fill to stay readable.
+        const ink = isToken ? `var(--${color}-foreground)` : undefined;
         const isFlagged = flagged.has(seat.id);
         const isSelected = selectedSeatId === seat.id;
 
@@ -121,7 +125,7 @@ export function SeatingCanvas({
             className={cn(
               'absolute grid place-items-center rounded-[6px] border text-[9px] font-medium transition-[transform,box-shadow] duration-100',
               'hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-              guest ? 'text-black/80' : 'border-dashed border-border text-muted-foreground/60',
+              guest ? 'font-semibold' : 'border-dashed border-border text-muted-foreground/60',
               isSelected && 'ring-2 ring-ring',
               isFlagged && 'ring-2 ring-destructive',
             )}
@@ -131,6 +135,7 @@ export function SeatingCanvas({
               width: SEAT_SIZE,
               height: SEAT_SIZE,
               background: guest ? (background ?? 'var(--muted-foreground)') : 'transparent',
+              color: guest ? (ink ?? 'var(--background)') : undefined,
             }}
             draggable={Boolean(guest)}
             onDragStart={(e) => {

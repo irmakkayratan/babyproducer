@@ -5,7 +5,7 @@ import { BUILTIN_TEMPLATES } from '@/data/templates';
 /**
  * The guardrail for "fully customizable": a blank workspace must not assume an
  * industry. Vocabulary belongs in templates and seed data, which the user can
- * rename or delete — never baked into the defaults.
+ * rename or delete. Never baked into the defaults.
  */
 const INDUSTRY_WORDS = [
   'celebrity',

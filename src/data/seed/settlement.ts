@@ -3,7 +3,7 @@
  *
  * Built from the event template's preset and then filled in from the scenario:
  * how each band sold, what the night actually cost, and the deal each party is
- * on. Left as drafts on purpose — a reader should be able to change a ticket
+ * on. Left as drafts on purpose, a reader should be able to change a ticket
  * count and watch the payout move.
  */
 import { buildSettlementSheet } from '@/data/settlement';

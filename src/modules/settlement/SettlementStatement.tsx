@@ -9,8 +9,8 @@ import { basisDetail, formatMoney, type SettlementResult } from './math';
  *
  * This is the document the whole module produces: the one page that gets
  * signed in the production office, printed to PDF and mailed on. It renders
- * twice — once on screen and once, ink-light, for paper — from the same
- * component, so what is sent is exactly what was checked.
+ * twice from the same component: once on screen, and once ink-light for paper.
+ * What gets sent is therefore exactly what was checked.
  */
 export function SettlementStatement({
   event,
@@ -26,7 +26,7 @@ export function SettlementStatement({
   paper?: boolean;
 }) {
   const money = (value: number, decimals = 0) => formatMoney(value, result.currency, decimals);
-  const categoryLabel = (id?: string) => categories.find((entry) => entry.id === id)?.label ?? '—';
+  const categoryLabel = (id?: string) => categories.find((entry) => entry.id === id)?.label ?? '-';
   const rule = paper ? 'border-black/15' : 'border-border/60';
   const heading = paper ? 'text-[11px] font-semibold uppercase tracking-wide' : 'font-display text-lg tracking-tight';
   const table = paper ? 'w-full border-collapse text-[11px]' : 'w-full text-sm';
@@ -37,7 +37,7 @@ export function SettlementStatement({
       <header className={cn('border-b pb-3', rule)}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h1 className={paper ? 'text-xl font-semibold' : 'font-display text-2xl tracking-tight'}>
-            {event.name} — Settlement
+            {event.name} · Settlement
           </h1>
           <span className={cn('text-xs uppercase tracking-widest', !paper && 'text-muted-foreground')}>
             {sheet.finalizedAt ? 'Final' : 'Draft'}
@@ -64,7 +64,7 @@ export function SettlementStatement({
           paper={paper}
           label="Sell-through"
           value={
-            result.attendance.allotment > 0 ? `${Math.round(result.attendance.sellThrough * 100)}%` : '—'
+            result.attendance.allotment > 0 ? `${Math.round(result.attendance.sellThrough * 100)}%` : '-'
           }
           note={result.attendance.allotment > 0 ? `of ${formatNumber(result.attendance.allotment)}` : undefined}
         />
@@ -150,7 +150,7 @@ export function SettlementStatement({
       )}
 
       {result.parties.map((party) => (
-        <Block key={party.party.id} title={`Payout — ${party.party.name || 'party'}`} heading={heading}>
+        <Block key={party.party.id} title={`Payout · ${party.party.name || 'party'}`} heading={heading}>
           <p className={cn('mb-2 text-xs', !paper && 'text-muted-foreground')}>{party.terms}</p>
           <table className={table}>
             <tbody>
@@ -211,7 +211,7 @@ export function SettlementStatement({
       <p className={cn('mt-6 text-[11px]', !paper && 'text-muted-foreground')}>
         {sheet.finalizedAt
           ? `Finalized ${new Date(sheet.finalizedAt).toLocaleString()}.`
-          : 'Draft — figures move as the sheet is edited.'}{' '}
+          : 'Draft. Figures move as the sheet is edited.'}{' '}
         Generated {new Date().toLocaleString()} from data held in this browser.
       </p>
     </article>

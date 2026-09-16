@@ -1,7 +1,7 @@
 /**
  * Deterministic demo generation.
  *
- * Numbers are plausible rather than random: follower counts are log-normal,
+ * Numbers are plausible: follower counts are log-normal,
  * engagement falls as reach rises, RSVP conversion varies by voice, and
  * arrivals follow a curve. The same seed always rebuilds the same demo, which
  * is what makes screenshots and tests stable.
@@ -37,7 +37,7 @@ function eventWindow(spec: ScenarioSpec, now: Date) {
   return { start, end, doors };
 }
 
-/** Engagement rate falls as an account grows — the well-known inverse curve. */
+/** Engagement rate falls as an account grows, the well-known inverse curve. */
 function engagementFor(followers: number, rng: Rng): number {
   const base = 0.16 / Math.log10(Math.max(followers, 100));
   return Math.max(0.002, Math.min(0.22, base * rng.normal(1, 0.25)));
@@ -246,8 +246,8 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
     template: getTemplate('runway-show'),
   });
 
-  // The demo is the product tour, so it runs every module rather than the
-  // subset its first template happens to enable.
+  // The demo is the product tour, so it runs every module. The subset its
+  // first template happens to enable would not show the whole thing.
   await updateWorkspace(workspace.id, { enabledModules: [...ALL_MODULES] });
 
   const now = new Date();
@@ -388,7 +388,7 @@ export async function resetDemoData(): Promise<Workspace> {
 
 /**
  * Deep-copies a demo workspace into one the user owns, with fresh ids and the
- * demo flag cleared — so they can start from a realistic production rather
+ * demo flag cleared, so they can start from a realistic production rather
  * than an empty grid, and resetting the demo later leaves their copy alone.
  */
 export async function forkDemoWorkspace(workspaceId: string): Promise<Workspace> {
@@ -398,7 +398,7 @@ export async function forkDemoWorkspace(workspaceId: string): Promise<Workspace>
   const payload = await exportWorkspace(workspaceId, { includeData: true });
   const result = await importWorkspace(
     // The export carries the demo flag; import clears it, and the name should
-    // read as the user's own rather than "(imported)".
+    // read as the user's own work, with no "(imported)" on the end.
     { ...payload, workspace: { ...payload.workspace, name: source.name.replace(/^Demo /, '') } },
   );
   const forked = await db.workspaces.get(result.workspaceId);

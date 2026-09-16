@@ -20,8 +20,8 @@ function mb(bytes: number) {
 /**
  * Observability without a backend.
  *
- * All of this stays on the device — it exists so a producer can answer "is my
- * data safe and where is it?" before a show, not so anything gets reported
+ * All of this stays on the device. It exists so a producer can answer "is my
+ * data safe and where is it?" before a show. Nothing here is reported
  * anywhere.
  */
 export function Diagnostics() {
@@ -129,7 +129,7 @@ export function Diagnostics() {
           variant="outline"
           onClick={() =>
             downloadFile(
-              `atelier-diagnostics-${new Date().toISOString().slice(0, 10)}.json`,
+              `babyproducer-diagnostics-${new Date().toISOString().slice(0, 10)}.json`,
               JSON.stringify({ ...report, userAgent: navigator.userAgent, at: new Date().toISOString() }, null, 2),
               'application/json',
             )

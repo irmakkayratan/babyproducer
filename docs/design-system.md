@@ -1,89 +1,140 @@
-# Design System — "Vibe Coding" Parameters
+# Design System
 
-The research is blunt about the target: editorial and immersive, not a sterile corporate dashboard. Aesthetic decisions are treated as engineering requirements, with the same acceptance criteria as logic.
+Black background. White text. Helvetica. That is the whole thing.
+
+The constraint is the point. When there is only one colour and one typeface, every distinction has to be
+earned by lightness, weight, spacing or an edge, and a screen made that way reads the same in a bright office,
+on a dimmed laptop at a production desk, through a projector, and on paper.
 
 ## 1. Principles
 
-1. **Editorial over enterprise.** Generous whitespace, high contrast, few borders, type doing the structural work.
-2. **Semantic tokens only.** Components use `bg-background`, `text-muted-foreground`, `border-border`, `bg-primary` — never `bg-blue-500`. Theme switching and per-event theming then become a variable swap that charts, tables and canvases follow for free.
-3. **Composition over configuration.** Layouts are assembled from `Sidebar`, `Card`, `Sheet`, `Table`, `Chart` primitives rather than monolithic configurable components. Copy-in shadcn components are ours to restyle.
-4. **Motion with intent.** Every animation explains a state change. 150–250ms for UI feedback, ~420ms for the theme crossfade, spring physics only for drag. Everything obeys `prefers-reduced-motion`.
-5. **Onstage vs backstage.** Producer surfaces are dense and keyboard-first. Guest- and stage-facing surfaces (cover pages, timer, prompter) are large, calm and unmistakable from twenty feet away.
+1. **One palette.** Black behind, white in front, and greys that are white lifted off the black by a fixed
+   percentage. There are no hues anywhere in `src/styles/index.css`.
+2. **One typeface.** Helvetica for headings, body, tables, timers and printed sheets.
+3. **Semantic tokens only.** Components use `bg-background`, `text-muted-foreground`, `border-border`,
+   `bg-foreground`. A component never writes a colour value of its own.
+4. **Meaning is never in the colour**, because there is no colour. It is in the word, the sign, the fill, the
+   border, or the dash pattern.
+5. **Composition over configuration.** Layouts are assembled from `Sidebar`, `Card`, `Sheet`, `Table` and
+   `Chart` primitives. The shadcn components are copied in and ours to restyle.
+6. **Motion with intent.** Every animation explains a state change. 150 to 250ms for UI feedback, spring
+   physics only for drag. Everything obeys `prefers-reduced-motion`.
+7. **Onstage and backstage.** Producer surfaces are dense and keyboard-first. Stage-facing surfaces (timer,
+   prompter) are large, calm and readable from twenty feet.
 
-## 2. Token architecture
+## 2. Tokens
 
 ```css
 :root {
-  /* base ramp — overridden per workspace brand and per event theme */
-  --background: 0 0% 100%;
-  --foreground: 240 10% 4%;
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 46%;
-  --border: 240 6% 90%;
-  --primary: 262 83% 58%;            /* brand accent */
-  --primary-foreground: 0 0% 100%;
-  --accent-glow: 262 83% 58%;        /* theme crossfade hue */
-  --radius: 0.75rem;
+  --background: hsl(0 0% 0%);
+  --foreground: hsl(0 0% 100%);
 
-  /* domain tokens — semantics the product actually needs */
-  --tier-1 … --tier-6;               /* guest tiers, user-editable */
-  --status-ok / --status-warn / --status-critical;
+  --card: hsl(0 0% 6%);            /* raised surfaces, in steps */
+  --popover: hsl(0 0% 9%);
+  --muted: hsl(0 0% 12%);
+  --secondary: hsl(0 0% 14%);
+  --accent: hsl(0 0% 16%);
+
+  --muted-foreground: hsl(0 0% 68%);   /* clears 4.5:1 on black */
+  --border: hsl(0 0% 22%);
+  --input: hsl(0 0% 30%);
+
+  --primary: hsl(0 0% 100%);       /* white is the only emphasis */
+  --primary-foreground: hsl(0 0% 0%);
+
+  --chart-1 … --chart-8;           /* 100% down to 44%, paired with dashes */
+  --tier-1 … --tier-6;             /* 100% down to 30% */
+  --tier-1-foreground … --tier-6-foreground;
   --drift-under / --drift-over;
-  --chart-1 … --chart-8;
 }
-
-:root[data-theme='dark'] { /* full re-declaration */ }
-@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { /* … */ } }
 ```
 
-- **Workspace brand tokens** override the base ramp. **Event themes** override again, scoped to the event layout element, so two events open in two tabs each keep their own identity.
-- **Tier colors are data, not CSS.** They resolve through `--tier-n` variables written from `SchemaConfig` at runtime, so a user-added tier is a first-class citizen of the palette.
-- Color never carries meaning alone: tier dots pair with labels, drift pills pair with signs, alerts pair with icons.
+There is one theme. `[data-theme='light']` resolves to the same values as `[data-theme='dark']`, so any code
+or bookmark that still sets it keeps working.
 
-## 3. Theme crossfade (the signature interaction)
+**Tier colours are data.** They resolve through `--tier-n`, written from `SchemaConfig` at runtime, so a tier
+a user adds is a first-class member of the scale.
 
-Changing an event theme should feel like the room changing color, not like a form field updating.
+**Every tier that can be used as a fill has a paired foreground.** A seat in the room carries its label on the
+tier grey, and the greys run from white down to near-black, so the ink has to follow the fill. The pairing is
+computed from WCAG relative luminance: black clears 4.5:1 down to `--tier-4` (6.5:1) and fails at `--tier-5`
+(4.0:1), where white takes over at 5.3:1.
 
-```
-1. Snapshot current accent hue.
-2. Mount a fixed, pointer-events-none gradient layer at the new hue, opacity 0.
-3. Animate opacity 0→1 over 420ms (cubic-bezier .4,0,.2,1) while CSS variables
-   transition on the root element.
-4. Unmount the layer. Total: one paint, no layout thrash, no component remount.
-5. Under prefers-reduced-motion: variables swap instantly, no layer.
-```
+## 3. Telling things apart without colour
 
-The same primitive powers the landing page's ambient gradient and the Command Center alert wash.
+| Where | How |
+| --- | --- |
+| Chart series | Step down the grey scale, and each series takes a different dash. Lightness alone is the first thing a projector or a photograph loses; the dash survives both, and it prints |
+| Bars in a bar chart | A background-coloured stroke between neighbours, so two adjacent greys still read as two bars |
+| Advance statuses | Missing is a dashed outline, requested is a solid outline, confirmed is a filled block, not needed recedes into the muted surface. A sheet of eighty lines gets visibly quieter as the advance gets done |
+| Check-in outcome | Admitted is a solid white block, already in is a quiet outlined panel, not found is a heavy dashed edge that reads as unfinished |
+| Drift pill | The sign and the figure carry it. Over its plan is filled, drifting is outlined, on plan is quiet |
+| Stage timer | Comfortable time is a softer white, the last minute is full white, running over inverts the block to black on white. Inverting is the loudest thing a two-colour screen can do and it reads from the back of a room |
+| Guest tiers | A dot on the grey scale, and the dot always travels with its label |
+| Event cover art | A greyscale wash whose angle and brightness come from a hash of the event name, which is enough to tell two cards apart in a list |
 
 ## 4. Typography and layout
 
 | Role | Choice |
 | --- | --- |
-| Display / event names | A high-contrast editorial serif or a wide grotesque (self-hosted, variable, subset) |
-| UI | `Inter` variable, `-0.011em` tracking at body sizes |
-| Numerals | Tabular figures everywhere in tables, timers and rundowns — digits must not jitter as they count |
-| Timers / durations | Monospace, `font-variant-numeric: tabular-nums`, sized for legibility at distance |
+| Everything | `Helvetica, 'Helvetica Neue', 'Nimbus Sans', Arial, sans-serif` |
+| Headings | The same stack, set tighter (`-0.02em`) via `.font-display` |
+| Body | `-0.006em` tracking |
+| Numerals | Tabular figures in every table, timer and rundown, so digits do not jitter as they count |
 
-Layout: 8px spatial rhythm; content max-width 1440px on marketing-style surfaces, full-bleed on working surfaces; sidebar 280px collapsible to 64px icons; sheets 480px (guest detail) and 640px (settings).
+`--font-sans`, `--font-display` and `--font-mono` all resolve to the one stack. The three names remain because
+Tailwind and existing markup reference them.
+
+Layout: 8px spatial rhythm. Content max-width 1440px on marketing-style surfaces and full-bleed on working
+surfaces. Sidebar 264px, collapsing to 64px of icons. Sheets are 480px (guest detail) and 640px (settings).
 
 ## 5. Component inventory
 
-**From shadcn (copied in and restyled):** Button, Input, Textarea, Select, Combobox, Checkbox, Switch, Radio, Slider, Label, Form, Dialog, AlertDialog, Sheet, Drawer, Popover, Tooltip, DropdownMenu, ContextMenu, Command (⌘K), Tabs, Accordion, Card, Badge, Avatar, Table, Pagination, Toast/Sonner, Skeleton, ScrollArea, Separator, Resizable, Calendar, DatePicker, Chart.
+**From shadcn (copied in and restyled):** Button, Input, Textarea, Select, Combobox, Checkbox, Switch, Radio,
+Slider, Label, Form, Dialog, AlertDialog, Sheet, Drawer, Popover, Tooltip, DropdownMenu, ContextMenu, Command,
+Tabs, Accordion, Card, Badge, Avatar, Table, Pagination, Toast/Sonner, Skeleton, ScrollArea, Separator,
+Resizable, Calendar, DatePicker, Chart.
 
-**Built on top:** `DataTable` (virtualized, view-aware), `FieldRenderer` (custom-field registry), `EntitySheet`, `EmptyState` (always with a primary action), `ThemeCrossfade`, `CoverArtCropper`, `SeatingCanvas`, `CueGrid`, `DriftPill`, `WidgetGrid`, `MetricRadar`, `StatTile`, `StatusChip` (online/offline/queued), `ImportWizard`, `FormulaEditor`, `GuidedTour`.
+**Built on top:** `DataTable` (virtualized, view-aware), `FieldRenderer` (custom-field registry),
+`EntitySheet`, `EmptyState` (always with a primary action), `CoverArtCropper`, `SeatingCanvas`, `CueGrid`,
+`DriftPill`, `WidgetGrid`, `MetricRadar`, `StatTile`, `StatusChip`, `ImportWizard`, `FormulaEditor`,
+`GuidedTour`, `ItemRow` (one line of the advance).
 
-**Accessibility rules that are non-negotiable:** every Dialog/Sheet/Drawer carries a `DialogTitle`/`SheetTitle` (visually hidden where the design has no visible header); focus is trapped and restored; drag interactions have keyboard equivalents; live regions announce check-ins and cue advances; contrast ≥4.5:1 for text and ≥3:1 for UI, verified in both themes.
+## 6. Accessibility
 
-## 6. Dark mode
+These are not negotiable, and CI enforces them with axe across eleven routes:
 
-Dark is the default on production surfaces (Command Center, caller, kiosk, timer) because they run in dark venues; light is the default on planning surfaces. Both are fully supported everywhere, and the choice is a workspace brand token. Because charts read `--chart-n` through the shadcn `Chart` wrapper, no chart contains a conditional color expression.
+- Every Dialog, Sheet and Drawer carries a title, visually hidden where the design has no visible header.
+- Focus is trapped and restored.
+- Every drag interaction has a keyboard equivalent.
+- Live regions announce check-ins and cue advances.
+- Text clears 4.5:1 and UI clears 3:1.
+
+A single-colour palette makes the last one easier to reason about and easier to get wrong in one specific way:
+a grey used as a fill needs its own paired foreground. That is what `--tier-n-foreground` exists for, and it is
+the first thing to add when a new grey fill appears.
 
 ## 7. Empty, loading and error states
 
-- **Empty is never blank:** an illustration-free, typographic empty state with one sentence of context and a primary action ("Import a guest list", "Add your first cue", "Load demo data").
-- **Loading is rare by design** — data is local. Where it exists (image processing, imports, exports) it is a determinate progress bar, not a spinner.
-- **Errors are actionable:** what failed, what is safe, and what to do next. Any data-threatening error offers "Export a backup now".
+- **Empty is never blank.** A typographic empty state with one sentence of context and one primary action
+  ("Import a guest list", "Add your first cue", "Load demo data").
+- **Loading is rare by design**, because the data is local. Where it exists (image processing, imports,
+  exports) it is a determinate progress bar.
+- **Errors are actionable.** What failed, what is safe, and what to do next. Any error that threatens data
+  offers "Export a backup now".
 
 ## 8. Print
 
-Print is a real output for this industry. Dedicated print stylesheets for: the cue sheet (landscape, chosen columns, page-broken by block, header with event/version/timestamp), the seating map (A3 with legend), badges (4×3"), and the recap report. Print output uses ink-economical light tokens regardless of screen theme.
+Print is a real output in this industry. There are dedicated print stylesheets for the advance sheet, the cue
+sheet (landscape, chosen columns, page-broken by block, header with event and timestamp), the seating map (A3
+with a legend), badges (4x3 inches) and the recap report.
+
+Paper inverts: white page, black ink. That keeps the palette monochrome and keeps the ink bill down. The dash
+patterns on chart series are what make a printed chart readable, which is why they are in the design and not
+just in the rendering.
+
+## 9. House style for copy
+
+- **No em dashes.** Use a full stop, a comma or brackets. Enforced by lint.
+- **Say what a thing does, not what it is not.** Avoid "X, not Y" and "X instead of Y" framing.
+- **Write like a person talking to a colleague.** Short sentences. Plain words.

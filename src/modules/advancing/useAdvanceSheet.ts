@@ -7,9 +7,9 @@ import type { AdvanceSheet, Event } from '@/data/types';
 /**
  * The advance sheet for an event, live.
  *
- * Reads go through Dexie's live query so a change made in another tab — the
- * production office laptop next to the door desk — lands here without a
- * refresh. Writes go straight to `data/advancing`, which is what feeds it.
+ * Reads go through Dexie's live query, so a change made in another tab (the
+ * production office laptop next to the door desk) lands here with no refresh.
+ * Writes go straight to `data/advancing`, which is what feeds it.
  */
 export function useAdvanceSheet(event: Event | undefined): {
   sheet: AdvanceSheet | undefined;

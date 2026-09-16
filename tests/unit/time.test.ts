@@ -22,7 +22,7 @@ describe('parseDuration', () => {
     expect(parseDuration('45s')).toBe(45);
   });
 
-  it('returns null rather than zero for nonsense, so a bad keystroke cannot wipe a cue', () => {
+  it('returns null for nonsense, so a bad keystroke cannot wipe a cue', () => {
     expect(parseDuration('')).toBeNull();
     expect(parseDuration('abc')).toBeNull();
     expect(parseDuration('1:2:3:4')).toBeNull();
@@ -38,7 +38,7 @@ describe('formatDuration', () => {
   });
 });
 
-describe('deriveTimes — the auto-drift cascade', () => {
+describe('deriveTimes: the auto-drift cascade', () => {
   it('cascades start times from durations', () => {
     const cues = [cue('a', 600), cue('b', 300), cue('c', 900)];
     const times = deriveTimes(SHOW_START, cues);

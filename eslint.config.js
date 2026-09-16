@@ -31,6 +31,24 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      // House style, enforced so it does not drift back in. An em dash in a
+      // string reaches a user; one in a comment sets the tone for the next
+      // person writing a string. Use a full stop, a comma or brackets.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Literal[value=/\u2014/]",
+          message: 'No em dashes. Use a full stop, a comma or brackets.',
+        },
+        {
+          selector: "TemplateElement[value.raw=/\u2014/]",
+          message: 'No em dashes. Use a full stop, a comma or brackets.',
+        },
+        {
+          selector: "JSXText[value=/\u2014/]",
+          message: 'No em dashes. Use a full stop, a comma or brackets.',
+        },
+      ],
     },
   },
   {
@@ -40,10 +58,17 @@ export default tseslint.config(
     rules: {
       'no-restricted-syntax': [
         'error',
+        // Repeated from the block above, because a second `no-restricted-syntax`
+        // entry replaces the first for the files it matches instead of adding
+        // to it, and losing the em dash rule across all of src/ is exactly the
+        // kind of quiet regression it exists to stop.
+        { selector: "Literal[value=/\u2014/]", message: 'No em dashes. Use a full stop, a comma or brackets.' },
+        { selector: "TemplateElement[value.raw=/\u2014/]", message: 'No em dashes. Use a full stop, a comma or brackets.' },
+        { selector: "JSXText[value=/\u2014/]", message: 'No em dashes. Use a full stop, a comma or brackets.' },
         {
           selector: `Literal[value=${INDUSTRY_LITERALS}]`,
           message:
-            'Industry vocabulary belongs in data/templates.ts or data/seed/ — the app code must stay domain-neutral (see docs/customization.md).',
+            'Industry vocabulary belongs in data/templates.ts or data/seed/. App code stays domain-neutral (see docs/customization.md).',
         },
       ],
     },

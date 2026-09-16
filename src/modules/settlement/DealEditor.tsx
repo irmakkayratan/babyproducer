@@ -11,7 +11,7 @@ import { formatMoney, type PartyResult } from './math';
 const DEAL_KINDS: Array<{ id: DealKind; label: string; hint: string }> = [
   { id: 'flat', label: 'Flat fee', hint: 'One number, whatever the room does.' },
   { id: 'percentage', label: 'Percentage', hint: 'A share of the basis, with no floor under it.' },
-  { id: 'versus', label: 'Guarantee vs percentage', hint: 'Whichever of the two is greater — never both.' },
+  { id: 'versus', label: 'Guarantee vs percentage', hint: 'Whichever of the two is greater. Never both.' },
   { id: 'plus-bonus', label: 'Guarantee plus bonus', hint: 'The fee, plus a share of everything over a figure.' },
 ];
 
@@ -66,7 +66,7 @@ export function DealEditor({
           onChange={(e) => onPatch({ roleId: e.target.value || undefined })}
           className="h-8 rounded-md border border-input bg-transparent px-2 text-sm"
         >
-          <option value="">—</option>
+          <option value="">-</option>
           {roles.map((role) => (
             <option key={role.id} value={role.id}>
               {role.label}

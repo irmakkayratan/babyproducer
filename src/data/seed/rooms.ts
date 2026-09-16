@@ -1,7 +1,7 @@
 /**
  * Room presets.
  *
- * Room shapes and zone names are content, not code: a runway's "Front Row" is
+ * Room shapes and zone names are content you can edit. A runway's "Front Row" is
  * exactly the kind of vocabulary the app must not assume, so it lives here
  * with the other seed data and is editable once loaded.
  */
@@ -33,7 +33,7 @@ const ZONES: Record<string, Zone[]> = {
  * rows facing a stage; a banquet is a grid of tables.
  */
 export interface PresetOptions {
-  /** Rooms are built to the event's capacity rather than a fixed size. */
+  /** Rooms are built to the event's own capacity, never to a fixed size. */
   capacity?: number;
   rng?: Rng;
 }

@@ -196,7 +196,7 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
 
   await db.transaction('rw', db.events, db.workspaces, db.advanceSheets, db.settlements, async () => {
     await db.events.put(event);
-    // Advancing and settlement start with the event, not with the first visit
+    // Advancing and settlement start with the event itself, well before a visit
     // to their tab: the checklist is what turns a booking into a production,
     // and the deal is agreed long before the box office opens.
     await db.advanceSheets.put(buildAdvanceSheet(event));

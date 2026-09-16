@@ -15,7 +15,7 @@ import { syncBus } from '@/lib/syncBus';
  * Demo mode is explicit and reversible.
  *
  * Reset only ever touches workspaces flagged as demo, and the confirmation
- * names exactly what will be rebuilt — a user's own work is never in scope.
+ * names exactly what will be rebuilt, a user's own work is never in scope.
  */
 export function DemoBanner({ workspaceId, workspaceName }: { workspaceId: string; workspaceName: string }) {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ export function DemoBanner({ workspaceId, workspaceName }: { workspaceId: string
       await bootstrap();
       navigate(`/w/${workspace.id}`);
       toast.success('Copied into your own workspace', {
-        description: 'Edit freely — resetting the demo will not touch it.',
+        description: 'Edit it freely. Resetting the demo will not touch it.',
       });
     } finally {
       setBusy(false);
@@ -94,7 +94,7 @@ export function DemoBanner({ workspaceId, workspaceName }: { workspaceId: string
       >
         <AlertDialogBody>
           <p>
-            This deletes and regenerates <strong>{workspaceName}</strong> — its events, guests, seating, rundowns and
+            This deletes and regenerates <strong>{workspaceName}</strong>, including its events, guests, seating, rundowns and
             telemetry.
           </p>
           <p className="text-muted-foreground">

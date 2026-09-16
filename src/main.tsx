@@ -6,7 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { router } from './app/router';
 import { useStore } from './store';
-import { requestPersistentStorage } from './data/db';
+import { adoptLegacyDatabase, requestPersistentStorage } from './data/db';
 import { syncBus } from './lib/syncBus';
 import './styles/index.css';
 
@@ -21,6 +21,9 @@ function Root() {
 }
 
 async function start() {
+  // Has to happen before anything opens the database, or a device upgrading
+  // from the old build looks like a brand new one.
+  await adoptLegacyDatabase();
   await useStore.getState().bootstrap();
 
   // Other tabs changing the same workspace must not leave this one stale.

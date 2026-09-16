@@ -1,7 +1,7 @@
 /**
  * Seating rules.
  *
- * Producers overrule these constantly — a rule is information, not a lock. So
+ * Producers overrule these constantly, because a rule here is information. So
  * every rule evaluates to a violation that is surfaced on the seat and in a
  * panel, and only a rule explicitly marked `block` refuses the assignment.
  */
@@ -33,8 +33,8 @@ function evaluateRule(rule: SeatingRule, context: Context): Violation[] {
       const positions = seatedSubjects(rule, context);
       if (positions.length < 2) return [];
       // Everyone on the same table counts as together; in a row they have to be
-      // a contiguous block, so compare against the whole party rather than just
-      // the first two subjects.
+      // a contiguous block, so this compares the whole party. Checking only the
+      // first two subjects missed real clashes.
       const elements = new Set(positions.map((position) => position.element.id));
       if (elements.size === 1) {
         if (positions[0].element.kind !== 'row') return [];
@@ -56,7 +56,7 @@ function evaluateRule(rule: SeatingRule, context: Context): Violation[] {
     case 'keep-apart': {
       const positions = seatedSubjects(rule, context);
       if (positions.length < 2) return [];
-      // Every pair, not just the first two: a rule naming three people is one
+      // Every pair gets checked. A rule naming three people is one
       // rule about all of them, and checking only subjects[0] and subjects[1]
       // reported a clean room while two of them sat next to each other.
       const offenders = new Map<string, SeatPosition>();

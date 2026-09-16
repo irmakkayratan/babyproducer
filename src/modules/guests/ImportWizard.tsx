@@ -161,7 +161,7 @@ export function ImportWizard({
             <Upload className="size-6 text-muted-foreground" />
             <span className="text-sm font-medium">Choose a CSV file</span>
             <span className="text-xs text-muted-foreground">
-              Comma, semicolon or tab separated. Nothing is uploaded — parsing happens in this browser.
+              Comma, semicolon or tab separated. Nothing is uploaded, because the parsing happens in this browser.
             </span>
             <input
               type="file"

@@ -95,7 +95,7 @@ const normalizeHeader = (header: string) =>
   header.toLowerCase().replace(/[^a-z0-9+ ]/g, ' ').replace(/\s+/g, ' ').trim();
 
 /**
- * An alias matches a header when it is the whole header or one of its words —
+ * An alias matches a header when it is the whole header or one of its words,
  * never an arbitrary substring. Matching on substrings read "Hotel" as a phone
  * column (it contains "tel") and "Designer" as a social handle (it contains
  * "ig"), which is worse than leaving the column unmapped: the producer sees a

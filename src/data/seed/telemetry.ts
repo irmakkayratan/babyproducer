@@ -1,7 +1,7 @@
 /**
  * Simulated experiential telemetry.
  *
- * Real activations instrument the room — RFID gates, depth cameras, LED
+ * Real activations instrument the room. RFID gates, depth cameras, LED
  * playback health. This generates feeds with the shape those produce: a
  * smoothed random walk with day-part seasonality, plus scripted anomalies so
  * the alerting path has something honest to show.

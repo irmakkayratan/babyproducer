@@ -19,8 +19,8 @@ const RecapCharts = lazy(() => import('./RecapCharts'));
 /**
  * The post-event report.
  *
- * Written as an editorial document rather than a dashboard dump: each section
- * carries one chart and one sentence of plain-language interpretation, so a
+ * Written as an editorial document. Each section carries one chart and one
+ * sentence of plain-language interpretation, so a
  * client can read it without a analyst sitting next to them.
  */
 export function RecapPage() {
@@ -211,7 +211,7 @@ export function RecapPage() {
         title="Attendance"
         blurb={`${formatNumber(funnel.invited)} invited, ${formatNumber(funnel.confirmed)} confirmed, ${formatNumber(
           funnel.arrived,
-        )} through the door — a ${Math.round((funnel.arrived / Math.max(1, funnel.invited)) * 100)}% conversion from invitation to attendance.`}
+        )} through the door, a ${Math.round((funnel.arrived / Math.max(1, funnel.invited)) * 100)}% conversion from invitation to attendance.`}
       >
         <Suspense fallback={<Skeleton className="h-56 w-full" />}>
           <RecapCharts

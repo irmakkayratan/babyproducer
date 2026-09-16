@@ -19,8 +19,8 @@ export type SyncEvent =
 
 type Handler = (event: SyncEvent) => void;
 
-const CHANNEL = 'atelier:sync';
-const FALLBACK_KEY = 'atelier:sync:fallback';
+const CHANNEL = 'babyproducer:sync';
+const FALLBACK_KEY = 'babyproducer:sync:fallback';
 
 interface Envelope {
   senderId: string;
@@ -30,7 +30,7 @@ interface Envelope {
 
 /**
  * How many recently seen message ids to remember. Both transports deliver the
- * same message, so this only has to outlive the gap between the two — a few
+ * same message, so this only has to outlive the gap between the two, a few
  * dozen is generous.
  */
 const SEEN_LIMIT = 64;

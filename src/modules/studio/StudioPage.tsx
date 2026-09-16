@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Download, Palette, Upload } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import type { Guest, ModuleKey } from '@/data/types';
 import { ALL_MODULES } from '@/data/types';
 import { Button } from '@/components/ui/button';
@@ -17,17 +17,6 @@ import { VocabEditor } from './VocabEditor';
 import { FieldEditor } from './FieldEditor';
 import { MetricEditor } from './MetricEditor';
 import { Diagnostics } from './Diagnostics';
-import { cn } from '@/lib/utils';
-
-const ACCENTS = [
-  'hsl(258 85% 68%)',
-  'hsl(38 90% 62%)',
-  'hsl(325 75% 65%)',
-  'hsl(190 80% 52%)',
-  'hsl(152 50% 52%)',
-  'hsl(210 90% 62%)',
-  'hsl(12 80% 62%)',
-];
 
 const MODULE_LABELS: Record<ModuleKey, string> = {
   guests: 'Guests',
@@ -44,7 +33,7 @@ const MODULE_LABELS: Record<ModuleKey, string> = {
  * Studio: one place to reshape the app.
  *
  * Everything here writes to the workspace's schema, brand tokens and metric
- * configs, which the rest of the app reads at render time — so a change takes
+ * configs, which the rest of the app reads at render time, so a change takes
  * effect immediately, with no rebuild and no migration.
  */
 export function StudioPage() {
@@ -128,7 +117,7 @@ export function StudioPage() {
       const result = await importWorkspace(JSON.parse(await file.text()));
       await bootstrap();
       toast.success('Workspace imported', {
-        description: `${result.events} events, ${result.guests} guests — added alongside your existing work.`,
+        description: `${result.events} events, ${result.guests} guests, added alongside your existing work.`,
       });
     } catch (error) {
       toast.error('Import failed', { description: error instanceof Error ? error.message : 'Unknown error' });
@@ -183,7 +172,7 @@ export function StudioPage() {
         <TabsContent value="vocabulary" className="mt-6 space-y-5">
           <VocabEditor
             title="Voices"
-            description="Who your guests are to you — the axis your value metrics weight by."
+            description="Who your guests are to you. This is the axis your value metrics weight by."
             entries={schema.voices}
             usage={usage.voices}
             onChange={(voices) => patchSchema({ voices })}
@@ -222,7 +211,7 @@ export function StudioPage() {
           />
           <VocabEditor
             title="Party roles"
-            description="Who the people you advance and settle with are to you — on both the advance sheet and the settlement."
+            description="Who the people you advance and settle with are to you, on the advance sheet and on the settlement."
             entries={schema.partyRoles}
             onChange={(partyRoles) => patchSchema({ partyRoles })}
           />
@@ -261,31 +250,8 @@ export function StudioPage() {
                 className="max-w-xs"
               />
               <p className="text-xs text-muted-foreground">
-                The app's own name is a token — call it whatever your team calls it.
+                The app&rsquo;s own name is a setting. Call it whatever your team calls it.
               </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>
-                <Palette className="mr-1.5 inline size-4" />
-                Accent
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {ACCENTS.map((accent) => (
-                  <button
-                    key={accent}
-                    type="button"
-                    aria-label={`Accent ${accent}`}
-                    aria-pressed={workspace.brand.accent === accent}
-                    onClick={() => void updateWorkspace(workspace.id, { brand: { ...workspace.brand, accent } })}
-                    className={cn(
-                      'size-8 rounded-full border-2 transition-transform hover:scale-110',
-                      workspace.brand.accent === accent ? 'border-foreground' : 'border-transparent',
-                    )}
-                    style={{ background: accent }}
-                  />
-                ))}
-              </div>
             </div>
 
             <div className="space-y-2">
@@ -305,8 +271,8 @@ export function StudioPage() {
             <header className="border-b p-4">
               <h3 className="font-medium">Modules</h3>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                Switch off what you do not run. Disabled modules disappear from navigation and their routes stop
-                resolving — no dead links, no half-used screens.
+                Switch off what you do not run. Disabled modules disappear from the navigation and their routes
+                stop resolving, so you get no dead links and no half-used screens.
               </p>
             </header>
             <div className="divide-y divide-border/60">

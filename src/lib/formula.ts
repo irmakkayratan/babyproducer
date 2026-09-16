@@ -2,12 +2,12 @@
  * A tiny, safe expression language for user-authored metric formulas.
  *
  * Users write things like `reach * mediaRate * contentQuality`. That string is
- * parsed into an AST over a fixed whitelist — numbers, identifiers, arithmetic,
+ * parsed into an AST over a fixed whitelist. Numbers, identifiers, arithmetic,
  * comparisons, a ternary and a closed set of functions. There is no `eval`, no
  * `Function` constructor, no property access and no way to reach the DOM, the
  * store or the network from a formula. Unknown identifiers fail at edit time
  * with the offending token named, so a bad formula is caught in the editor
- * rather than crashing a table row.
+ * and never reaches a table row.
  */
 
 export type Node =
@@ -120,7 +120,7 @@ const BINDING_POWER: Record<string, number> = {
 /**
  * Expressions are parsed by recursive descent, so nesting depth is stack depth.
  * A formula nested past this is not something a person typed, and letting it
- * through would raise a `RangeError` the callers do not catch — the editor
+ * through would raise a `RangeError` the callers do not catch, the editor
  * reports a depth problem instead.
  */
 const MAX_DEPTH = 64;
@@ -279,10 +279,10 @@ export function evaluateNode(node: Node, scope: Record<string, number>): number 
 /**
  * Parsed formulas are cached by source.
  *
- * A metric is evaluated once per guest per render — a table of a few thousand
+ * A metric is evaluated once per guest per render, a table of a few thousand
  * rows re-parsed the same handful of characters thousands of times, which
  * measured as the dominant cost of scoring the room. The formula set is small
- * and user-authored, so the cache is bounded rather than unbounded.
+ * and user-authored, so the cache stays bounded.
  */
 const astCache = new Map<string, Node>();
 const AST_CACHE_LIMIT = 256;
@@ -300,7 +300,7 @@ export function evaluateFormula(formula: string, scope: Record<string, number>):
   return evaluateNode(parseFormulaCached(formula), scope);
 }
 
-/** Every identifier a formula depends on — used to validate against variables. */
+/** Every identifier a formula depends on. Used to validate against variables. */
 export function formulaIdentifiers(node: Node, found = new Set<string>()): Set<string> {
   switch (node.type) {
     case 'identifier':

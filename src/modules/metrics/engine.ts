@@ -3,7 +3,7 @@
  *
  * A metric is data: a formula string, a list of variables saying where each
  * token comes from, and weight tables the user can edit. MIV and EMV are just
- * two such records — the engine has no special knowledge of either.
+ * two such records, the engine has no special knowledge of either.
  */
 import type { Guest, MetricConfig, MetricVariable, WeightTable } from '@/data/types';
 import { evaluateFormula, FormulaError } from '@/lib/formula';
@@ -66,7 +66,7 @@ function metricShape(metric: MetricConfig): string {
 
 /**
  * A score is cached against a hash of everything that produced it, so editing
- * one weight invalidates every affected guest without a migration pass — the
+ * one weight invalidates every affected guest without a migration pass. The
  * table recomputes lazily as rows scroll into view.
  */
 export function metricInputHash(metric: MetricConfig, guest: Guest): string {
@@ -131,7 +131,7 @@ export function breakdownFor(
   const parts = scoreGuest(metric, guest).parts;
   const maxima = new Map<string, number>();
   for (const id of metric.breakdown) maxima.set(id, 0);
-  // One pass over the room, not one per axis: the axis loop was re-scoring
+  // One pass over the room covers every axis. The old axis loop re-scored
   // every peer from scratch for each of the four axes on the radar.
   for (const peer of peers) {
     const peerParts = scoreGuest(metric, peer).parts;

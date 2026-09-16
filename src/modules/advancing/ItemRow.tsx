@@ -9,15 +9,19 @@ import { cn } from '@/lib/utils';
 import { isOverdue, nextStatus, STATUS_LABEL } from './model';
 
 /**
- * Tints stay light enough for the label on them to clear 4.5:1 at this size.
- * A heavier fill reads louder but fails contrast, and a status nobody can read
- * is worse than a quiet one.
+ * The four states of a line on an advance, drawn so you can scan a sheet of
+ * eighty of them and see what is left.
+ *
+ * With one colour available they separate by weight and by edge, and they are
+ * ordered so that the page gets visually quieter as the advance gets done:
+ * missing is an open dashed outline, requested is a solid outline, confirmed
+ * is filled in, and not needed recedes into the background.
  */
 const STATUS_STYLE: Record<AdvanceStatus, string> = {
-  missing: 'bg-destructive/10 text-destructive hover:bg-destructive/20',
-  requested: 'bg-warning/15 text-warning hover:bg-warning/25',
-  confirmed: 'bg-success/15 text-success hover:bg-success/25',
-  na: 'bg-muted text-muted-foreground hover:bg-muted/80',
+  missing: 'border border-dashed border-foreground/70 text-foreground hover:bg-foreground/10',
+  requested: 'border border-foreground/70 bg-foreground/10 text-foreground hover:bg-foreground/20',
+  confirmed: 'border border-foreground bg-foreground text-background hover:bg-foreground/90',
+  na: 'border border-transparent bg-muted text-muted-foreground hover:bg-muted/80',
 };
 
 /** Which structured fields an item shows, by what kind of thing it is. */
@@ -68,9 +72,9 @@ export interface ItemRowProps {
 /**
  * One line of the advance.
  *
- * The status button is the primary control — it is the thing a producer hits
- * fifty times while working a phone — so it is first, wide, and colour-coded
- * to the same palette the missing panel uses.
+ * The status button is the primary control. A producer hits it fifty times
+ * while working the phone, so it comes first, it is wide, and it is drawn the
+ * same way the missing panel draws the same four states.
  */
 export function ItemRow({ item, parties, onPatch, onRemove, now }: ItemRowProps) {
   const [open, setOpen] = useState(false);
@@ -84,8 +88,8 @@ export function ItemRow({ item, parties, onPatch, onRemove, now }: ItemRowProps)
 
   return (
     <div
-      // An overdue line is marked in the margin rather than washed: a tint
-      // under the status chip costs it the contrast it needs.
+      // An overdue line is marked in the margin. A tint under the status chip
+      // would cost it the contrast it needs.
       className={cn(
         'border-b border-border/60 px-3 py-2 last:border-b-0',
         overdue && 'border-l-2 border-l-destructive pl-2.5',

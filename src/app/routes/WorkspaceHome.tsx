@@ -56,7 +56,7 @@ export function WorkspaceHome() {
         <EmptyState
           className="mt-10 rounded-lg border border-dashed"
           title="No events yet"
-          description="Create one from a template — runway show, activation, keynote, conference or gala — and the vocabulary, cue columns and dashboards come with it."
+          description="Create one from a template. Pick the shape of your event and the vocabulary, cue columns and dashboards come with it."
           action={
             <Button onClick={() => setWizardOpen(true)}>
               <Plus className="size-4" /> Create your first event
@@ -93,7 +93,7 @@ function EventGrid({
           <Link
             key={event.id}
             to={`/w/${event.workspaceId}/events/${event.id}/overview`}
-            // Past events are marked, not dimmed: a blanket opacity drags the
+            // Past events get a marker. A blanket opacity would drag the
             // text below the contrast floor.
             className="group overflow-hidden rounded-lg border bg-card transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >

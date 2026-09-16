@@ -13,8 +13,8 @@ export const STORE_VERSION = 1;
  * One bound store composed from domain slices.
  *
  * Domain records live in IndexedDB (see data/db.ts); this store holds the
- * working set plus UI state. Only small, boring preferences are persisted —
- * transient UI (open drawers, crossfades) is deliberately discarded on reload.
+ * working set plus UI state. Only small, boring preferences are persisted, and
+ * transient UI such as an open drawer is deliberately discarded on reload.
  */
 export const useStore = create<AppStore>()(
   persist(
@@ -24,11 +24,10 @@ export const useStore = create<AppStore>()(
       ...createUiSlice(...a),
     })),
     {
-      name: 'atelier:prefs',
+      name: 'babyproducer:prefs',
       version: STORE_VERSION,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        scheme: state.scheme,
         sidebarCollapsed: state.sidebarCollapsed,
         tourCompleted: state.tourCompleted,
         activeWorkspaceId: state.activeWorkspaceId,

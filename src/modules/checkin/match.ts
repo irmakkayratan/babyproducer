@@ -1,9 +1,9 @@
 /**
  * Door-side guest matching.
  *
- * The person at the door types what they heard, not what is on the list, so
- * matching is typo-tolerant and always offers the near misses rather than
- * failing flat.
+ * The person at the door types what they heard, and the list often says
+ * something else. So matching is typo-tolerant, and a query with no exact hit
+ * still offers the near misses.
  */
 import type { Guest } from '@/data/types';
 
@@ -11,8 +11,8 @@ import type { Guest } from '@/data/types';
  * Damerau-Levenshtein distance (optimal string alignment), bounded for speed on
  * a long list.
  *
- * The transposition term is what makes this Damerau rather than plain
- * Levenshtein, and it is the whole point at a door: two adjacent letters
+ * The transposition term is what makes this Damerau. Plain Levenshtein has no
+ * such term, and it is the whole point at a door: two adjacent letters
  * swapped is the single most common way a name gets typed wrong, and counting
  * it as two edits pushed "Jnoathan" outside the tolerance for "Jonathan".
  */
@@ -95,7 +95,7 @@ export function matchGuests(guests: Guest[], query: string, limit = 8): Match[] 
       continue;
     }
     // Compare against each part of the name as well as the whole: someone
-    // typing "valburg" is aiming at a surname, not the full string.
+    // typing "valburg" is aiming at a surname on its own.
     const tolerance = needle.length > 6 ? 3 : 2;
     const candidates = [name, ...name.split(' '), handle.replace('@', '')].filter(Boolean);
     let best = tolerance + 1;

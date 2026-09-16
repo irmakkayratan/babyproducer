@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { db, SCHEMA_VERSION } from '@/data/db';
+import { adoptLegacyDatabase, DB_NAME, db, LEGACY_DB_NAME, SCHEMA_VERSION } from '@/data/db';
 import type { Workspace } from '@/data/types';
 
 /**
@@ -39,6 +39,8 @@ function legacyWorkspace() {
       defaultScheme: 'dark',
       displayFont: 'serif',
     },
+    // Left exactly as the old build wrote it, product name and purple accent
+    // included, because that is what is on a real device that upgrades.
     schema: {
       fields: [],
       eventStatuses: [{ id: 'planning', label: 'Planning', order: 0 }],
@@ -58,7 +60,7 @@ function legacyWorkspace() {
 }
 
 async function writeV1Fixture() {
-  const legacy = new Dexie('atelier');
+  const legacy = new Dexie(DB_NAME);
   legacy.version(1).stores(V1_STORES);
   await legacy.open();
   await legacy.table('workspaces').put(legacyWorkspace());
@@ -98,6 +100,7 @@ async function writeV1Fixture() {
 
 beforeEach(async () => {
   await db.delete();
+  await Dexie.delete(LEGACY_DB_NAME);
 });
 
 describe('v1 → v2 upgrade', () => {
@@ -122,7 +125,7 @@ describe('v1 → v2 upgrade', () => {
     expect(workspace.schema.voices.map((voice) => voice.id)).toEqual(['guest']);
   });
 
-  it('turns the new modules on rather than hiding them behind a setting', async () => {
+  it('turns the new modules on for a workspace that upgrades', async () => {
     await writeV1Fixture();
     await db.open();
 
@@ -138,5 +141,62 @@ describe('v1 → v2 upgrade', () => {
     expect(db.verno).toBe(SCHEMA_VERSION);
     expect(await db.advanceSheets.count()).toBe(0);
     expect(await db.settlements.count()).toBe(0);
+  });
+});
+
+/**
+ * The rename from Atelier to BabyProducer moved the database with it.
+ *
+ * A device that has been running the old build holds its only copy of the work
+ * under the old name, so opening an empty database beside it would read as
+ * losing every event on the machine.
+ */
+describe('adopting the database from before the rename', () => {
+  async function writeLegacyNamedDatabase() {
+    const legacy = new Dexie(LEGACY_DB_NAME);
+    legacy.version(1).stores(V1_STORES);
+    await legacy.open();
+    await legacy.table('workspaces').put(legacyWorkspace());
+    await legacy.table('guests').put({
+      id: 'g9',
+      eventId: 'e1',
+      name: 'Guest From Before',
+      statusId: 'invited',
+      plusOnes: 0,
+      tags: [],
+      fields: {},
+      qrToken: 'token',
+      createdAt: iso,
+      updatedAt: iso,
+      rev: 1,
+    });
+    legacy.close();
+  }
+
+  it('brings the old database across on first run', async () => {
+    await writeLegacyNamedDatabase();
+
+    expect(await adoptLegacyDatabase()).toBe(true);
+    expect((await db.guests.get('g9'))?.name).toBe('Guest From Before');
+    expect((await db.workspaces.get('w1'))?.name).toBe('Season');
+  });
+
+  it('leaves the old database in place, so a downgrade still has it', async () => {
+    await writeLegacyNamedDatabase();
+    await adoptLegacyDatabase();
+
+    expect(await Dexie.exists(LEGACY_DB_NAME)).toBe(true);
+  });
+
+  it('does nothing on a device that already has the new database', async () => {
+    await db.open();
+    await writeLegacyNamedDatabase();
+
+    expect(await adoptLegacyDatabase()).toBe(false);
+  });
+
+  it('does nothing at all on a fresh install', async () => {
+    expect(await Dexie.exists(LEGACY_DB_NAME)).toBe(false);
+    expect(await adoptLegacyDatabase()).toBe(false);
   });
 });

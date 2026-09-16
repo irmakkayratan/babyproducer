@@ -14,7 +14,7 @@ async function openGuests(page: Page) {
   await expect(page.getByTestId('guest-table-scroll')).toBeVisible();
 }
 
-test.describe('studio — customization', () => {
+test.describe('studio: customization', () => {
   test('renaming a voice renames it everywhere', async ({ page }) => {
     await openStudio(page);
     const field = page.getByLabel('Label for celebrity');
@@ -79,7 +79,7 @@ test.describe('studio — customization', () => {
     await expect(preview.locator('.font-mono')).not.toHaveText(before);
   });
 
-  test('an invalid formula is named rather than silently accepted', async ({ page }) => {
+  test('an invalid formula is named on screen', async ({ page }) => {
     await openStudio(page);
     await page.getByRole('tab', { name: 'Metrics' }).click();
     await page.getByLabel('Formula').fill('reach * mystery');

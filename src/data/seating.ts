@@ -1,8 +1,8 @@
 /**
  * Seating persistence.
  *
- * A seat assignment lives in two places — the seat on the map and `seatId` on
- * the guest — so both are written in one transaction and can never disagree.
+ * A seat assignment lives in two places: the seat on the map, and `seatId` on
+ * the guest. Both are written in one transaction, so they can never disagree.
  */
 import { db } from './db';
 import type { SeatingMap } from './types';

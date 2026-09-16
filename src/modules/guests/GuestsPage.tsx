@@ -236,7 +236,7 @@ export function GuestsPage() {
         <EmptyState
           className="flex-1 rounded-lg border border-dashed"
           title="No guests yet"
-          description="Import a spreadsheet — any column layout works — or add guests one at a time."
+          description="Import a spreadsheet. Any column layout works. Or add guests one at a time."
           action={
             <>
               <Button onClick={() => setImportOpen(true)}>

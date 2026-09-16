@@ -1,7 +1,7 @@
 /**
  * Settlement sheets: the post-event financial record.
  *
- * The row stores inputs only — ticket scaling, deductions, expenses and deal
+ * The row stores inputs only. Ticket scaling, deductions, expenses and deal
  * terms. Every total on the statement is derived by `computeSettlement()`, for
  * the same reason cue start times are derived: a stored total is a total that
  * can disagree with the numbers under it.

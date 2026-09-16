@@ -52,6 +52,10 @@ export interface BrandTokens {
 }
 
 export interface ThemeOverride {
+  /**
+   * Kept so a workspace exported before the product went black and white still
+   * imports cleanly. Nothing reads it: there is one palette now.
+   */
   accent: string;
   scheme?: 'dark' | 'light';
   gradient?: string;
@@ -377,7 +381,7 @@ export interface Arrival {
  * hospitality detail agreed with the venue, the crew and the travelling party
  * before anyone gets on a plane. The model is deliberately a flat checklist of
  * items grouped by a user-defined section, because that is what an advance
- * actually is — a list of questions that must all end up answered.
+ * actually is, a list of questions that must all end up answered.
  */
 export type AdvanceStatus = 'missing' | 'requested' | 'confirmed' | 'na';
 
@@ -392,7 +396,7 @@ export type AdvanceLogisticsKind = 'travel' | 'stay' | 'transfer' | 'schedule' |
  */
 export interface AdvanceLogistics {
   kind: AdvanceLogisticsKind;
-  /** Carrier, property or supplier — whoever is holding the booking. */
+  /** Carrier, property or supplier, whoever is holding the booking. */
   provider?: string;
   /** Booking reference, confirmation number or flight number. */
   reference?: string;
@@ -400,7 +404,7 @@ export interface AdvanceLogistics {
   to?: string;
   startsAt?: ISODate;
   endsAt?: ISODate;
-  /** Rooms, vehicles, seats, channels — whatever the item is counted in. */
+  /** Rooms, vehicles, seats, channels. Whatever the item is counted in. */
   quantity?: number;
   unit?: string;
 }
@@ -414,7 +418,7 @@ export interface AdvanceItem {
   status: AdvanceStatus;
   /** A required item that is not confirmed blocks the advance. */
   required: boolean;
-  /** Who owes the answer — free text so it can name a person or a company. */
+  /** Who owes the answer. Free text so it can name a person or a company. */
   owner?: string;
   dueAt?: ISODate;
   /** The answer itself, in whatever form it arrived. */
@@ -464,7 +468,7 @@ export interface AdvanceSheet extends Timestamped {
  * took, what it cost, and who is owed what once the contract is applied.
  *
  * The sheet stores only inputs. Every figure on the statement is derived by
- * `computeSettlement()` — the same principle as the rundown's start times, and
+ * `computeSettlement()`, the same principle as the rundown's start times, and
  * for the same reason: a stored total is a total that can go stale.
  */
 export interface TicketTier {
@@ -511,7 +515,7 @@ export interface SettlementParty {
   name: string;
   roleId?: string;
   deal: DealTerms;
-  /** Already paid at signature — deducted from the balance, not the fee. */
+  /** Already paid at signature. Comes off the balance, and the fee stands. */
   deposit: number;
   /** Percentage (0–100) withheld at source from the fee. */
   withholdingPercent: number;
@@ -616,7 +620,7 @@ export interface AdvanceChecklistEntry {
   /** Deadline expressed relative to the event, in days before it starts. */
   dueDaysBefore?: number;
   logisticsKind?: AdvanceLogisticsKind;
-  /** Repeat the item once per travelling party rather than once per event. */
+  /** Repeat the item once for each travelling party. */
   perParty?: boolean;
 }
 

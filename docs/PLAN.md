@@ -1,17 +1,17 @@
-# Atelier — Event Production OS
+# BabyProducer: Advancing and Event Production
 ## Master Build Plan
 
 > **Status:** Built. Phases P0–P8 are implemented, tested and deployed from this branch; this document remains the specification the code is measured against.
-> **Working title:** *Atelier* (the product name is a single brand token — see [customization.md](./customization.md#1-brand--identity)).
+> **Name:** *BabyProducer*. The product name is a single brand token, so a workspace can call it something else (see [customization.md](./customization.md#1-brand--identity)).
 > **Source of record:** `Event Production App Research` (industry analysis of Cvent, Bizzabo, Launchmetrics, Shoflo/LASSO, Rundown Studio, Stagetimer, CreatorIQ, and experiential/EMV-MIV practice).
 
 ---
 
 ## 1. What we are building
 
-A **web-based event production operating system** for culture-driven events — fashion shows, brand activations, product launches, pop-ups, conferences — that unifies the four workflows the industry currently splits across four vendors:
+An **advancing tool for culture-driven events** (fashion shows, brand activations, product launches, pop-ups, conferences) that unifies the four workflows the industry currently splits across four vendors:
 
-| Industry tool | What it does well | What Atelier absorbs |
+| Industry tool | What it does well | What BabyProducer absorbs |
 | --- | --- | --- |
 | **Launchmetrics Events** | Curated VIP guest lists, visual seating, RFID/barcode check-in, media value | Guest & Talent CRM, seating builder, check-in, MIV scoring |
 | **Shoflo / LASSO, Rundown Studio** | Real-time cue sheets, auto-drift timing, show-caller sync, teleprompter | Run of Show engine |
@@ -21,15 +21,15 @@ A **web-based event production operating system** for culture-driven events — 
 
 Three hard requirements from the brief drive every decision below:
 
-1. **Fully usable on the web.** Runs entirely in the browser — no backend required, installable as a PWA, works offline in a venue with dead Wi-Fi.
+1. **Fully usable on the web.** Runs entirely in the browser, no backend required, installable as a PWA, works offline in a venue with dead Wi-Fi.
 2. **Demo test examples.** Ships with rich, deterministic, realistic sample data so anyone can open the URL and immediately use a fully populated production.
 3. **Fully customizable to the user's use case.** Nothing about fashion, luxury, or beauty is hardcoded. Fields, statuses, tiers, rundown columns, metric formulas, dashboards, themes and enabled modules are all user-editable and portable. See [customization.md](./customization.md).
 
 ### Non-goals (v1)
 
-- No server, no accounts, no multi-tenant auth (an optional sync adapter is designed for but not built — [architecture.md](./architecture.md#9-optional-sync-adapter)).
-- No payment rails and no ticketing integrations. The settlement module computes and documents what is owed; moving money, and pulling box office reports from a ticketing provider, stay outside it. Contracts live wherever they already live — the advance tracks whether one is signed, not its text.
-- No live social-API scraping. MIV/EMV are computed from data the user supplies or the demo seeds — the engine is real, the follower counts are not.
+- No server, no accounts, no multi-tenant auth (an optional sync adapter is designed for but not built. [architecture.md](./architecture.md#9-optional-sync-adapter)).
+- No payment rails and no ticketing integrations. The settlement module computes and documents what is owed; moving money, and pulling box office reports from a ticketing provider, stay outside it. Contracts live wherever they already live. The advance tracks whether one is signed; its text stays elsewhere.
+- No live social-API scraping. MIV/EMV are computed from data the user supplies or the demo seeds. The engine is real; the follower counts in the demo are invented.
 - No native iOS/Android build. The PWA covers onsite handhelds and kiosks.
 
 ---
@@ -100,11 +100,11 @@ Each module is specified with data model, interactions, and acceptance criteria 
 
 ## 6. Demo experience
 
-Detailed in [demo-data.md](./demo-data.md). In short: four complete, deterministic sample productions —
+Detailed in [demo-data.md](./demo-data.md). In short, four complete and deterministic sample productions:
 
-1. **"AURELIA — SS27 Runway"** — Paris fashion show. 420 guests across Celebrity/Influencer/Media/Buyer/Partner voices, front-row politics, RFID-style check-in, 68-cue rundown with music and lighting departments, seated in a 3-zone runway map.
-2. **"LUMEN Beauty — Pop-Up Activation"** — 4-day retail activation. Foot-traffic telemetry, dwell time, LED volume and RFID trigger widgets, walk-in-heavy check-in, creator content log.
-3. **"NOVA — Product Launch Keynote"** — corporate/tech tone. Proves the app is not fashion-only: theatre seating, speaker rehearsal blocks, teleprompter scripts, press embargo tracking.
+1. **"AURELIA SS27 Runway"**: a Paris fashion show. 420 guests across Celebrity/Influencer/Media/Buyer/Partner voices, front-row politics, RFID-style check-in, 68-cue rundown with music and lighting departments, seated in a 3-zone runway map.
+2. **"LUMEN Beauty Pop-Up Activation"**: a 4-day retail activation. Foot-traffic telemetry, dwell time, LED volume and RFID trigger widgets, walk-in-heavy check-in, creator content log.
+3. **"NOVA Product Launch Keynote"**: a corporate and tech tone. Proves the app is not fashion-only: theatre seating, speaker rehearsal blocks, teleprompter scripts, press embargo tracking.
 
 Plus: a guided tour, a visible **Demo Mode** banner, one-click **Reset demo data**, **Fork demo into my workspace**, and **Simulate live** (a clock-driven simulator that runs the show, moves the caller, fires check-ins and pushes sensor data so the Command Center is alive on first open). All seeded from a fixed PRNG so screenshots and tests are reproducible.
 
@@ -112,7 +112,7 @@ Plus: a guided tour, a visible **Demo Mode** banner, one-click **Reset demo data
 
 ## 7. Roadmap
 
-Nine phases, each independently shippable and deployable. Effort is expressed in **build sessions** (one focused working block) rather than calendar dates.
+Nine phases, each independently shippable and deployable. Effort is expressed in **build sessions**, one focused working block each.
 
 | Phase | Name | Delivers | Effort |
 | --- | --- | --- | --- |
@@ -131,8 +131,8 @@ Nine phases, each independently shippable and deployable. Effort is expressed in
 ### Sequencing rules
 
 - Every phase ends green: typecheck, lint, unit tests, Playwright smoke, and a deployed Pages build.
-- Demo seed data for a module lands **with** that module, not in P8 — P8 enriches and ties it together.
-- Customization is not a late phase bolt-on: custom fields land in P2, rundown columns in P3, metric weights in P6. P7 consolidates the surface rather than inventing the capability.
+- Demo seed data for a module lands **with** that module. P8 then enriches it and ties it together.
+- Customization is not a late phase bolt-on: custom fields land in P2, rundown columns in P3, metric weights in P6. P7 consolidates the surface that is already there.
 
 ---
 
@@ -141,7 +141,7 @@ Nine phases, each independently shippable and deployable. Effort is expressed in
 Full detail in [testing-and-deployment.md](./testing-and-deployment.md).
 
 - **Performance budgets:** app shell < 250KB gzipped JS; time-to-interactive < 2s on a mid-tier laptop; 5,000-row guest table scrolls at 60fps; rundown recalculation of 500 cues under 16ms; seating canvas drag at 60fps with 400 seats.
-- **Offline:** a full end-to-end Playwright run with the network blocked after first load — create, edit, check in, and reload without data loss.
+- **Offline:** a full end-to-end Playwright run with the network blocked after first load. Create, edit, check in, and reload without data loss.
 - **Accessibility:** WCAG 2.2 AA. Keyboard path for every producer action including seating and cue advance; every Dialog/Sheet has an accessible title; `prefers-reduced-motion` respected by the theme crossfade and all transitions.
 - **Determinism:** seeded data generates identically on every run so tests and screenshots are stable.
 - **Data safety:** `navigator.storage.persist()` requested; export-before-destructive-action prompts; schema-versioned Dexie migrations; JSON export is the escape hatch from day one.
@@ -154,8 +154,8 @@ Full detail in [testing-and-deployment.md](./testing-and-deployment.md).
 | --- | --- | --- |
 | CRDT complexity leaks into unrelated state | Bugs, slow dev | Yjs is scoped **only** to the rundown document; everything else is Dexie + Zustand. One clearly bounded integration. |
 | IndexedDB eviction loses a live event's data | Severe | Request persistent storage on first write; auto-export snapshot to a downloadable file before risky ops; visible storage health indicator. |
-| Static hosting means no real multi-device sync | Limits "real" use | Ship a `SyncProvider` interface with a local-only implementation; document the Supabase/y-websocket drop-in so it is a config change, not a rewrite. |
-| Scope creep across eight modules | Never ships | Phase gates; each module has a written acceptance criterion; anything beyond it is logged, not built. |
+| Static hosting means no real multi-device sync | Limits "real" use | Ship a `SyncProvider` interface with a local-only implementation; document the Supabase/y-websocket drop-in so adding one is a config change. |
+| Scope creep across eight modules | Never ships | Phase gates; each module has a written acceptance criterion; anything beyond it goes in the log for later. |
 | Safari quirks (BroadcastChannel, IndexedDB, camera) | Onsite failures | Abstract cross-tab behind one `syncBus` with a localStorage-polling fallback; feature-detect `BarcodeDetector` with a `@zxing/browser` fallback; document tested browser matrix. |
 | Over-fitting to fashion | Fails "customizable" requirement | Fashion vocabulary lives entirely in seed data and templates; the code ships neutral defaults. Enforced by a test that boots a blank workspace and asserts no FLB-specific strings in the schema. |
 
@@ -166,9 +166,9 @@ Full detail in [testing-and-deployment.md](./testing-and-deployment.md).
 These do not block P0–P2; I will proceed on the default if you would rather I just build.
 
 1. **Backend:** stay fully static/local-first (default, matches the research), or plan a Supabase-backed multi-device sync from P6 onward?
-2. **Name:** keep *Atelier*, or another working title? (One token to change.)
+2. **Name:** *BabyProducer*, renamed from *Atelier*. Devices running the old build adopt their existing database on first run, so nothing is lost.
 3. **Demo scenarios:** the three above, or swap one for something closer to your actual work?
-4. **Priority:** if you want value sooner, which module matters most — Run of Show, Guest CRM, or Seating? I will pull it forward.
+4. **Priority:** if you want value sooner, which module matters most (Run of Show, Guest CRM, or Seating)? I will pull it forward.
 5. **Visual direction:** dark-first editorial (default, per the research), light-first Luma-like, or both with a theme switch at first run?
 
 ---

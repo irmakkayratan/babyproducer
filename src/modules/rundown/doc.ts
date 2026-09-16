@@ -7,7 +7,7 @@
  *
  * Start times are deliberately NOT stored. They are derived from showStart plus
  * the durations above each cue (see lib/time.ts), so changing a duration is a
- * single-field update and the cascade is a recomputation — nothing to conflict
+ * single-field update and the cascade is a recomputation, nothing to conflict
  * over, and no write amplification down a 500-row sheet.
  */
 import * as Y from 'yjs';
@@ -37,7 +37,7 @@ const handles = new Map<string, HandleEntry>();
  * Opening reads IndexedDB, so it is asynchronous, and the grid, the caller bar
  * and the stage timer all mount in the same tick. Without this, each of them
  * awaited the read before anybody had registered a handle, every one of them
- * built its own `Y.Doc`, and the last to finish won the map — three documents
+ * built its own `Y.Doc`, and the last to finish won the map, three documents
  * for one event, edits landing in whichever copy the surface happened to hold,
  * and three debounced writers overwriting each other in IndexedDB. Callers
  * queue on the first open instead.
@@ -113,7 +113,7 @@ export function readMeta(doc: Y.Doc): RundownMeta {
 export function insertCue(doc: Y.Doc, index: number, cue: Partial<Cue> = {}): string {
   const id = cue.id ?? ulid();
   // Spread first, then the defaults: a caller passing `{ label: undefined }`
-  // means "no label given", not "set the label to undefined" — spreading last
+  // means "no label given", not "set the label to undefined". Spreading last
   // put the string "undefined" in the id and a zero-length cue on the sheet.
   cueArray(doc).insert(index, [
     cueToMap({
@@ -186,7 +186,7 @@ export function setMeta(doc: Y.Doc, patch: Partial<RundownMeta>): void {
 
 /**
  * `bytes.buffer` is the whole backing store, which for a view into a pooled
- * buffer is longer than the update and starts in the wrong place — the far end
+ * buffer is longer than the update and starts in the wrong place, the far end
  * would decode neighbouring bytes as part of the message. Copy exactly the
  * region the view covers.
  */
@@ -207,7 +207,7 @@ class BroadcastProvider {
     eventId: string,
   ) {
     if (typeof BroadcastChannel === 'undefined') return;
-    this.channel = new BroadcastChannel(`atelier:rundown:${eventId}`);
+    this.channel = new BroadcastChannel(`babyproducer:rundown:${eventId}`);
     this.channel.onmessage = (event: MessageEvent<ArrayBuffer>) => {
       try {
         Y.applyUpdate(doc, new Uint8Array(event.data), 'remote');
@@ -289,7 +289,7 @@ async function createRundown(eventId: string, seed?: (doc: Y.Doc) => void): Prom
     Y.applyUpdate(doc, stored.update, 'storage');
   }
   // A document nobody has written to yet gets its starting shape here, with
-  // the doc passed in — the caller has no handle to it until this returns.
+  // the doc passed in, the caller has no handle to it until this returns.
   if (metaMap(doc).get('eventId') === undefined) {
     metaMap(doc).set('eventId', eventId);
     seed?.(doc);

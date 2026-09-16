@@ -6,9 +6,9 @@ import type { Event, SettlementSheet } from '@/data/types';
 /**
  * The settlement sheet for an event, live.
  *
- * Settlements get worked on two screens at once — the promoter's laptop and
- * the tour manager's — so this reads through Dexie's live query and every
- * write lands on both within a tick.
+ * Settlements get worked on two screens at once, the promoter's laptop and the
+ * tour manager's. This reads through Dexie's live query, so every write lands
+ * on both within a tick.
  */
 export function useSettlement(event: Event | undefined): {
   sheet: SettlementSheet | undefined;

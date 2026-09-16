@@ -32,10 +32,10 @@ export interface LineTableProps {
 /**
  * One editable block of the statement.
  *
- * Every line states its own basis — a flat amount, a percentage, or a rate per
- * ticket or per head — because that is how they are written into a contract,
- * and because a settlement argued at 1am is won by the side whose numbers can
- * be re-derived in front of the other.
+ * Every line states its own basis: a flat amount, a percentage, or a rate per
+ * ticket or per head. That is how they are written into a contract, and a
+ * settlement argued at 1am is won by the side whose numbers can be worked out
+ * again in front of the other.
  */
 export function LineTable({
   title,
@@ -105,7 +105,7 @@ export function LineTable({
                       onChange={(e) => onPatch(line.id, { categoryId: e.target.value || undefined })}
                       className="h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm hover:border-input"
                     >
-                      <option value="">—</option>
+                      <option value="">-</option>
                       {categories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.label}

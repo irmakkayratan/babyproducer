@@ -16,6 +16,16 @@ import {
 import type { TelemetrySeries } from '@/data/types';
 
 const AXIS = { stroke: 'var(--muted-foreground)', fontSize: 11 };
+
+/**
+ * Series are told apart twice over: by how light the line is, and by its dash.
+ *
+ * Lightness alone is enough on a good screen, but these get projected onto
+ * whatever the venue has and read off photographs of a laptop, and a grey step
+ * is the first thing either of those loses. The dash survives both, and it also
+ * survives being printed.
+ */
+const SERIES_DASH = ['0', '6 3', '2 3', '10 3 2 3', '1 3'];
 const TOOLTIP = {
   background: 'var(--popover)',
   border: '1px solid var(--border)',
@@ -32,7 +42,7 @@ export interface RecapChartProps {
   telemetry: TelemetrySeries[];
 }
 
-/** Charts follow the theme through tokens — no conditional colours anywhere. */
+/** Charts follow the theme through tokens, no conditional colours anywhere. */
 export default function RecapCharts({ kind, funnel, arrivalCurve, telemetry }: RecapChartProps) {
   if (kind === 'attendance') {
     const data = [
@@ -50,7 +60,7 @@ export default function RecapCharts({ kind, funnel, arrivalCurve, telemetry }: R
             <Tooltip contentStyle={TOOLTIP} cursor={{ fill: 'var(--muted)', opacity: 0.4 }} />
             <Bar dataKey="value" radius={[0, 6, 6, 0]} isAnimationActive={false}>
               {data.map((_, index) => (
-                <Cell key={index} fill={`var(--chart-${index + 1})`} />
+                <Cell key={index} fill={`var(--chart-${index + 1})`} stroke="var(--background)" strokeWidth={1} />
               ))}
             </Bar>
           </BarChart>
@@ -119,6 +129,7 @@ export default function RecapCharts({ kind, funnel, arrivalCurve, telemetry }: R
               dataKey={entry.source}
               stroke={`var(--chart-${index + 1})`}
               strokeWidth={1.75}
+              strokeDasharray={SERIES_DASH[index % SERIES_DASH.length]}
               dot={false}
               isAnimationActive={false}
             />

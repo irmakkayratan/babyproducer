@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/dialog';
 
 /**
- * Destructive actions name their scope rather than asking "are you sure?".
+ * Destructive actions name exactly what they will affect. "Are you sure?" on
+ * its own tells nobody anything.
  */
 export function ConfirmDialog({
   open,

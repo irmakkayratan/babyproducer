@@ -133,7 +133,7 @@ export const WIDGETS: WidgetDefinition[] = [
     settings: sourceSettings,
     Component: ({ data, settings }) => {
       const series = seriesFor(data, settings, 'occupancy');
-      if (!series) return <Stat label="Occupancy" value="—" sub="No sensor data" />;
+      if (!series) return <Stat label="Occupancy" value="-" sub="No sensor data" />;
       return (
         <Suspense fallback={<Skeleton className="m-4 h-[calc(100%-2rem)]" />}>
           <Sparkline points={series.points} unit={series.unit} thresholds={series.thresholds} />
@@ -175,7 +175,7 @@ export const WIDGETS: WidgetDefinition[] = [
     minSize: { w: 2, h: 2 },
     Component: ({ data }) => {
       const systems = data.telemetry.filter((series) => series.metric === 'uptime');
-      if (systems.length === 0) return <Stat label="Systems" value="—" sub="No feeds reporting" />;
+      if (systems.length === 0) return <Stat label="Systems" value="-" sub="No feeds reporting" />;
       return (
         <div className="space-y-2 p-4">
           <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Systems</p>
@@ -205,7 +205,7 @@ export const WIDGETS: WidgetDefinition[] = [
     minSize: { w: 2, h: 2 },
     Component: ({ data }) => {
       const current = data.cues.find((cue) => cue.id === data.callerCueId);
-      if (!current) return <Stat label="Show timing" value="—" sub="Nobody is calling the show" />;
+      if (!current) return <Stat label="Show timing" value="-" sub="Nobody is calling the show" />;
       const tone = data.drift > 120 ? 'critical' : data.drift > 30 ? 'warn' : 'good';
       return (
         <Stat
@@ -292,7 +292,7 @@ export const WIDGETS: WidgetDefinition[] = [
     ],
     Component: ({ data, settings }) => {
       const metric = data.metrics.find((m) => m.id === settings.metricId) ?? data.metrics[0];
-      if (!metric) return <Stat label="Media value" value="—" sub="No metric configured" />;
+      if (!metric) return <Stat label="Media value" value="-" sub="No metric configured" />;
       const arrived = new Set(data.arrivals.filter((a) => !a.undone).map((a) => a.guestId));
       const scope = settings.scope === 'all' ? data.guests : data.guests.filter((guest) => arrived.has(guest.id));
       const total = sumMetric(metric, scope);

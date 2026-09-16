@@ -1,9 +1,9 @@
 /**
  * Seeded pseudo-random number generation.
  *
- * Every demo record — names, follower counts, arrival times, sensor noise —
- * comes from here, so the demo is byte-identical on every machine and tests
- * and screenshots are stable.
+ * Every demo record comes from here: names, follower counts, arrival times,
+ * sensor noise. That is what makes the demo byte-identical on every machine,
+ * and what keeps tests and screenshots stable.
  */
 
 export function mulberry32(seed: number): () => number {
@@ -17,7 +17,7 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-/** Deterministic 32-bit hash — turns a scenario name into a seed. */
+/** Deterministic 32-bit hash. Turns a scenario name into a seed. */
 export function hashSeed(str: string): number {
   let h = 2166136261 >>> 0;
   for (let i = 0; i < str.length; i++) {

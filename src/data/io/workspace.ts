@@ -1,8 +1,8 @@
 /**
  * Workspace import and export.
  *
- * This is the portability guarantee: everything a user has shaped — brand,
- * schema, metrics, templates and optionally the data itself — travels as one
+ * This is the portability guarantee. Everything a user has shaped (brand,
+ * schema, metrics, templates and optionally the data itself) travels as one
  * JSON file. It is also the backup story, and the migration path if a hosted
  * backend is ever added.
  */
@@ -21,7 +21,14 @@ import type {
 } from '@/data/types';
 import { ulid } from '@/lib/id';
 
-export const EXPORT_FORMAT = 'atelier.workspace';
+export const EXPORT_FORMAT = 'babyproducer.workspace';
+
+/**
+ * What exports were stamped with before the product was renamed. Files people
+ * already have on disk still have to open, so both are accepted on the way in
+ * and only the current one is written on the way out.
+ */
+const LEGACY_EXPORT_FORMATS = ['atelier.workspace'];
 export const EXPORT_VERSION = 2;
 
 export interface WorkspaceExport {
@@ -98,12 +105,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 /**
  * A file picked off a disk is untrusted input, and the only thing standing
  * between a truncated or hand-edited export and a raw `TypeError` in the
- * middle of a Dexie transaction is this check — so it validates the shape the
- * importer actually walks, not just the header.
+ * middle of a Dexie transaction is this check, so it validates the shape the
+ * importer actually walks, all the way down.
  */
 export function isWorkspaceExport(value: unknown): value is WorkspaceExport {
   if (!isRecord(value)) return false;
-  if (value.format !== EXPORT_FORMAT) return false;
+  if (value.format !== EXPORT_FORMAT && !LEGACY_EXPORT_FORMATS.includes(value.format as string)) return false;
   if (typeof value.version !== 'number' || !Number.isFinite(value.version)) return false;
 
   const workspace = value.workspace;
@@ -140,7 +147,7 @@ export async function importWorkspace(
   options: { mode?: 'new' | 'replace' } = {},
 ): Promise<ImportResult> {
   if (!isWorkspaceExport(payload)) {
-    throw new Error('That file is not an Atelier workspace export.');
+    throw new Error('That file is not a BabyProducer workspace export.');
   }
   if (payload.version > EXPORT_VERSION) {
     throw new Error('That export came from a newer version of the app.');
@@ -249,7 +256,7 @@ export async function importWorkspace(
         data.rundowns.map((doc) => ({
           eventId: remap(doc.eventId),
           // A hand-edited file can carry anything here; a non-byte would decode
-          // into a corrupt Yjs update rather than failing loudly.
+          // into a corrupt Yjs update, and fail quietly much later.
           update: Uint8Array.from((doc.update ?? []).map((byte) => (Number.isFinite(byte) ? byte : 0))),
           updatedAt: now,
         })),

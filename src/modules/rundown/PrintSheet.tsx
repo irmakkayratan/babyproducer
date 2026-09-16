@@ -5,7 +5,7 @@ import { formatClock, formatDuration } from '@/lib/time';
 /**
  * The paper cue sheet.
  *
- * Print is a real output in this industry — the stage manager's copy lives on
+ * Print is a real output in this industry, the stage manager's copy lives on
  * a clipboard. It renders only the columns marked as printed, uses ink-light
  * styling regardless of the screen theme, and stamps the version so two copies
  * on a table can be told apart.
@@ -30,7 +30,7 @@ export function PrintSheet({
   return (
     <div className="hidden print:block print:text-black">
       <header className="mb-4 border-b border-black/20 pb-2">
-        <h1 className="text-xl font-semibold">{eventName} — Run of Show</h1>
+        <h1 className="text-xl font-semibold">{eventName} · Run of Show</h1>
         <p className="text-xs">
           {venue ? `${venue} · ` : ''}
           {cues.length} cues · printed {new Date().toLocaleString()} · times in {timezone}

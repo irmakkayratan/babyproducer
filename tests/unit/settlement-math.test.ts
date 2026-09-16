@@ -107,7 +107,7 @@ describe('deductions', () => {
       }),
     );
 
-    // 20% of the 24,000 the tickets took — never of the 30,000 total.
+    // 20% of the 24,000 the tickets took, never of the 30,000 total.
     expect(result.gross).toBe(30_000);
     expect(result.deductionTotal).toBe(4800);
     expect(result.adjustedGross).toBe(25_200);
@@ -143,7 +143,7 @@ describe('expenses', () => {
     expect(result.net).toBe(result.adjustedGross - result.expenseTotal);
   });
 
-  it('files an uncategorised cost under other rather than dropping it', () => {
+  it('files an uncategorised cost under other, so nothing is dropped', () => {
     const result = computeSettlement(sheet({ expenses: [line({ label: 'Runner', amount: 250 })] }));
     expect(result.expensesByCategory).toEqual([{ categoryId: 'other', total: 250 }]);
   });
@@ -177,7 +177,7 @@ describe('deals', () => {
     expect(strong.parties[0].percentageValue).toBe(17_000);
     expect(strong.parties[0].earned).toBe(17_000);
     expect(strong.parties[0].wonBy).toBe('percentage');
-    expect(strong.parties[0].terms).toContain('the percentage applies');
+    expect(strong.parties[0].terms).toContain('The percentage applies');
 
     const quiet = withDeal(
       { kind: 'versus', guarantee: 12_000, percentage: 85, basis: 'net', breakeven: 0 },
@@ -260,7 +260,7 @@ describe('payouts', () => {
 });
 
 describe('robustness', () => {
-  it('returns zeros rather than NaN for an empty sheet', () => {
+  it('returns zeros for an empty sheet, with no NaN anywhere', () => {
     const result = computeSettlement(sheet({ scaling: [], parties: [] }));
     expect(result.gross).toBe(0);
     expect(result.net).toBe(0);
@@ -332,7 +332,7 @@ describe('export', () => {
     expect(rows.some((row) => row.Line === 'Gross receipts' && row.Amount === 24_000)).toBe(true);
     // Money leaving the show is written as a negative, so the column sums.
     expect(rows.find((row) => row.Line === 'VAT')?.Amount).toBe(-4800);
-    expect(rows.find((row) => row.Line === 'Headline — balance due')?.Amount).toBe(4500);
+    expect(rows.find((row) => row.Line === 'Headline · balance due')?.Amount).toBe(4500);
     expect(rows.at(-1)).toMatchObject({ Line: 'House result' });
   });
 });

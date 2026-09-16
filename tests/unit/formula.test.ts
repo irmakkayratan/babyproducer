@@ -39,11 +39,11 @@ describe('formula language', () => {
     expect(evaluateFormula('followers > 1000 ? 2 : 1', { followers: 500 })).toBe(1);
   });
 
-  it('treats division by zero as zero rather than infinity', () => {
+  it('treats division by zero as zero', () => {
     expect(evaluateFormula('10 / missing', { missing: 0 })).toBe(0);
   });
 
-  it('refuses anything outside the whitelist — a formula cannot reach the app', () => {
+  it('refuses anything outside the whitelist, so a formula cannot reach the app', () => {
     const hostile = [
       'constructor',
       'window.alert(1)',
@@ -126,7 +126,7 @@ describe('metric engine', () => {
     );
   });
 
-  it('degrades to zero with a message rather than crashing a row', () => {
+  it('degrades to zero with a message, leaving the row intact', () => {
     const broken: MetricConfig = { ...miv, formula: 'reach * nonsense' };
     const result = evaluateMetric(broken, guest({ audience: { followers: 100 } }));
     expect(result.value).toBe(0);

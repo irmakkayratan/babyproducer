@@ -17,7 +17,7 @@ export function formatDuration(seconds: Seconds, opts: { forceHours?: boolean } 
 /**
  * Accepts what producers actually type: "90" (seconds), "4:12", "1:04:12",
  * "2m", "1h30m". Returns null when it cannot be understood, so the caller can
- * keep the previous value rather than silently writing a zero.
+ * keep the previous value and never silently write a zero.
  */
 export function parseDuration(input: string): Seconds | null {
   const text = input.trim().toLowerCase();
@@ -27,7 +27,7 @@ export function parseDuration(input: string): Seconds | null {
 
   if (text.includes(':')) {
     // Every segment must actually be digits. Reading "" as 0 turned ":" into a
-    // zero-length cue — the silent zeroing this function exists to prevent.
+    // zero-length cue, the silent zeroing this function exists to prevent.
     const parts = text.split(':');
     if (parts.length < 2 || parts.length > 3) return null;
     if (!parts.every((part) => /^\d+$/.test(part))) return null;
@@ -49,9 +49,9 @@ export function parseDuration(input: string): Seconds | null {
 }
 
 /**
- * A cue longer than this is a typo, not a plan. Accepting it would push the
+ * A cue longer than this is a typo. Accepting it would push the
  * derived clock past the range `Date` can represent, and the cue grid would
- * throw on the next render rather than reject the keystroke.
+ * throw on the next render, when it should simply refuse the keystroke.
  */
 export const MAX_DURATION_SEC = 100 * 24 * 3600;
 
@@ -68,15 +68,15 @@ function clampDuration(seconds: number): Seconds | null {
  */
 function safeFormat(iso: ISODate, options: Intl.DateTimeFormatOptions, timezone?: string): string {
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
+  if (Number.isNaN(date.getTime())) return '-';
   try {
     return new Intl.DateTimeFormat(undefined, { ...options, timeZone: timezone }).format(date);
   } catch {
-    // Fall back to the device's own zone rather than losing the value.
+    // Fall back to the device's own zone, so the value still gets shown.
     try {
       return new Intl.DateTimeFormat(undefined, options).format(date);
     } catch {
-      return '—';
+      return '-';
     }
   }
 }
@@ -89,7 +89,7 @@ export function formatEventWindow(startsAt: ISODate, endsAt: ISODate, timezone?:
   const start = new Date(startsAt);
   const end = new Date(endsAt);
   const dayOpts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  if (Number.isNaN(start.getTime())) return '—';
+  if (Number.isNaN(start.getTime())) return '-';
   const startLabel = safeFormat(startsAt, dayOpts, timezone);
   if (Number.isNaN(end.getTime()) || start.toDateString() === end.toDateString()) {
     return `${startLabel}, ${formatClock(startsAt, timezone)}`;
@@ -140,7 +140,7 @@ export interface DerivedCueTime {
 /**
  * The auto-drift cascade.
  *
- * Start times are never stored — they are derived from `showStart` plus the
+ * Start times are never stored. They are derived from `showStart` plus the
  * durations above each cue. A duration edit is therefore a single-field change
  * and this one O(n) pass re-times everything below it.
  *
@@ -161,8 +161,8 @@ function clampMs(ms: number, fallback: number): number {
 }
 
 export function deriveTimes(showStart: ISODate, cues: Cue[]): DerivedCueTime[] {
-  // An unreadable show start is treated as the epoch rather than poisoning
-  // every downstream instant with NaN.
+  // An unreadable show start is treated as the epoch. Letting it through
+  // would poison every instant below it with NaN.
   const startMs = clampMs(new Date(showStart).getTime(), 0);
   let clock = startMs;
   const out: DerivedCueTime[] = new Array(cues.length);
@@ -227,9 +227,9 @@ export function liveDriftSec(
 
 /**
  * `<input type="date">` and `type="datetime-local"` speak local wall-clock
- * strings, not ISO instants. These convert in both directions and return
- * undefined for a cleared field, so an emptied date erases rather than
- * becoming the epoch.
+ * strings. These convert in both directions and return
+ * undefined for a cleared field, so an emptied date erases itself and does not
+ * become the epoch.
  */
 export function toDateInputValue(iso?: ISODate): string {
   if (!iso) return '';
@@ -255,7 +255,7 @@ function pad(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-/** "Tue 14 Mar, 18:30" — the format a day sheet is read in. */
+/** "Tue 14 Mar, 18:30", the format a day sheet is read in. */
 export function formatDayTime(iso: ISODate, timezone?: string): string {
   return safeFormat(
     iso,
