@@ -54,6 +54,9 @@
 
   --radius: 0.75rem;
   --shell-gradient: hsl(258 85% 68%);
+  /* How much accent the landing wash mixes in. Lighter in light mode, where
+     every percent of tint comes straight off the text contrast under it. */
+  --wash: 40%;
 
   color-scheme: dark;
 }
@@ -66,7 +69,10 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(240 10% 8%);
   --muted: hsl(240 8% 96%);
-  --muted-foreground: hsl(240 4% 44%);
+  /* 39%, not 44%: muted text also has to clear 4.5:1 where a translucent
+     accent wash sits over it, and 44% measured 4.55 — a rounding difference
+     away from failing. */
+  --muted-foreground: hsl(240 4% 39%);
   --accent: hsl(240 8% 95%);
   --accent-foreground: hsl(240 10% 8%);
   --border: hsl(240 8% 90%);
@@ -74,6 +80,7 @@
 
   --primary: hsl(258 78% 58%);
   --primary-foreground: hsl(0 0% 100%);
+  --wash: 24%;
   --secondary: hsl(240 8% 95%);
   --secondary-foreground: hsl(240 10% 8%);
 

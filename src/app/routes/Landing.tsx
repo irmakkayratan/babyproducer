@@ -10,7 +10,7 @@ const DOORS = [
     id: 'demo',
     icon: PlayCircle,
     title: 'Explore the demo',
-    body: 'Three example productions — a runway show, a pop-up activation and a launch keynote — ready to open, edit and reset.',
+    body: 'Four example productions — a runway show, a pop-up activation, a launch keynote and a tour date already settled — ready to open, edit and reset.',
     cta: 'Open the demo',
   },
   {
@@ -46,7 +46,7 @@ export function Landing() {
         className="pointer-events-none absolute inset-x-0 top-0 h-[60vh] opacity-70"
         style={{
           background:
-            'radial-gradient(90% 70% at 50% -10%, color-mix(in oklab, var(--primary) 40%, transparent), transparent 70%)',
+            'radial-gradient(90% 70% at 50% -10%, color-mix(in oklab, var(--primary) var(--wash), transparent), transparent 70%)',
         }}
       />
       <header className="relative flex items-center justify-between px-6 py-5 sm:px-10">

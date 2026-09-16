@@ -65,7 +65,7 @@ export function DemoBanner({ workspaceId, workspaceName }: { workspaceId: string
         <span className="mr-auto">
           <strong className="font-medium">Demo data.</strong>{' '}
           <span className="text-muted-foreground">
-            Three example productions, generated on this device. Nothing here is real, and nothing leaves the browser.
+            Four example productions, generated on this device. Nothing here is real, and nothing leaves the browser.
           </span>
         </span>
 
