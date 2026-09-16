@@ -11,6 +11,14 @@ import { EventCoverArt } from './EventCoverArt';
 import { countdownParts, formatEventWindow } from '@/lib/time';
 import { formatNumber } from '@/lib/utils';
 
+/** Quick links follow the same module toggles as the navigation. */
+const QUICK_LINKS = [
+  { module: 'guests', to: 'guests', label: 'Guest list' },
+  { module: 'rundown', to: 'rundown', label: 'Run of show' },
+  { module: 'seating', to: 'seating', label: 'Seating' },
+  { module: 'checkin', to: 'checkin', label: 'Check-in' },
+] as const;
+
 const ACCENTS = [
   'hsl(258 85% 68%)',
   'hsl(38 90% 62%)',
@@ -27,6 +35,9 @@ export function EventOverview() {
   const updateEvent = useStore((s) => s.updateEvent);
   const setActiveEvent = useStore((s) => s.setActiveEvent);
   const event = events.find((e) => e.id === eventId);
+  const enabledModules = useStore(
+    (s) => s.workspaces.find((workspace) => workspace.id === event?.workspaceId)?.enabledModules,
+  );
 
   useEffect(() => {
     if (eventId) setActiveEvent(eventId);
@@ -125,15 +136,11 @@ export function EventOverview() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline">
-              <Link to={`/w/${event.workspaceId}/events/${event.id}/guests`}>Guest list</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to={`/w/${event.workspaceId}/events/${event.id}/rundown`}>Run of show</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to={`/w/${event.workspaceId}/events/${event.id}/seating`}>Seating</Link>
-            </Button>
+            {QUICK_LINKS.filter((link) => enabledModules?.includes(link.module) ?? true).map((link) => (
+              <Button key={link.module} asChild variant="outline">
+                <Link to={`/w/${event.workspaceId}/events/${event.id}/${link.to}`}>{link.label}</Link>
+              </Button>
+            ))}
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import type { ModuleKey } from '@/data/types';
 import { AppShell } from './AppShell';
 import { RootBoundary } from './RootBoundary';
 import { RouteFallback } from './RouteFallback';
@@ -7,7 +8,7 @@ import { Landing } from './routes/Landing';
 import { StartFromTemplate } from './routes/StartFromTemplate';
 import { WorkspaceHome } from './routes/WorkspaceHome';
 import { EventOverview } from '@/modules/workspace/EventOverview';
-import { ModulePlaceholder } from './routes/ModulePlaceholder';
+import { ModuleGuard } from './ModuleGuard';
 
 /**
  * Heavy modules load with their route. Charts, canvases and scanners never
@@ -17,6 +18,7 @@ const GuestsPage = lazy(() => import('@/modules/guests/GuestsPage').then((m) => 
 const Demo = lazy(() => import('./routes/Demo').then((m) => ({ default: m.Demo })));
 const RundownPage = lazy(() => import('@/modules/rundown/RundownPage').then((m) => ({ default: m.RundownPage })));
 const CallerMode = lazy(() => import('@/modules/rundown/CallerMode').then((m) => ({ default: m.CallerMode })));
+const StudioPage = lazy(() => import('@/modules/studio/StudioPage').then((m) => ({ default: m.StudioPage })));
 const RecapPage = lazy(() => import('@/modules/recap/RecapPage').then((m) => ({ default: m.RecapPage })));
 const CommandPage = lazy(() => import('@/modules/command/CommandPage').then((m) => ({ default: m.CommandPage })));
 const CheckinPage = lazy(() => import('@/modules/checkin/CheckinPage').then((m) => ({ default: m.CheckinPage })));
@@ -25,7 +27,11 @@ const StageDisplay = lazy(() => import('@/modules/rundown/StageDisplay').then((m
 
 const lazyRoute = (element: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
 
-const NOT_YET_BUILT: Array<{ path: string; title: string; description: string }> = [];
+const moduleRoute = (module: ModuleKey, element: React.ReactNode) => (
+  <ModuleGuard module={module}>
+    <Suspense fallback={<RouteFallback />}>{element}</Suspense>
+  </ModuleGuard>
+);
 
 export const router = createBrowserRouter(
   [
@@ -38,22 +44,19 @@ export const router = createBrowserRouter(
       errorElement: <RootBoundary />,
       children: [
         { index: true, element: <WorkspaceHome /> },
+        { path: 'studio', element: lazyRoute(<StudioPage />) },
         {
           path: 'events/:eventId',
           children: [
             { index: true, element: <Navigate to="overview" replace /> },
             { path: 'overview', element: <EventOverview /> },
-            { path: 'guests', element: lazyRoute(<GuestsPage />) },
-            { path: 'seating', element: lazyRoute(<SeatingPage />) },
-            { path: 'checkin', element: lazyRoute(<CheckinPage />) },
-            { path: 'command', element: lazyRoute(<CommandPage />) },
-            { path: 'recap', element: lazyRoute(<RecapPage />) },
-            { path: 'rundown', element: lazyRoute(<RundownPage />) },
-            { path: 'rundown/caller', element: lazyRoute(<CallerMode />) },
-            ...NOT_YET_BUILT.map((module) => ({
-              path: module.path,
-              element: <ModulePlaceholder title={module.title} description={module.description} />,
-            })),
+            { path: 'guests', element: moduleRoute('guests', <GuestsPage />) },
+            { path: 'seating', element: moduleRoute('seating', <SeatingPage />) },
+            { path: 'checkin', element: moduleRoute('checkin', <CheckinPage />) },
+            { path: 'command', element: moduleRoute('command', <CommandPage />) },
+            { path: 'recap', element: moduleRoute('metrics', <RecapPage />) },
+            { path: 'rundown', element: moduleRoute('rundown', <RundownPage />) },
+            { path: 'rundown/caller', element: moduleRoute('rundown', <CallerMode />) },
           ],
         },
       ],

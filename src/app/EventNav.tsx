@@ -16,7 +16,19 @@ const MODULE_NAV: Array<{ key: ModuleKey | 'overview'; to: string; label: string
 
 /** Nav is derived from enabled modules: disabling one removes it everywhere. */
 export function EventNav({ event, collapsed }: { event: Event; collapsed: boolean }) {
-  const isModuleEnabled = useStore((s) => s.isModuleEnabled);
+  // Subscribe to the data, not to the selector function: an action's identity
+  // never changes, so selecting it would leave this nav stale after a change
+  // in Studio.
+  const enabledModules = useStore(
+    (s) => s.workspaces.find((workspace) => workspace.id === event.workspaceId)?.enabledModules,
+  );
+  const overrides = useStore((s) => s.events.find((candidate) => candidate.id === event.id)?.moduleOverrides);
+
+  const isEnabled = (moduleKey: ModuleKey) => {
+    const override = overrides?.[moduleKey];
+    if (typeof override === 'boolean') return override;
+    return enabledModules?.includes(moduleKey) ?? true;
+  };
 
   return (
     <div className="mt-4">
@@ -25,7 +37,7 @@ export function EventNav({ event, collapsed }: { event: Event; collapsed: boolea
           {event.name}
         </p>
       )}
-      {MODULE_NAV.filter((item) => item.key === 'overview' || isModuleEnabled(item.key as ModuleKey, event.id)).map(
+      {MODULE_NAV.filter((item) => item.key === 'overview' || isEnabled(item.key as ModuleKey)).map(
         (item) => (
           <NavLink
             key={item.to}
