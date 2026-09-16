@@ -31,6 +31,8 @@ test.describe('accessibility', () => {
   });
 
   test('every working surface is clean', async ({ page }) => {
+    // Eleven routes, each loaded and scanned: worth the longer budget.
+    test.slow();
     const workspaceId = await loadDemo(page);
     const eventId = await page.evaluate(() => {
       const link = document.querySelector('a[href*="/events/"]') as HTMLAnchorElement | null;
@@ -44,7 +46,9 @@ test.describe('accessibility', () => {
       `/w/${workspaceId}/events/${eventId}/guests`,
       `/w/${workspaceId}/events/${eventId}/seating`,
       `/w/${workspaceId}/events/${eventId}/rundown`,
+      `/w/${workspaceId}/events/${eventId}/advancing`,
       `/w/${workspaceId}/events/${eventId}/checkin`,
+      `/w/${workspaceId}/events/${eventId}/settlement`,
       `/w/${workspaceId}/events/${eventId}/command`,
       `/w/${workspaceId}/events/${eventId}/recap`,
     ];

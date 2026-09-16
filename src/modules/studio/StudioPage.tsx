@@ -33,9 +33,11 @@ const MODULE_LABELS: Record<ModuleKey, string> = {
   guests: 'Guests',
   seating: 'Seating',
   rundown: 'Run of Show',
+  advancing: 'Advancing',
   checkin: 'Check-in',
   command: 'Command Center',
   metrics: 'Metrics & Recap',
+  settlement: 'Settlement',
 };
 
 /**
@@ -211,6 +213,24 @@ export function StudioPage() {
             description="Where your guests' audiences live. Metric weight tables key off this."
             entries={schema.platforms}
             onChange={(platforms) => patchSchema({ platforms })}
+          />
+          <VocabEditor
+            title="Advance sections"
+            description="The headings your advance checklist is grouped under, in the order you work through them."
+            entries={schema.advanceSections}
+            onChange={(advanceSections) => patchSchema({ advanceSections })}
+          />
+          <VocabEditor
+            title="Party roles"
+            description="Who the people you advance and settle with are to you — on both the advance sheet and the settlement."
+            entries={schema.partyRoles}
+            onChange={(partyRoles) => patchSchema({ partyRoles })}
+          />
+          <VocabEditor
+            title="Expense categories"
+            description="How show costs are grouped on a settlement statement."
+            entries={schema.expenseCategories}
+            onChange={(expenseCategories) => patchSchema({ expenseCategories })}
           />
         </TabsContent>
 

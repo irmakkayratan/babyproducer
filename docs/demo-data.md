@@ -15,9 +15,9 @@ Landing
 
 Demo mode is explicit and reversible: a persistent banner reading **"Demo data — Reset · Fork into my workspace · Exit"**. Nothing in demo mode is second-class; every feature works, and forking copies the data into a normal workspace the user owns.
 
-## 2. The three seeded productions
+## 2. The four seeded productions
 
-Each is complete across every module — guests, seating, rundown, arrivals, telemetry, dashboards, recap — so any entry point lands on real data rather than an empty state.
+Each is complete across every module — guests, seating, rundown, advancing, arrivals, telemetry, dashboards, recap, settlement — so any entry point lands on real data rather than an empty state.
 
 ### A. AURELIA — SS27 Runway (Paris)
 The FLB flagship. 420 guests across Celebrity / Influencer / Media / Buyer / Partner voices with plausible follower and engagement distributions (heavy-tailed, not uniform). Front-row politics encoded as seating rules: two guests marked keep-apart, a celebrity pair marked seat-together, a tier-in-zone rule reserving the front row. A three-zone runway map (runway, front row, riser left/right) with 380 seats. A 68-cue rundown with Music, Lighting, Model Order, Camera and Notes columns, hard-anchored at doors and show start. Arrivals concentrated in a 40-minute pre-show spike. High MIV, moderate EMV — deliberately illustrating the metric contrast the research describes.
@@ -28,12 +28,17 @@ The experiential case. Walk-in-heavy check-in, a retail floor map instead of sea
 ### C. NOVA — Product Launch Keynote
 The proof the app is not fashion-only. Corporate vocabulary (Analyst / Press / Customer / Partner / Internal), theatre seating with rows and an aisle, a rundown with Slides / Mics / Stream / Lower Thirds columns, teleprompter scripts on four cues, rehearsal blocks, and a custom "Sponsor Value" metric replacing MIV — demonstrating that the metric engine is data, not code.
 
+### D. ATLAS — Tour Date (Amsterdam)
+The advance-and-settle case, three days in the past. A 1,500-capacity room with four price bands, an advance at 98% with one line still chasing, three travelling parties with flights, hotel rooms and transfers on a day sheet, and a settlement that resolves the deal the industry actually writes down: €12,000 guaranteed against 70% of net after costs, with the percentage winning on the night. Deductions carry Dutch rates (9% VAT, ticketing, author's rights on the balance); the statement ends at a house result of about €4,300 on €63,000 of gross receipts.
+
+Advancing and settlement are seeded across the other three as well: the upcoming productions carry an advance in progress — some lines confirmed, some chasing, one or two genuinely late — because a finished advance shows nothing, and an advance with three open questions shows the whole point. LUMEN settles against a client fee rather than a box office, which is the same statement with no price bands in it.
+
 ## 3. Generation strategy
 
 - **Deterministic.** A seeded PRNG (`mulberry32`, fixed seed per scenario) drives every name, number and timestamp. Record **ids** are seeded too — they are ULIDs built from a fixed epoch plus the scenario's RNG rather than the wall clock — because identical values in a different order are not the same demo. A reset rebuilds the same records in the same order, verified by both a unit test and an end-to-end one.
 - **Plausible, not random.** Follower counts are log-normal; engagement rate is inversely correlated with follower count; RSVP conversion varies by tier; arrival times follow a pre-show spike curve; cue durations cluster by item type; telemetry is a smoothed random walk with day/hour seasonality and injected anomalies.
 - **Clearly fictional.** Invented names and brands with no real-person or real-brand data. Avatars are generated locally (deterministic gradient + initials) — no external image requests, which also keeps the app fully offline.
-- **Cheap to load.** Scenario data generates in a Web Worker from a compact spec (roughly 20KB of JSON parameters, not megabytes of records), streaming into Dexie with a determinate progress bar. Full seed of all three scenarios targets under 1.5 seconds.
+- **Cheap to load.** Scenario data generates in a Web Worker from a compact spec (roughly 20KB of JSON parameters, not megabytes of records), streaming into Dexie with a determinate progress bar. Full seed of all four scenarios targets under 1.5 seconds.
 
 ```ts
 // data/seed/scenario.ts

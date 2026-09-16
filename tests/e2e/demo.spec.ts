@@ -47,15 +47,15 @@ test.describe('demo experience', () => {
     await loadDemo(page);
     await page.getByRole('button', { name: /Take the tour/ }).click();
     const tour = page.getByTestId('tour');
-    await expect(tour).toContainText('Step 1 of 6');
+    await expect(tour).toContainText('Step 1 of 8');
     await expect(page).toHaveURL(/\/guests$/);
 
     await tour.getByRole('button', { name: 'Next' }).click();
-    await expect(tour).toContainText('Step 2 of 6');
+    await expect(tour).toContainText('Step 2 of 8');
     await expect(page).toHaveURL(/\/seating$/);
 
     // Walk the rest of the tour to its end.
-    for (let step = 0; step < 5; step++) {
+    for (let step = 0; step < 7; step++) {
       await tour.getByRole('button', { name: /Next|Finish/ }).click();
     }
     await expect(tour).toHaveCount(0);
