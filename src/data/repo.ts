@@ -169,8 +169,12 @@ export interface CreateEventInput {
 
 export async function createEvent(input: CreateEventInput): Promise<Event> {
   const template = getTemplate(input.templateId ?? 'blank');
-  const startsAt = input.startsAt;
-  const endsAt = input.endsAt ?? new Date(new Date(startsAt).getTime() + 3 * 3600_000).toISOString();
+  // A start the browser cannot read would otherwise reach `toISOString` as NaN
+  // and throw, losing the event the user just filled in a form for.
+  const startMs = new Date(input.startsAt).getTime();
+  const startsAt = Number.isFinite(startMs) ? input.startsAt : new Date().toISOString();
+  const endsAt =
+    input.endsAt ?? new Date((Number.isFinite(startMs) ? startMs : Date.now()) + 3 * 3600_000).toISOString();
 
   const event: Event = stamp({
     id: ulid(),
@@ -237,6 +241,7 @@ export async function deleteEvent(id: string): Promise<void> {
       db.rundowns,
       db.advanceSheets,
       db.settlements,
+      db.meta,
     ],
     async () => {
       await Promise.all([
@@ -250,6 +255,10 @@ export async function deleteEvent(id: string): Promise<void> {
         db.telemetry.where('eventId').equals(id).delete(),
         db.dashboards.where('eventId').equals(id).delete(),
         db.rundowns.delete(id),
+        // `createEvent` writes the rundown's column set into `meta`; without
+        // this the row outlives the event it describes, and a workspace that
+        // has cycled through a season of events carries every one of them.
+        db.meta.delete(`rundown:columns:${id}`),
       ]);
     },
   );

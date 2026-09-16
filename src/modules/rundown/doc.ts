@@ -25,7 +25,24 @@ export interface RundownHandle {
   destroy: () => void;
 }
 
-const handles = new Map<string, { handle: RundownHandle; refs: number; closeTimer?: ReturnType<typeof setTimeout> }>();
+interface HandleEntry {
+  handle: RundownHandle;
+  refs: number;
+  closeTimer?: ReturnType<typeof setTimeout>;
+}
+
+const handles = new Map<string, HandleEntry>();
+
+/**
+ * Opening reads IndexedDB, so it is asynchronous, and the grid, the caller bar
+ * and the stage timer all mount in the same tick. Without this, each of them
+ * awaited the read before anybody had registered a handle, every one of them
+ * built its own `Y.Doc`, and the last to finish won the map — three documents
+ * for one event, edits landing in whichever copy the surface happened to hold,
+ * and three debounced writers overwriting each other in IndexedDB. Callers
+ * queue on the first open instead.
+ */
+const opening = new Map<string, Promise<RundownHandle>>();
 
 /**
  * Moving between the grid, the caller and the timer unmounts one surface and
@@ -95,13 +112,16 @@ export function readMeta(doc: Y.Doc): RundownMeta {
 
 export function insertCue(doc: Y.Doc, index: number, cue: Partial<Cue> = {}): string {
   const id = cue.id ?? ulid();
+  // Spread first, then the defaults: a caller passing `{ label: undefined }`
+  // means "no label given", not "set the label to undefined" — spreading last
+  // put the string "undefined" in the id and a zero-length cue on the sheet.
   cueArray(doc).insert(index, [
     cueToMap({
+      ...cue,
       id,
       label: cue.label ?? 'New cue',
       durationSec: cue.durationSec ?? 300,
       cells: cue.cells ?? {},
-      ...cue,
     }),
   ]);
   return id;
@@ -165,6 +185,16 @@ export function setMeta(doc: Y.Doc, patch: Partial<RundownMeta>): void {
 /* -------------------------------------------------------- persistence/sync */
 
 /**
+ * `bytes.buffer` is the whole backing store, which for a view into a pooled
+ * buffer is longer than the update and starts in the wrong place — the far end
+ * would decode neighbouring bytes as part of the message. Copy exactly the
+ * region the view covers.
+ */
+function toTransferable(bytes: Uint8Array): ArrayBuffer {
+  return bytes.slice().buffer as ArrayBuffer;
+}
+
+/**
  * Cross-tab sync without a server: each tab broadcasts its Yjs updates and
  * applies the ones it receives. Yjs guarantees the merge is conflict-free and
  * order-independent, so a tab that was offline catches up on reconnect.
@@ -179,16 +209,22 @@ class BroadcastProvider {
     if (typeof BroadcastChannel === 'undefined') return;
     this.channel = new BroadcastChannel(`atelier:rundown:${eventId}`);
     this.channel.onmessage = (event: MessageEvent<ArrayBuffer>) => {
-      Y.applyUpdate(doc, new Uint8Array(event.data), 'remote');
+      try {
+        Y.applyUpdate(doc, new Uint8Array(event.data), 'remote');
+      } catch (error) {
+        // A malformed update from another tab must not take this one down
+        // mid-show; Yjs simply keeps the state it already has.
+        console.error('[rundown] ignoring an unreadable update from another tab', error);
+      }
     };
     doc.on('update', this.onUpdate);
     // Announce our state so an existing tab can merge us in.
-    this.channel.postMessage(Y.encodeStateAsUpdate(doc).buffer);
+    this.channel.postMessage(toTransferable(Y.encodeStateAsUpdate(doc)));
   }
 
   private onUpdate = (update: Uint8Array, origin: unknown) => {
     if (origin === 'remote') return;
-    this.channel?.postMessage(update.buffer.slice(0) as ArrayBuffer);
+    this.channel?.postMessage(toTransferable(update));
   };
 
   destroy() {
@@ -212,14 +248,41 @@ async function persist(doc: Y.Doc, eventId: string) {
 export async function openRundown(eventId: string, seed?: (doc: Y.Doc) => void): Promise<RundownHandle> {
   const existing = handles.get(eventId);
   if (existing) {
-    existing.refs += 1;
-    if (existing.closeTimer) {
-      clearTimeout(existing.closeTimer);
-      existing.closeTimer = undefined;
-    }
+    retain(existing);
     return existing.handle;
   }
 
+  // Someone else is already building this document: wait for it and take a
+  // reference on the one they registered.
+  const inFlight = opening.get(eventId);
+  if (inFlight) {
+    await inFlight;
+    const entry = handles.get(eventId);
+    if (entry) {
+      retain(entry);
+      return entry.handle;
+    }
+    // The open failed for the first caller; fall through and try again.
+  }
+
+  const pending = createRundown(eventId, seed);
+  opening.set(eventId, pending);
+  try {
+    return await pending;
+  } finally {
+    opening.delete(eventId);
+  }
+}
+
+function retain(entry: HandleEntry): void {
+  entry.refs += 1;
+  if (entry.closeTimer) {
+    clearTimeout(entry.closeTimer);
+    entry.closeTimer = undefined;
+  }
+}
+
+async function createRundown(eventId: string, seed?: (doc: Y.Doc) => void): Promise<RundownHandle> {
   const doc = new Y.Doc();
   const stored = await db.rundowns.get(eventId);
   if (stored) {
@@ -245,7 +308,9 @@ export async function openRundown(eventId: string, seed?: (doc: Y.Doc) => void):
     eventId,
     destroy: () => {
       const entry = handles.get(eventId);
-      if (!entry) return;
+      // A surface that unmounts twice (StrictMode does exactly this) must not
+      // drive the count negative and strand the document open.
+      if (!entry || entry.refs <= 0) return;
       entry.refs -= 1;
       if (entry.refs > 0) return;
       void persist(doc, eventId);

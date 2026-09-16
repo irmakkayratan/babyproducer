@@ -23,9 +23,20 @@ import type {
   TicketTier,
 } from '@/data/types';
 
-/** Money is rounded to the cent at every reported figure, never before. */
+/**
+ * Money is rounded to the cent at every reported figure, never before.
+ *
+ * `Math.round` breaks ties towards +Infinity, which would round 1.005 up and
+ * -1.005 down to -1.00 — a statement where a credit and the debit reversing it
+ * do not cancel. Ties here always go away from zero, and the scaled value is
+ * nudged past the binary-representation error that puts 1.005 * 100 at
+ * 100.49999999999999.
+ */
 export function round2(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+  if (!Number.isFinite(value)) return 0;
+  const scaled = value * 100;
+  const nudged = scaled + Math.sign(scaled) * Number.EPSILON * Math.abs(scaled);
+  return Math.sign(scaled) * Math.round(Math.abs(nudged)) / 100;
 }
 
 const num = (value: number | undefined): number => (Number.isFinite(value) ? (value as number) : 0);
@@ -303,13 +314,37 @@ function trimPercent(value: number): string {
   return String(Math.round(num(value) * 100) / 100);
 }
 
+/**
+ * A currency code that `Intl` rejects throws at construction, and every figure
+ * on a statement runs through this function — so one bad code in an imported
+ * workspace would take the whole settlement page down rather than showing a
+ * slightly wrong symbol. Codes are validated once and remembered.
+ */
+const currencyCache = new Map<string, string>();
+
+function safeCurrency(currency: string): string {
+  const code = (currency || 'EUR').trim().toUpperCase();
+  const cached = currencyCache.get(code);
+  if (cached) return cached;
+  let resolved = 'EUR';
+  try {
+    new Intl.NumberFormat(undefined, { style: 'currency', currency: code });
+    resolved = code;
+  } catch {
+    resolved = 'EUR';
+  }
+  currencyCache.set(code, resolved);
+  return resolved;
+}
+
 export function formatMoney(value: number, currency: string, decimals = 2): string {
+  const amount = Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat(undefined, {
     style: 'currency',
-    currency: currency || 'EUR',
+    currency: safeCurrency(currency),
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(value);
+  }).format(amount);
 }
 
 /**

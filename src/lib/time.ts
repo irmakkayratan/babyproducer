@@ -23,43 +23,78 @@ export function parseDuration(input: string): Seconds | null {
   const text = input.trim().toLowerCase();
   if (!text) return null;
 
-  if (/^\d+$/.test(text)) return Number(text);
+  if (/^\d+$/.test(text)) return clampDuration(Number(text));
 
   if (text.includes(':')) {
-    const parts = text.split(':').map((p) => Number(p));
-    if (parts.some((p) => Number.isNaN(p))) return null;
-    if (parts.length === 2) return parts[0] * 60 + parts[1];
-    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    return null;
+    // Every segment must actually be digits. Reading "" as 0 turned ":" into a
+    // zero-length cue — the silent zeroing this function exists to prevent.
+    const parts = text.split(':');
+    if (parts.length < 2 || parts.length > 3) return null;
+    if (!parts.every((part) => /^\d+$/.test(part))) return null;
+    const numbers = parts.map(Number);
+    const seconds =
+      numbers.length === 2
+        ? numbers[0] * 60 + numbers[1]
+        : numbers[0] * 3600 + numbers[1] * 60 + numbers[2];
+    return clampDuration(seconds);
   }
 
   const match = /^(?:(\d+)h)?\s*(?:(\d+)m)?\s*(?:(\d+)s)?$/.exec(text);
   if (match && (match[1] || match[2] || match[3])) {
-    return Number(match[1] ?? 0) * 3600 + Number(match[2] ?? 0) * 60 + Number(match[3] ?? 0);
+    return clampDuration(
+      Number(match[1] ?? 0) * 3600 + Number(match[2] ?? 0) * 60 + Number(match[3] ?? 0),
+    );
   }
   return null;
 }
 
+/**
+ * A cue longer than this is a typo, not a plan. Accepting it would push the
+ * derived clock past the range `Date` can represent, and the cue grid would
+ * throw on the next render rather than reject the keystroke.
+ */
+export const MAX_DURATION_SEC = 100 * 24 * 3600;
+
+function clampDuration(seconds: number): Seconds | null {
+  if (!Number.isFinite(seconds) || seconds < 0 || seconds > MAX_DURATION_SEC) return null;
+  return seconds;
+}
+
+/**
+ * `Intl.DateTimeFormat` throws twice over: once at construction for a timezone
+ * it does not recognise, and again at `format` for an unreadable date. Both are
+ * reachable from imported or hand-edited data, and both would take down a page
+ * that is only trying to print a time, so every formatter goes through here.
+ */
+function safeFormat(iso: ISODate, options: Intl.DateTimeFormatOptions, timezone?: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  try {
+    return new Intl.DateTimeFormat(undefined, { ...options, timeZone: timezone }).format(date);
+  } catch {
+    // Fall back to the device's own zone rather than losing the value.
+    try {
+      return new Intl.DateTimeFormat(undefined, options).format(date);
+    } catch {
+      return '—';
+    }
+  }
+}
+
 export function formatClock(iso: ISODate, timezone?: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: timezone,
-  }).format(new Date(iso));
+  return safeFormat(iso, { hour: '2-digit', minute: '2-digit', hour12: false }, timezone);
 }
 
 export function formatEventWindow(startsAt: ISODate, endsAt: ISODate, timezone?: string): string {
   const start = new Date(startsAt);
   const end = new Date(endsAt);
-  const sameDay = start.toDateString() === end.toDateString();
-  const dateFmt = new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    timeZone: timezone,
-  });
-  if (sameDay) return `${dateFmt.format(start)}, ${formatClock(startsAt, timezone)}`;
-  return `${dateFmt.format(start)} – ${dateFmt.format(end)}`;
+  const dayOpts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  if (Number.isNaN(start.getTime())) return '—';
+  const startLabel = safeFormat(startsAt, dayOpts, timezone);
+  if (Number.isNaN(end.getTime()) || start.toDateString() === end.toDateString()) {
+    return `${startLabel}, ${formatClock(startsAt, timezone)}`;
+  }
+  return `${startLabel} – ${safeFormat(endsAt, dayOpts, timezone)}`;
 }
 
 export function relativeToNow(iso: ISODate, now = Date.now()): string {
@@ -113,8 +148,22 @@ export interface DerivedCueTime {
  * clock to it (the show waits, or is late, but the anchor holds). A **soft**
  * anchor reports how far off the plan is without moving it.
  */
+/**
+ * Largest instant `Date` can represent. Everything derived here is clamped to
+ * it: a cue sheet is read live during a show, and a single unparseable date or
+ * fat-fingered duration must not be able to throw from a render path.
+ */
+const MAX_TIME_MS = 8.64e15;
+
+function clampMs(ms: number, fallback: number): number {
+  if (!Number.isFinite(ms)) return fallback;
+  return Math.min(Math.max(ms, -MAX_TIME_MS), MAX_TIME_MS);
+}
+
 export function deriveTimes(showStart: ISODate, cues: Cue[]): DerivedCueTime[] {
-  const startMs = new Date(showStart).getTime();
+  // An unreadable show start is treated as the epoch rather than poisoning
+  // every downstream instant with NaN.
+  const startMs = clampMs(new Date(showStart).getTime(), 0);
   let clock = startMs;
   const out: DerivedCueTime[] = new Array(cues.length);
 
@@ -125,20 +174,25 @@ export function deriveTimes(showStart: ISODate, cues: Cue[]): DerivedCueTime[] {
 
     if (cue.anchor) {
       const anchorMs = new Date(cue.anchor.at).getTime();
-      driftSec = Math.round((clock - anchorMs) / 1000);
-      anchored = true;
-      if (cue.anchor.mode === 'hard') clock = anchorMs;
+      if (Number.isFinite(anchorMs)) {
+        driftSec = Math.round((clock - anchorMs) / 1000);
+        anchored = true;
+        if (cue.anchor.mode === 'hard') clock = clampMs(anchorMs, clock);
+      }
     }
 
-    const duration = Math.max(0, cue.durationSec || 0) * 1000;
+    const rawDuration = Number(cue.durationSec);
+    const duration = (Number.isFinite(rawDuration) ? Math.max(0, rawDuration) : 0) * 1000;
+    const start = clampMs(clock, startMs);
+    const end = clampMs(start + duration, start);
     out[i] = {
       cueId: cue.id,
-      plannedStart: new Date(clock).toISOString(),
-      plannedEnd: new Date(clock + duration).toISOString(),
+      plannedStart: new Date(start).toISOString(),
+      plannedEnd: new Date(end).toISOString(),
       driftSec,
       anchored,
     };
-    clock += duration;
+    clock = end;
   }
 
   return out;
@@ -203,21 +257,13 @@ function pad(n: number): string {
 
 /** "Tue 14 Mar, 18:30" — the format a day sheet is read in. */
 export function formatDayTime(iso: ISODate, timezone?: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: timezone,
-  }).format(new Date(iso));
+  return safeFormat(
+    iso,
+    { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false },
+    timezone,
+  );
 }
 
 export function formatDay(iso: ISODate, timezone?: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    day: 'numeric',
-    month: 'short',
-    timeZone: timezone,
-  }).format(new Date(iso));
+  return safeFormat(iso, { day: 'numeric', month: 'short' }, timezone);
 }
