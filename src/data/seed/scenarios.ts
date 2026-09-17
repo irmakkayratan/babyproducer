@@ -1,8 +1,8 @@
 /**
  * Demo scenario specifications.
  *
- * A scenario is a compact parameter set (a few kilobytes), not a dump of
- * records — the generator expands it deterministically at load time. Vocabulary
+ * A scenario is a compact parameter set, a few kilobytes. It stands in for
+ * records, the generator expands it deterministically at load time. Vocabulary
  * here is demo content: everything is editable once loaded.
  */
 import type { DealTerms, ModuleKey, SettlementLine } from '@/data/types';
@@ -13,7 +13,7 @@ export interface GuestMix {
   tierMix: Record<string, number>;
   /** Probability of reaching Confirmed, by voice. */
   rsvpConversion: Record<string, number>;
-  /** Median follower count by voice — expanded log-normally. */
+  /** Median follower count by voice. Expanded log-normally. */
   reachMedian: Record<string, number>;
   platformMix: Record<string, number>;
   companyCount: number;
@@ -34,7 +34,7 @@ export interface SettlementSpec {
   /** Share of each band's allotment that sold. */
   soldRate?: number;
   compsRate?: number;
-  /** A project settled against a fee rather than a box office has no bands. */
+  /** A project settled against a fee, with no box office, has no bands. */
   noBoxOffice?: boolean;
   deductions?: Array<Omit<SettlementLine, 'id'>>;
   otherRevenue?: Array<Omit<SettlementLine, 'id'>>;
@@ -58,7 +58,7 @@ export interface ScenarioSpec {
   templateId: string;
   accent: string;
   venue: { name: string; address?: string };
-  /** Days from "now" — negative means the event has already happened. */
+  /** Days from "now". Negative means the event has already happened. */
   startsInDays: number;
   startHour: number;
   durationHours: number;
@@ -75,10 +75,10 @@ export const SCENARIOS: ScenarioSpec[] = [
   {
     id: 'aurelia',
     seed: 'aurelia-ss27',
-    name: 'AURELIA — SS27',
+    name: 'AURELIA SS27',
     kind: 'Runway Show',
     templateId: 'runway-show',
-    accent: 'hsl(38 90% 62%)',
+    accent: 'hsl(0 0% 100%)',
     venue: { name: 'Palais de Tokyo', address: '13 Av. du Président Wilson, Paris' },
     startsInDays: 12,
     startHour: 19,
@@ -107,17 +107,17 @@ export const SCENARIOS: ScenarioSpec[] = [
       contacts: [
         { name: 'Camille Roux', role: 'Venue production manager', company: 'Palais de Tokyo', phone: '+33 1 47 23 54 01' },
         { name: 'Ibrahim Sy', role: 'Head of security', company: 'Palais de Tokyo', phone: '+33 6 88 12 02 77' },
-        { name: 'Marta Oliveira', role: 'Show caller', company: 'Atelier Productions', phone: '+33 6 21 55 18 04' },
+        { name: 'Marta Oliveira', role: 'Show caller', company: 'Northlight Productions', phone: '+33 6 21 55 18 04' },
       ],
     },
   },
   {
     id: 'lumen',
     seed: 'lumen-popup',
-    name: 'LUMEN Beauty — Pop-Up',
+    name: 'LUMEN Beauty Pop-Up',
     kind: 'Activation',
     templateId: 'brand-activation',
-    accent: 'hsl(325 75% 65%)',
+    accent: 'hsl(0 0% 84%)',
     venue: { name: 'The Old Sorting Office', address: '21–31 New Oxford St, London' },
     startsInDays: -6,
     startHour: 11,
@@ -169,7 +169,7 @@ export const SCENARIOS: ScenarioSpec[] = [
       ],
       parties: [
         {
-          name: 'Atelier Productions',
+          name: 'Northlight Productions',
           roleId: 'principal',
           deal: { kind: 'percentage', guarantee: 0, percentage: 15, basis: 'gross', breakeven: 0 },
           deposit: 20_000,
@@ -180,10 +180,10 @@ export const SCENARIOS: ScenarioSpec[] = [
   {
     id: 'nova',
     seed: 'nova-launch',
-    name: 'NOVA — Launch Keynote',
+    name: 'NOVA Launch Keynote',
     kind: 'Keynote',
     templateId: 'product-launch',
-    accent: 'hsl(210 90% 62%)',
+    accent: 'hsl(0 0% 70%)',
     venue: { name: 'Kulturhuset Stadsteatern', address: 'Sergels torg, Stockholm' },
     startsInDays: 34,
     startHour: 10,
@@ -217,10 +217,10 @@ export const SCENARIOS: ScenarioSpec[] = [
   {
     id: 'atlas',
     seed: 'atlas-tour',
-    name: 'ATLAS — Tour Date',
+    name: 'ATLAS Tour Date',
     kind: 'Live Show',
     templateId: 'live-show',
-    accent: 'hsl(12 80% 62%)',
+    accent: 'hsl(0 0% 56%)',
     venue: { name: 'Muziekgebouw aan het IJ', address: 'Piet Heinkade 1, Amsterdam' },
     startsInDays: -3,
     startHour: 20,

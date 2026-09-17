@@ -86,11 +86,11 @@ test.describe('run of show', () => {
   test('cue edits survive a reload', async ({ page }) => {
     await openDemoRundown(page);
     const label = page.getByTestId('cue-row').first().getByLabel(/^Label for cue/);
-    await label.fill('Doors — revised');
+    await label.fill('Doors, revised');
     await label.press('Enter');
     await page.waitForTimeout(600);
 
     await page.reload();
-    await expect(page.getByTestId('cue-row').first().getByLabel(/^Label for cue/)).toHaveValue('Doors — revised');
+    await expect(page.getByTestId('cue-row').first().getByLabel(/^Label for cue/)).toHaveValue('Doors, revised');
   });
 });

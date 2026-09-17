@@ -37,11 +37,11 @@ test.describe('settlement', () => {
     const guarantee = party.getByLabel(/^Guarantee for/);
     await guarantee.fill('900000');
     await guarantee.press('Enter');
-    await expect(party).toContainText('the guarantee applies');
+    await expect(party).toContainText('The guarantee applies');
 
     await guarantee.fill('1');
     await guarantee.press('Enter');
-    await expect(party).toContainText('the percentage applies');
+    await expect(party).toContainText('The percentage applies');
   });
 
   test('the statement reads as a document, with the totals in order', async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe('settlement', () => {
     await expect(page.getByTestId('settlement-tier').first().getByLabel(/^Sold for/)).toBeEnabled();
   });
 
-  test('an edit survives a reload — the sheet lives on the device', async ({ page }) => {
+  test('an edit survives a reload: the sheet lives on the device', async ({ page }) => {
     await openSettlement(page);
     const expenses = page.getByTestId('settlement-expenses');
     const total = expenses.locator('[data-numeric]').first();
@@ -77,7 +77,7 @@ test.describe('settlement', () => {
     await rate.press('Enter');
 
     // The costs total re-renders from the stored sheet, so a changed total is
-    // proof the write landed rather than proof the input accepted a keystroke.
+    // proof the write landed, which an accepted keystroke alone does not give.
     await expect(total).not.toHaveText(before);
 
     await page.reload();

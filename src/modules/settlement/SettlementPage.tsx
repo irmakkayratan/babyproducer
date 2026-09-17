@@ -33,7 +33,7 @@ import { useSettlement } from './useSettlement';
  * Settlement: the money side of the same event.
  *
  * Inputs on one tab, the statement on the other, and the four figures that
- * actually matter pinned above both — because the question in the room is
+ * actually matter pinned above both, because the question in the room is
  * never "what did the bar take", it is "what do I owe you, and did we make
  * anything".
  */
@@ -95,7 +95,7 @@ export function SettlementPage() {
     toast.success(finalizing ? 'Settlement finalized' : 'Settlement reopened', {
       description: finalizing
         ? 'The sheet is read-only until you reopen it. Print or export it as the record.'
-        : 'Edits are live again — the statement follows every change.',
+        : 'Edits are live again. The statement follows every change.',
     });
   }
 
@@ -106,8 +106,8 @@ export function SettlementPage() {
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Settlement</p>
           <h1 className="mt-1 font-display text-3xl tracking-tight">{event.name}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            What the show took, what it cost, and who is owed what once the deal is applied. Every figure below is
-            derived — change an input and the statement follows.
+            What the show took, what it cost, and who is owed what once the deal is applied. Every figure below
+            is worked out live, so change an input and the statement follows.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -168,7 +168,7 @@ export function SettlementPage() {
 
           <LineTable
             title="Other income"
-            description="Bar share, merchandise, sponsorship — anything that lands in the same pot."
+            description="Bar share, merchandise, sponsorship. Anything that lands in the same pot."
             lines={sheet.otherRevenue}
             resolved={resolvedFor('otherRevenue')}
             total={result.otherRevenueTotal}

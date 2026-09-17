@@ -50,14 +50,14 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     kind: 'Runway Show',
     description:
       'Curated guest list, front-row politics, tight cue stack. Voices and tiers set up for fashion week.',
-    accent: 'hsl(38 90% 62%)',
+    accent: 'hsl(0 0% 100%)',
     builtin: true,
     seatingPreset: 'runway',
     enabledModules: ['guests', 'seating', 'rundown', 'advancing', 'checkin', 'command', 'metrics'],
     metricIds: ['miv', 'emv'],
     metricWeights: {
       miv: {
-        // Authority, not volume: a critic at a top-tier title outweighs a
+        // Weighted on authority: a critic at a top-tier title outweighs a
         // larger account with no standing. Every number here is editable.
         mediaRate: { celebrity: 0.09, influencer: 0.05, media: 0.045, buyer: 0.012, partner: 0.02, owned: 0.03 },
         mediaQuality: { 'a-list': 2.4, 'front-row': 1.7, press: 1.35, buyer: 0.9, standing: 0.6 },
@@ -110,7 +110,7 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     kind: 'Activation',
     description:
       'Multi-day experiential footprint: walk-in heavy, sensor telemetry, dwell time and content capture.',
-    accent: 'hsl(325 75% 65%)',
+    accent: 'hsl(0 0% 84%)',
     builtin: true,
     seatingPreset: 'open-floor',
     enabledModules: ['guests', 'rundown', 'advancing', 'checkin', 'command', 'metrics'],
@@ -162,7 +162,7 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     kind: 'Keynote',
     description:
       'Theatre seating, rehearsal blocks, teleprompter scripts and press embargo tracking.',
-    accent: 'hsl(210 90% 62%)',
+    accent: 'hsl(0 0% 70%)',
     builtin: true,
     seatingPreset: 'theatre',
     enabledModules: ['guests', 'seating', 'rundown', 'advancing', 'checkin', 'command', 'metrics'],
@@ -215,7 +215,7 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     name: 'Conference Track',
     kind: 'Conference',
     description: 'Sessions, speakers and room turnarounds with badge check-in.',
-    accent: 'hsl(190 80% 52%)',
+    accent: 'hsl(0 0% 56%)',
     builtin: true,
     seatingPreset: 'theatre',
     enabledModules: ['guests', 'rundown', 'advancing', 'checkin', 'command'],
@@ -247,7 +247,7 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     name: 'Gala Dinner',
     kind: 'Gala',
     description: 'Banquet tables, seating politics, donor tiers and a served-course rundown.',
-    accent: 'hsl(152 50% 52%)',
+    accent: 'hsl(0 0% 92%)',
     builtin: true,
     seatingPreset: 'banquet',
     enabledModules: ['guests', 'seating', 'rundown', 'advancing', 'checkin', 'metrics', 'settlement'],
@@ -316,7 +316,7 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     kind: 'Live Show',
     description:
       'A touring date end to end: advance the venue and the travelling party, then settle the box office against the deal on the night.',
-    accent: 'hsl(12 80% 62%)',
+    accent: 'hsl(0 0% 62%)',
     builtin: true,
     seatingPreset: 'open-floor',
     enabledModules: ['guests', 'rundown', 'advancing', 'checkin', 'command', 'metrics', 'settlement'],
@@ -417,7 +417,7 @@ export const BUILTIN_TEMPLATES: EventTemplate[] = [
     name: 'Blank',
     kind: 'Event',
     description: 'No assumptions. Neutral vocabulary you shape yourself in Studio.',
-    accent: 'hsl(258 85% 68%)',
+    accent: 'hsl(0 0% 46%)',
     builtin: true,
     seatingPreset: 'none',
     enabledModules: ['guests', 'seating', 'rundown', 'advancing', 'checkin', 'command', 'metrics', 'settlement'],

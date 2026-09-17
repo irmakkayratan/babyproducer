@@ -31,15 +31,25 @@ export async function startScanner(video: HTMLVideoElement, onScan: ScanHandler)
     video: { facingMode: 'environment' },
     audio: false,
   });
-  video.srcObject = stream;
-  video.setAttribute('playsinline', 'true');
-  await video.play();
 
   let stopped = false;
   const stopStream = () => {
     stopped = true;
+    video.srcObject = null;
     for (const track of stream.getTracks()) track.stop();
   };
+
+  // From here on the camera is live. Anything that throws before a handle is
+  // returned has to hand it back, or the light stays on with nothing holding a
+  // reference to turn it off.
+  try {
+    video.srcObject = stream;
+    video.setAttribute('playsinline', 'true');
+    await video.play();
+  } catch (error) {
+    stopStream();
+    throw error;
+  }
 
   if (window.BarcodeDetector) {
     const detector = new window.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
@@ -47,7 +57,7 @@ export async function startScanner(video: HTMLVideoElement, onScan: ScanHandler)
       if (stopped) return;
       try {
         const results = await detector.detect(video);
-        if (results[0]?.rawValue) onScan(results[0].rawValue);
+        if (results[0]?.rawValue && !stopped) onScan(results[0].rawValue);
       } catch {
         /* a dropped frame is not an error worth surfacing */
       }
@@ -57,16 +67,26 @@ export async function startScanner(video: HTMLVideoElement, onScan: ScanHandler)
     return { stop: stopStream, method: 'native' };
   }
 
-  const { BrowserMultiFormatReader } = await import('@zxing/browser');
-  const reader = new BrowserMultiFormatReader();
-  const controls = await reader.decodeFromVideoElement(video, (result) => {
-    if (result) onScan(result.getText());
-  });
-  return {
-    stop: () => {
+  try {
+    const { BrowserMultiFormatReader } = await import('@zxing/browser');
+    const reader = new BrowserMultiFormatReader();
+    const controls = await reader.decodeFromVideoElement(video, (result) => {
+      if (result && !stopped) onScan(result.getText());
+    });
+    if (stopped) {
+      // Stopped while the decoder was loading.
       controls.stop();
-      stopStream();
-    },
-    method: 'zxing',
-  };
+      return { stop: stopStream, method: 'zxing' };
+    }
+    return {
+      stop: () => {
+        controls.stop();
+        stopStream();
+      },
+      method: 'zxing',
+    };
+  } catch (error) {
+    stopStream();
+    throw error;
+  }
 }

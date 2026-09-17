@@ -3,7 +3,7 @@
  *
  * The device holds the primary copy of the data: every read and write in the
  * app hits IndexedDB, never the network. Schema versions are additive and each
- * upgrade is tested against a fixture of the previous version — a migration
+ * upgrade is tested against a fixture of the previous version, a migration
  * that silently drops a live guest list is the worst failure this app can have.
  */
 import Dexie, { type Table } from 'dexie';
@@ -27,7 +27,7 @@ import type {
 
 export interface RundownDoc {
   eventId: string;
-  update: Uint8Array; // Yjs state vector — the rundown's source of truth
+  update: Uint8Array; // Yjs state vector, the rundown's source of truth
   updatedAt: string;
 }
 
@@ -38,7 +38,19 @@ export interface MetaRecord {
 
 export const SCHEMA_VERSION = 2;
 
-export class AtelierDb extends Dexie {
+export const DB_NAME = 'babyproducer';
+
+/**
+ * What the database was called before the product was renamed.
+ *
+ * A device that has been running the old build holds its only copy of the work
+ * under that name. Opening a fresh empty database next to it would look exactly
+ * like losing a season of events, so the new name adopts the old one on first
+ * run and leaves the original in place.
+ */
+export const LEGACY_DB_NAME = 'atelier';
+
+export class BabyProducerDb extends Dexie {
   workspaces!: Table<Workspace, string>;
   events!: Table<Event, string>;
   guests!: Table<Guest, string>;
@@ -55,7 +67,7 @@ export class AtelierDb extends Dexie {
   views!: Table<SavedView, string>;
   meta!: Table<MetaRecord, string>;
 
-  constructor(name = 'atelier') {
+  constructor(name = DB_NAME) {
     super(name);
     this.version(1).stores({
       workspaces: 'id, name, demo',
@@ -110,7 +122,43 @@ export function backfillSchema(schema: SchemaConfig): SchemaConfig {
   };
 }
 
-export const db = new AtelierDb();
+export const db = new BabyProducerDb();
+
+/**
+ * Copies a database written under the old product name into the new one.
+ *
+ * Runs before anything opens `db`, because opening it would create the new
+ * database and make this look like a device that had already been adopted.
+ * The old database is left untouched, so a person who downgrades still has it.
+ */
+export async function adoptLegacyDatabase(): Promise<boolean> {
+  try {
+    if (!(await Dexie.exists(LEGACY_DB_NAME))) return false;
+    if (await Dexie.exists(DB_NAME)) return false;
+
+    const legacy = new Dexie(LEGACY_DB_NAME);
+    await legacy.open();
+    const contents = await Promise.all(
+      legacy.tables.map(async (table) => ({ name: table.name, rows: await table.toArray() })),
+    );
+    legacy.close();
+
+    await db.open();
+    await db.transaction('rw', db.tables, async () => {
+      for (const { name, rows } of contents) {
+        if (rows.length === 0) continue;
+        // A table the old build had and this one dropped is skipped rather
+        // than failing the whole adoption.
+        const table = db.tables.find((candidate) => candidate.name === name);
+        if (table) await table.bulkPut(rows);
+      }
+    });
+    return true;
+  } catch (error) {
+    console.error('[db] could not adopt the previous database', error);
+    return false;
+  }
+}
 
 /* ------------------------------------------------------------------ meta */
 

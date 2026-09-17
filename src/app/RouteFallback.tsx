@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-/** Shown only while a route chunk loads — data itself is already local. */
+/** Shown only while a route chunk loads. Data itself is already local. */
 export function RouteFallback() {
   return (
     <div className="space-y-3 p-6" aria-busy="true" aria-live="polite">

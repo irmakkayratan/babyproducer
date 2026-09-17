@@ -40,7 +40,7 @@ export function Demo() {
       <div className="w-full max-w-md space-y-5 text-center">
         <h1 className="font-display text-2xl tracking-tight">Building the demo</h1>
         <p className="text-sm text-muted-foreground">
-          {SCENARIOS.length} complete productions — guests, arrivals and media value — generated locally from a
+          {SCENARIOS.length} complete productions with guests, arrivals and media value, all generated on this device from a
           fixed seed. Nothing is downloaded.
         </p>
         <div className="h-1 overflow-hidden rounded-full bg-muted">
@@ -50,7 +50,7 @@ export function Demo() {
           />
         </div>
         <p className="text-xs text-muted-foreground" aria-live="polite">
-          {error ?? (progress ? `${progress.scenario} — ${progress.step}` : 'Starting…')}
+          {error ?? (progress ? `${progress.scenario}: ${progress.step}` : 'Starting…')}
         </p>
       </div>
     </div>

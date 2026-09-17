@@ -97,7 +97,8 @@ export function MetricEditor({
         <div className="mr-auto">
           <h3 className="font-medium">Metrics</h3>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Formulas and weights are data, not code. Change one and every score, chart and report follows.
+            Formulas and weights are data you can edit here. Change one and every score, chart and report
+            follows.
           </p>
         </div>
         <div className="flex flex-wrap gap-1">

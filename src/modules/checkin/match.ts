@@ -1,19 +1,29 @@
 /**
  * Door-side guest matching.
  *
- * The person at the door types what they heard, not what is on the list, so
- * matching is typo-tolerant and always offers the near misses rather than
- * failing flat.
+ * The person at the door types what they heard, and the list often says
+ * something else. So matching is typo-tolerant, and a query with no exact hit
+ * still offers the near misses.
  */
 import type { Guest } from '@/data/types';
 
-/** Damerau-Levenshtein distance, bounded for speed on a long list. */
+/**
+ * Damerau-Levenshtein distance (optimal string alignment), bounded for speed on
+ * a long list.
+ *
+ * The transposition term is what makes this Damerau. Plain Levenshtein has no
+ * such term, and it is the whole point at a door: two adjacent letters
+ * swapped is the single most common way a name gets typed wrong, and counting
+ * it as two edits pushed "Jnoathan" outside the tolerance for "Jonathan".
+ */
 export function editDistance(a: string, b: string, max = 3): number {
   if (a === b) return 0;
   if (Math.abs(a.length - b.length) > max) return max + 1;
 
   const rows = a.length + 1;
   const cols = b.length + 1;
+  // Three rows: a transposition looks two back on both axes.
+  let beforePrevious = new Array<number>(cols).fill(0);
   let previous = new Array<number>(cols);
   let current = new Array<number>(cols);
   for (let j = 0; j < cols; j++) previous[j] = j;
@@ -23,11 +33,18 @@ export function editDistance(a: string, b: string, max = 3): number {
     let best = current[0];
     for (let j = 1; j < cols; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost);
-      best = Math.min(best, current[j]);
+      let value = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        value = Math.min(value, beforePrevious[j - 2] + 1);
+      }
+      current[j] = value;
+      best = Math.min(best, value);
     }
     if (best > max) return max + 1;
-    [previous, current] = [current, previous];
+    const spare = beforePrevious;
+    beforePrevious = previous;
+    previous = current;
+    current = spare;
   }
   return previous[cols - 1];
 }
@@ -78,7 +95,7 @@ export function matchGuests(guests: Guest[], query: string, limit = 8): Match[] 
       continue;
     }
     // Compare against each part of the name as well as the whole: someone
-    // typing "valburg" is aiming at a surname, not the full string.
+    // typing "valburg" is aiming at a surname on its own.
     const tolerance = needle.length > 6 ? 3 : 2;
     const candidates = [name, ...name.split(' '), handle.replace('@', '')].filter(Boolean);
     let best = tolerance + 1;
@@ -97,7 +114,10 @@ export function matchGuests(guests: Guest[], query: string, limit = 8): Match[] 
 /** A scanned badge resolves by token; anything else falls back to search. */
 export function matchByToken(guests: Guest[], scanned: string): Guest | undefined {
   const token = scanned.trim().toUpperCase();
+  if (!token) return undefined;
+  // An imported guest can arrive without a badge token; scanning must not throw.
+  const normalizeToken = (value: string | undefined) => (value ?? '').trim().toUpperCase();
   return guests.find(
-    (guest) => guest.qrToken.trim().toUpperCase() === token || guest.id.trim().toUpperCase() === token,
+    (guest) => normalizeToken(guest.qrToken) === token || normalizeToken(guest.id) === token,
   );
 }

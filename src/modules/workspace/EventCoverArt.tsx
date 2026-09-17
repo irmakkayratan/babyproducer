@@ -5,9 +5,13 @@ import { cn } from '@/lib/utils';
 import type { Event } from '@/data/types';
 
 /**
- * Cover art is square by contract (Luma's 1:1, ≥800×800). Until an image is
- * uploaded, a deterministic gradient stands in — generated from the event name
- * so the same event always looks the same, with no network request.
+ * Cover art is square by contract (1:1, at least 800x800). Until someone
+ * uploads an image, a placeholder stands in. It is built from a hash of the
+ * event name, so the same event always looks the same and nothing is fetched.
+ *
+ * The placeholder is greyscale like everything else. What varies between events
+ * is the angle of the wash and how bright it is, which is enough to tell two
+ * cards apart in a list without introducing a colour.
  */
 export function EventCoverArt({ event, className }: { event: Event; className?: string }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -31,9 +35,10 @@ export function EventCoverArt({ event, className }: { event: Event; className?: 
   }, [event.coverAssetId]);
 
   const seed = hashSeed(event.name);
-  const hue = seed % 360;
-  const accentHue = /hsl\(\s*([\d.]+)/.exec(event.theme?.accent ?? '')?.[1];
-  const base = accentHue ? Number(accentHue) : hue;
+  const angle = seed % 360;
+  // 26% to 54%: bright enough to read as a deliberate surface, dark enough to
+  // keep the event name legible in white on top of it.
+  const lift = 26 + (seed % 29);
 
   return (
     <div
@@ -43,16 +48,16 @@ export function EventCoverArt({ event, className }: { event: Event; className?: 
           ? { backgroundImage: `url(${url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
           : {
               background: `
-                radial-gradient(130% 100% at 18% 12%, hsl(${base} 62% 52% / 0.85), transparent 62%),
-                radial-gradient(90% 75% at 88% 85%, hsl(${(base + 18) % 360} 45% 32% / 0.8), transparent 60%),
-                linear-gradient(165deg, hsl(${base} 22% 11%), hsl(${(base + 12) % 360} 28% 6%))`,
+                radial-gradient(130% 100% at 18% 12%, hsl(0 0% ${lift}% / 0.9), transparent 62%),
+                radial-gradient(90% 75% at 88% 85%, hsl(0 0% ${Math.round(lift * 0.5)}% / 0.85), transparent 60%),
+                linear-gradient(${angle}deg, hsl(0 0% 11%), hsl(0 0% 4%))`,
             }
       }
       role="img"
       aria-label={`Cover art for ${event.name}`}
     >
       {!url && (
-        <span className="absolute inset-x-0 bottom-0 p-4 font-display text-lg leading-tight text-white/85 drop-shadow-sm">
+        <span className="absolute inset-x-0 bottom-0 p-4 font-display text-lg leading-tight text-foreground/90 drop-shadow-sm">
           {event.name}
         </span>
       )}

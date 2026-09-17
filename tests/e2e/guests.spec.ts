@@ -56,7 +56,7 @@ test.describe('guest & talent CRM', () => {
     // The other desk sees it without a reload…
     await expect(second.getByTestId('guest-row').first().getByText('In')).toBeVisible({ timeout: 5_000 });
 
-    // …and a second scan there is refused rather than double-counted.
+    // ...and a second scan there is refused, so nobody is counted twice.
     await second.getByLabel('Search guests').fill(targetName);
     await second.getByTestId('guest-row').first().click();
     const sheet = second.getByRole('dialog');

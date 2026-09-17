@@ -3,7 +3,7 @@
  *
  * A blank workspace must not assume an industry. Anything specific to fashion,
  * beauty, broadcast or conferences lives in `templates.ts` or `seed/`, never
- * here — enforced by tests/unit/neutral-defaults.test.ts.
+ * here. Enforced by tests/unit/neutral-defaults.test.ts.
  */
 import type {
   AdvanceChecklistEntry,
@@ -25,11 +25,11 @@ const v = (id: string, label: string, order: number, extra: Partial<Vocab> = {})
 
 export function defaultBrand(): BrandTokens {
   return {
-    appName: 'Atelier',
-    accent: 'hsl(258 85% 68%)',
+    appName: 'BabyProducer',
+    accent: 'hsl(0 0% 100%)',
     radius: 0.75,
     defaultScheme: 'dark',
-    displayFont: 'serif',
+    displayFont: 'sans',
   };
 }
 
@@ -107,7 +107,7 @@ export function defaultSchema(): SchemaConfig {
 /**
  * The advance an event starts with.
  *
- * Generic on purpose — these are the questions any production has to answer
+ * Generic on purpose. These are the questions any production has to answer
  * before it travels. Anything discipline-specific (backline, camera packages,
  * rehearsal blocks) belongs in a template.
  */
@@ -164,7 +164,7 @@ export function defaultModules(): ModuleKey[] {
 /**
  * Both metric presets ship as ordinary, editable records. The research is
  * pointed about EMV's weakness being opaque multipliers, so every weight here
- * is visible and changeable in Studio — and either preset can be deleted.
+ * is visible and changeable in Studio, and either preset can be deleted.
  */
 export function defaultMetrics(): MetricConfig[] {
   return [
@@ -197,7 +197,7 @@ export function defaultMetrics(): MetricConfig[] {
       id: 'emv',
       label: 'Earned Media Value',
       description:
-        'Volume-centric benchmark: what comparable paid attention would have cost. Directional only — it treats every impression as equal.',
+        'Volume-centric benchmark: what comparable paid attention would have cost. Treat it as directional, because it counts every impression the same.',
       builtinPreset: 'emv',
       formula: '(impressions / 1000) * platformCpm * engagementMultiplier',
       variables: [

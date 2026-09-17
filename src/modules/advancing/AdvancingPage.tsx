@@ -30,9 +30,9 @@ const FILTERS: Array<{ id: Filter; label: string }> = [
 /**
  * Advancing: the pre-production tracker.
  *
- * The page answers one question before anything else — what is still missing —
- * and only then shows the full checklist. That ordering is the point: an
- * advance lives or dies on the three lines nobody has answered yet, and they
+ * The page answers one question before anything else: what is still missing.
+ * Only then does it show the full checklist. That ordering is the point. An
+ * advance lives or dies on the three lines nobody has answered yet, and those
  * are the hardest thing to see in a mail thread.
  */
 export function AdvancingPage() {
@@ -103,8 +103,8 @@ export function AdvancingPage() {
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Advancing</p>
           <h1 className="mt-1 font-display text-3xl tracking-tight">{event.name}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Every operational, technical and hospitality detail agreed before the day. Nothing here is a surprise on
-            site — that is the whole job.
+            Every operational, technical and hospitality detail, agreed before the day. Getting all of it settled
+            in advance is the job. Anything still open here is something that goes wrong on site.
           </p>
         </div>
         <div className="flex gap-2">
@@ -232,7 +232,7 @@ export function AdvancingPage() {
 
           {groups.length === 0 ? (
             <Card className="p-10 text-center text-sm text-muted-foreground">
-              Nothing matches this filter — which, on the “overdue” filter, is the answer you want.
+              Nothing matches this filter. On the overdue filter, that is the answer you want.
             </Card>
           ) : (
             groups.map((group) => (

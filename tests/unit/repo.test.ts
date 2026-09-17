@@ -13,7 +13,7 @@ describe('applyTemplateToSchema', () => {
   it('replaces untouched defaults so a fresh workspace speaks the template language', () => {
     const schema = applyTemplateToSchema(defaultSchema(), getTemplate('runway-show'));
     expect(schema.voices.map((v) => v.id)).toContain('celebrity');
-    // The neutral placeholders are gone rather than sitting alongside.
+    // The neutral placeholders are gone, with nothing left alongside.
     expect(schema.voices.map((v) => v.id)).not.toContain('guest');
   });
 

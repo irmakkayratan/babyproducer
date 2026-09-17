@@ -8,7 +8,7 @@ import { DriftPill } from './DriftPill';
 import { formatDuration } from '@/lib/time';
 
 /**
- * The producer's position bar. Space advances, ArrowLeft steps back — the show
+ * The producer's position bar. Space advances, ArrowLeft steps back, the show
  * caller should never need the mouse, and the keys work anywhere on the page
  * that is not a text field.
  */

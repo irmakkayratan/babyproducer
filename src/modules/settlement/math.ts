@@ -23,9 +23,20 @@ import type {
   TicketTier,
 } from '@/data/types';
 
-/** Money is rounded to the cent at every reported figure, never before. */
+/**
+ * Money is rounded to the cent at every reported figure, never before.
+ *
+ * `Math.round` breaks ties towards +Infinity, which would round 1.005 up and
+ * -1.005 down to -1.00, a statement where a credit and the debit reversing it
+ * do not cancel. Ties here always go away from zero, and the scaled value is
+ * nudged past the binary-representation error that puts 1.005 * 100 at
+ * 100.49999999999999.
+ */
 export function round2(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+  if (!Number.isFinite(value)) return 0;
+  const scaled = value * 100;
+  const nudged = scaled + Math.sign(scaled) * Number.EPSILON * Math.abs(scaled);
+  return Math.sign(scaled) * Math.round(Math.abs(nudged)) / 100;
 }
 
 const num = (value: number | undefined): number => (Number.isFinite(value) ? (value as number) : 0);
@@ -33,8 +44,8 @@ const num = (value: number | undefined): number => (Number.isFinite(value) ? (va
 export interface LineContext {
   /**
    * Gross box office. Tax, ticketing and rights are levied on what the tickets
-   * took, not on what the bar did, so percentages read this rather than total
-   * receipts — the same thing "% of gross" means on a printed settlement.
+   * took. The bar is a separate matter, so percentages read box office and not
+   * total receipts. That is what "% of gross" means on a printed settlement.
    */
   boxOffice: number;
   /** What the lines above this one have left: the running balance. */
@@ -159,7 +170,7 @@ export function computeSettlement(sheet: SettlementSheet): SettlementResult {
   const gross = round2(ticketGross + otherRevenueTotal);
 
   // Deductions cascade off the box office: tax comes off the top, and rights
-  // are calculated on what the tax left — which is how the statement a venue
+  // are calculated on what the tax left, which is how the statement a venue
   // hands over is laid out.
   let running = ticketGross;
   const deductions: ResolvedLine[] = sheet.deductions.map((line) => {
@@ -238,7 +249,7 @@ function settleParty(
   if (deal.kind === 'percentage') {
     earned = percentageValue;
   } else if (deal.kind === 'versus') {
-    // "Guarantee versus a percentage" pays whichever is greater — never both.
+    // "Guarantee versus a percentage" pays whichever is greater, never both.
     wonBy = percentageValue > guarantee ? 'percentage' : 'guarantee';
     earned = Math.max(guarantee, percentageValue);
   } else if (deal.kind === 'plus-bonus') {
@@ -287,9 +298,9 @@ export function describeDeal(
     case 'flat':
       return `Flat fee of ${money(applied.guarantee)}.`;
     case 'percentage':
-      return `${share} — ${money(applied.percentageValue)}.`;
+      return `${share}, ${money(applied.percentageValue)}.`;
     case 'versus':
-      return `${money(applied.guarantee)} versus ${share} (${money(applied.percentageValue)}) — the ${
+      return `${money(applied.guarantee)} versus ${share} (${money(applied.percentageValue)}). The ${
         applied.wonBy === 'percentage' ? 'percentage' : 'guarantee'
       } applies.`;
     case 'plus-bonus':
@@ -303,13 +314,38 @@ function trimPercent(value: number): string {
   return String(Math.round(num(value) * 100) / 100);
 }
 
+/**
+ * A currency code that `Intl` rejects throws at construction, and every figure
+ * on a statement runs through this function, so one bad code in an imported
+ * workspace would take the whole settlement page down. Falling back to a
+ * slightly wrong symbol is the better failure. Codes are validated once and
+ * remembered.
+ */
+const currencyCache = new Map<string, string>();
+
+function safeCurrency(currency: string): string {
+  const code = (currency || 'EUR').trim().toUpperCase();
+  const cached = currencyCache.get(code);
+  if (cached) return cached;
+  let resolved = 'EUR';
+  try {
+    new Intl.NumberFormat(undefined, { style: 'currency', currency: code });
+    resolved = code;
+  } catch {
+    resolved = 'EUR';
+  }
+  currencyCache.set(code, resolved);
+  return resolved;
+}
+
 export function formatMoney(value: number, currency: string, decimals = 2): string {
+  const amount = Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat(undefined, {
     style: 'currency',
-    currency: currency || 'EUR',
+    currency: safeCurrency(currency),
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(value);
+  }).format(amount);
 }
 
 /**
@@ -364,13 +400,13 @@ export function toSettlementRows(
   push('Total', 'Net after costs', result.net);
 
   for (const party of result.parties) {
-    push('Payout', `${party.party.name} — fee`, party.earned, party.terms);
+    push('Payout', `${party.party.name} · fee`, party.earned, party.terms);
     for (const adjustment of party.adjustments) {
-      push('Payout', `${party.party.name} — ${adjustment.line.label}`, adjustment.amount);
+      push('Payout', `${party.party.name} · ${adjustment.line.label}`, adjustment.amount);
     }
-    if (party.withholding) push('Payout', `${party.party.name} — withholding`, -party.withholding);
-    if (party.deposit) push('Payout', `${party.party.name} — deposit paid`, -party.deposit);
-    push('Payout', `${party.party.name} — balance due`, party.balanceDue);
+    if (party.withholding) push('Payout', `${party.party.name} · withholding`, -party.withholding);
+    if (party.deposit) push('Payout', `${party.party.name} · deposit paid`, -party.deposit);
+    push('Payout', `${party.party.name} · balance due`, party.balanceDue);
   }
 
   push('Total', 'House result', result.houseResult);

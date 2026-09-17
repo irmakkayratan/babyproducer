@@ -91,34 +91,88 @@ export const GUEST_IMPORT_TARGETS = [
 
 export type ImportTargetId = (typeof GUEST_IMPORT_TARGETS)[number]['id'] | 'ignore' | `field:${string}`;
 
+const normalizeHeader = (header: string) =>
+  header.toLowerCase().replace(/[^a-z0-9+ ]/g, ' ').replace(/\s+/g, ' ').trim();
+
+/**
+ * An alias matches a header when it is the whole header or one of its words,
+ * never an arbitrary substring. Matching on substrings read "Hotel" as a phone
+ * column (it contains "tel") and "Designer" as a social handle (it contains
+ * "ig"), which is worse than leaving the column unmapped: the producer sees a
+ * confident guess and a populated preview, and the error only surfaces at the
+ * door.
+ */
+function aliasMatches(normalized: string, alias: string): boolean {
+  if (normalized === alias) return true;
+  const words = normalized.split(' ');
+  const aliasWords = alias.split(' ');
+  if (aliasWords.length === 1) return words.includes(alias);
+  // A multi-word alias matches a run of whole words ("plus ones" in "guest plus ones").
+  for (let i = 0; i + aliasWords.length <= words.length; i++) {
+    if (aliasWords.every((word, j) => words[i + j] === word)) return true;
+  }
+  return false;
+}
+
 /** Fuzzy header matching, so a well-formed file needs no manual mapping. */
 export function guessMapping(headers: string[]): Record<string, ImportTargetId> {
   const mapping: Record<string, ImportTargetId> = {};
   const used = new Set<string>();
+  const normalized = headers.map(normalizeHeader);
 
-  for (const header of headers) {
-    const normalized = header.toLowerCase().replace(/[^a-z0-9+ ]/g, ' ').replace(/\s+/g, ' ').trim();
-    const match = GUEST_IMPORT_TARGETS.find(
-      (target) =>
-        !used.has(target.id) && target.aliases.some((alias) => normalized === alias || normalized.includes(alias)),
-    );
-    if (match) {
-      mapping[header] = match.id;
-      used.add(match.id);
-    } else {
-      mapping[header] = 'ignore';
-    }
+  // Exact header/alias hits are claimed first, so "Email" takes the email slot
+  // before "Company Email" can be considered for it.
+  for (const pass of ['exact', 'word'] as const) {
+    headers.forEach((header, index) => {
+      if (mapping[header]) return;
+      const text = normalized[index];
+      if (!text) return;
+      const match = GUEST_IMPORT_TARGETS.find(
+        (target) =>
+          !used.has(target.id) &&
+          target.aliases.some((alias) => (pass === 'exact' ? text === alias : aliasMatches(text, alias))),
+      );
+      if (match) {
+        mapping[header] = match.id;
+        used.add(match.id);
+      }
+    });
   }
+
+  for (const header of headers) if (!mapping[header]) mapping[header] = 'ignore';
   return mapping;
+}
+
+/**
+ * A guest list is exported to be opened in Excel or Sheets, and both treat a
+ * cell beginning `=`, `+`, `-`, `@` or a control character as a formula. A
+ * guest can be called whatever the PR team typed, so a name is untrusted input
+ * that ends up in a spreadsheet on someone else's machine: prefix it so it is
+ * read as text.
+ *
+ * Numbers are left alone. A settlement exports its deductions as negatives, and
+ * an accounts department needs `-1234.5` to arrive as a number, not `'-1234.5`.
+ */
+function neutralizeFormula(text: string, value: unknown): string {
+  if (typeof value === 'number' || typeof value === 'boolean') return text;
+  if (!/^[=+\-@\t\r]/.test(text)) return text;
+  // A plain number typed as a string is still a number to a reader.
+  if (/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(text)) return text;
+  return `'${text}`;
 }
 
 export function toCsv(rows: Array<Record<string, unknown>>, headers?: string[]): string {
   const columns = headers ?? [...new Set(rows.flatMap((row) => Object.keys(row)))];
   const escape = (value: unknown) => {
-    const text = value == null ? '' : String(value);
-    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    const text = neutralizeFormula(value == null ? '' : String(value), value);
+    // `\r` has to force quoting too: unquoted, a lone carriage return splits the
+    // row in a strict reader.
+    return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   };
-  return [columns.join(','), ...rows.map((row) => columns.map((column) => escape(row[column])).join(','))].join('\n');
+  return [
+    columns.map(escape).join(','),
+    ...rows.map((row) => columns.map((column) => escape(row[column])).join(',')),
+  ].join('\n');
 }
 
 export function downloadFile(filename: string, contents: string, mime = 'text/csv;charset=utf-8'): void {
@@ -128,5 +182,7 @@ export function downloadFile(filename: string, contents: string, mime = 'text/cs
   anchor.href = url;
   anchor.download = filename;
   anchor.click();
-  URL.revokeObjectURL(url);
+  // Revoking in the same tick can cancel the download before the browser has
+  // read the blob; one turn of the event loop is enough and still bounded.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }

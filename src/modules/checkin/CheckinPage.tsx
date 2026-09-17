@@ -174,11 +174,17 @@ export function CheckinPage() {
         {feedback && (
           <div
             data-testid="checkin-feedback"
+            /*
+              Three outcomes a door needs to tell apart in half a second, with
+              no colour to lean on. They differ in fill and in edge instead:
+              admitted is a solid white block, already in is outlined and quiet,
+              and not found is a heavy dashed edge that reads as unfinished.
+            */
             className={cn(
               'rounded-lg border p-4 text-lg',
-              feedback.kind === 'ok' && 'border-success/40 bg-success/10 text-success',
-              feedback.kind === 'duplicate' && 'border-warning/40 bg-warning/10 text-warning',
-              feedback.kind === 'unknown' && 'border-destructive/40 bg-destructive/10 text-destructive',
+              feedback.kind === 'ok' && 'border-foreground bg-foreground text-background',
+              feedback.kind === 'duplicate' && 'border-border bg-muted text-foreground',
+              feedback.kind === 'unknown' && 'border-2 border-dashed border-foreground bg-transparent text-foreground',
             )}
             aria-live="assertive"
           >

@@ -2,7 +2,7 @@
  * Filtering, searching and sorting for the guest table.
  *
  * Kept as pure functions over plain arrays so they can be unit-tested and so
- * the table can memoize them — a filter pass over 5,000 guests has to stay
+ * the table can memoize them, a filter pass over 5,000 guests has to stay
  * well inside a frame.
  */
 import type { FieldValue, Guest, MetricConfig, SchemaConfig, ViewFilter } from '@/data/types';
@@ -125,7 +125,7 @@ export function groupGuests(guests: Guest[], field: string | null, query: GuestQ
   if (!field) return [{ key: '', guests }];
   const groups = new Map<string, Guest[]>();
   for (const guest of guests) {
-    const key = String(guestValue(guest, field, query) ?? '—');
+    const key = String(guestValue(guest, field, query) ?? '-');
     const bucket = groups.get(key);
     if (bucket) bucket.push(guest);
     else groups.set(key, [guest]);

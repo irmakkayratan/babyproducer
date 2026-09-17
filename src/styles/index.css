@@ -1,115 +1,100 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* Dark is the default: these surfaces run in dark venues.
-   [data-theme="light"] opts into the planning palette. */
+/*
+  One palette: black behind, white in front.
+
+  There are no hues anywhere in this file. Everything that used to carry meaning
+  through colour now carries it through lightness, weight or a border, so the
+  whole product reads the same way on a laptop in an office and on a dimmed
+  screen at a production desk.
+
+  Greys are white at fixed opacities over the black, which keeps every surface
+  and every rule on one scale and makes contrast easy to reason about.
+*/
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 :root,
-[data-theme='dark'] {
-  --background: hsl(240 8% 5%);
-  --foreground: hsl(30 12% 96%);
-  --card: hsl(240 7% 7.5%);
-  --card-foreground: hsl(30 12% 96%);
-  --popover: hsl(240 7% 9%);
-  --popover-foreground: hsl(30 12% 96%);
-  --muted: hsl(240 6% 13%);
-  --muted-foreground: hsl(240 5% 60%);
-  --accent: hsl(240 6% 15%);
-  --accent-foreground: hsl(30 12% 96%);
-  --border: hsl(240 6% 16%);
-  --input: hsl(240 6% 19%);
+[data-theme='dark'],
+[data-theme='light'] {
+  --background: hsl(0 0% 0%);
+  --foreground: hsl(0 0% 100%);
 
-  --primary: hsl(258 85% 68%);
-  --primary-foreground: hsl(240 10% 6%);
-  --secondary: hsl(240 6% 14%);
-  --secondary-foreground: hsl(30 12% 96%);
+  /* Raised surfaces: white lifted off the black by a few percent. */
+  --card: hsl(0 0% 6%);
+  --card-foreground: hsl(0 0% 100%);
+  --popover: hsl(0 0% 9%);
+  --popover-foreground: hsl(0 0% 100%);
+  --muted: hsl(0 0% 12%);
+  --accent: hsl(0 0% 16%);
+  --accent-foreground: hsl(0 0% 100%);
+  --secondary: hsl(0 0% 14%);
+  --secondary-foreground: hsl(0 0% 100%);
 
-  --destructive: hsl(2 75% 60%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --success: hsl(152 55% 48%);
-  --warning: hsl(38 92% 60%);
-  --ring: hsl(258 85% 68%);
+  /* 68% clears 4.5:1 on black with room to spare, so secondary text stays
+     readable without becoming a second colour. */
+  --muted-foreground: hsl(0 0% 68%);
 
-  --chart-1: hsl(258 85% 68%);
-  --chart-2: hsl(190 85% 55%);
-  --chart-3: hsl(38 92% 60%);
-  --chart-4: hsl(152 55% 48%);
-  --chart-5: hsl(325 75% 65%);
-  --chart-6: hsl(220 70% 62%);
-  --chart-7: hsl(12 80% 62%);
-  --chart-8: hsl(60 60% 60%);
+  --border: hsl(0 0% 22%);
+  --input: hsl(0 0% 30%);
 
-  /* Guest tiers resolve to these slots at runtime from SchemaConfig,
-     so a user-created tier is a first-class citizen of the palette. */
-  --tier-1: hsl(45 85% 62%);
-  --tier-2: hsl(258 85% 68%);
-  --tier-3: hsl(190 85% 55%);
-  --tier-4: hsl(152 55% 48%);
-  --tier-5: hsl(325 75% 65%);
-  --tier-6: hsl(240 5% 55%);
+  /* White is the only emphasis the product has. */
+  --primary: hsl(0 0% 100%);
+  --primary-foreground: hsl(0 0% 0%);
+  --ring: hsl(0 0% 100%);
 
-  --drift-under: hsl(152 55% 48%);
-  --drift-over: hsl(2 75% 60%);
+  /* States are still distinct, by lightness and by the words next to them. */
+  --destructive: hsl(0 0% 100%);
+  --destructive-foreground: hsl(0 0% 0%);
+  --success: hsl(0 0% 100%);
+  --warning: hsl(0 0% 78%);
+
+  /*
+    Chart series and guest tiers need to be told apart, and a single white
+    would flatten them into one shape. They step down the same grey scale, far
+    enough apart to separate on a projector. Charts pair these with dash
+    patterns so the ordering survives for anyone who cannot see the steps.
+  */
+  --chart-1: hsl(0 0% 100%);
+  --chart-2: hsl(0 0% 82%);
+  --chart-3: hsl(0 0% 66%);
+  --chart-4: hsl(0 0% 52%);
+  --chart-5: hsl(0 0% 88%);
+  --chart-6: hsl(0 0% 74%);
+  --chart-7: hsl(0 0% 60%);
+  --chart-8: hsl(0 0% 44%);
+
+  --tier-1: hsl(0 0% 100%);
+  --tier-2: hsl(0 0% 84%);
+  --tier-3: hsl(0 0% 70%);
+  --tier-4: hsl(0 0% 56%);
+  --tier-5: hsl(0 0% 42%);
+  --tier-6: hsl(0 0% 30%);
+
+  /*
+    The ink that reads on each tier, when a tier is used as a fill and carries
+    a label (a seat in the room, for one). These are worked out from WCAG
+    relative luminance rather than guessed: black clears 4.5:1 down to tier-4
+    (6.5:1) and fails at tier-5 (4.0:1), where white takes over at 5.3:1.
+  */
+  --tier-1-foreground: hsl(0 0% 0%);
+  --tier-2-foreground: hsl(0 0% 0%);
+  --tier-3-foreground: hsl(0 0% 0%);
+  --tier-4-foreground: hsl(0 0% 0%);
+  --tier-5-foreground: hsl(0 0% 100%);
+  --tier-6-foreground: hsl(0 0% 100%);
+
+  /* Running early reads as full white, running late as a dimmer one. The
+     sign and the figure beside them say which is which. */
+  --drift-under: hsl(0 0% 100%);
+  --drift-over: hsl(0 0% 70%);
 
   --radius: 0.75rem;
-  --shell-gradient: hsl(258 85% 68%);
-  /* How much accent the landing wash mixes in. Lighter in light mode, where
-     every percent of tint comes straight off the text contrast under it. */
-  --wash: 40%;
+  --shell-gradient: hsl(0 0% 100%);
+  /* How much white the landing wash lifts off the black. */
+  --wash: 8%;
 
   color-scheme: dark;
-}
-
-[data-theme='light'] {
-  --background: hsl(40 22% 99%);
-  --foreground: hsl(240 10% 8%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(240 10% 8%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(240 10% 8%);
-  --muted: hsl(240 8% 96%);
-  /* 39%, not 44%: muted text also has to clear 4.5:1 where a translucent
-     accent wash sits over it, and 44% measured 4.55 — a rounding difference
-     away from failing. */
-  --muted-foreground: hsl(240 4% 39%);
-  --accent: hsl(240 8% 95%);
-  --accent-foreground: hsl(240 10% 8%);
-  --border: hsl(240 8% 90%);
-  --input: hsl(240 8% 87%);
-
-  --primary: hsl(258 78% 58%);
-  --primary-foreground: hsl(0 0% 100%);
-  --wash: 24%;
-  --secondary: hsl(240 8% 95%);
-  --secondary-foreground: hsl(240 10% 8%);
-
-  --destructive: hsl(2 72% 52%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --success: hsl(152 60% 36%);
-  --warning: hsl(32 90% 45%);
-  --ring: hsl(258 78% 58%);
-
-  --chart-1: hsl(258 78% 58%);
-  --chart-2: hsl(190 80% 40%);
-  --chart-3: hsl(32 90% 48%);
-  --chart-4: hsl(152 60% 36%);
-  --chart-5: hsl(325 70% 52%);
-  --chart-6: hsl(220 70% 52%);
-  --chart-7: hsl(12 75% 52%);
-  --chart-8: hsl(55 70% 42%);
-
-  --tier-1: hsl(38 85% 45%);
-  --tier-2: hsl(258 78% 58%);
-  --tier-3: hsl(190 80% 40%);
-  --tier-4: hsl(152 60% 36%);
-  --tier-5: hsl(325 70% 52%);
-  --tier-6: hsl(240 5% 45%);
-
-  --drift-under: hsl(152 60% 36%);
-  --drift-over: hsl(2 72% 52%);
-
-  color-scheme: light;
 }
 
 @theme inline {
@@ -151,6 +136,13 @@
   --color-tier-5: var(--tier-5);
   --color-tier-6: var(--tier-6);
 
+  --color-tier-1-foreground: var(--tier-1-foreground);
+  --color-tier-2-foreground: var(--tier-2-foreground);
+  --color-tier-3-foreground: var(--tier-3-foreground);
+  --color-tier-4-foreground: var(--tier-4-foreground);
+  --color-tier-5-foreground: var(--tier-5-foreground);
+  --color-tier-6-foreground: var(--tier-6-foreground);
+
   --color-drift-under: var(--drift-under);
   --color-drift-over: var(--drift-over);
 
@@ -158,9 +150,18 @@
   --radius-md: calc(var(--radius) - 0.25rem);
   --radius-sm: calc(var(--radius) - 0.4rem);
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, ui-serif, serif;
-  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  /*
+    Helvetica, and nothing else.
+
+    The three variables stay because the rest of the app and Tailwind both
+    reference them, but they all resolve to the same stack: headings, body,
+    timers and printed sheets are one typeface. The fallbacks are the machines
+    that ship Helvetica under another name, ending at the generic sans so no
+    device drops to a serif.
+  */
+  --font-sans: Helvetica, 'Helvetica Neue', 'Nimbus Sans', Arial, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: var(--font-sans);
 }
 
 @layer base {
@@ -176,8 +177,7 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-feature-settings: 'cv02', 'cv03', 'cv04';
-    letter-spacing: -0.011em;
+    letter-spacing: -0.006em;
     min-height: 100dvh;
     overscroll-behavior-y: none;
   }
@@ -201,8 +201,11 @@
 }
 
 @layer utilities {
+  /* Kept so existing markup still works. Headings are the same typeface as
+     everything else now, set a little tighter. */
   .font-display {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
   }
 
   .scrollbar-thin {
@@ -211,7 +214,7 @@
   }
 }
 
-/* Every animation explains a state change — and none of them run for
+/* Every animation explains a state change, and none of them run for
    people who asked the platform to stop moving things. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -224,7 +227,7 @@
   }
 }
 
-@keyframes atelier-crossfade {
+@keyframes babyproducer-crossfade {
   0% {
     opacity: 0;
   }

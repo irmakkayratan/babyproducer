@@ -10,8 +10,9 @@ import { formatMoney, type TierResult } from './math';
 /**
  * The box office, priced band by band.
  *
- * Comps get their own column rather than being folded into sold: they are
- * bodies in the room for the per-head costs and nothing at all for the gross,
+ * Comps get their own column. Folding them into sold would be wrong twice
+ * over: they are bodies in the room for the per-head costs, and nothing at
+ * all for the gross,
  * and conflating the two is the classic way a settlement ends up wrong.
  */
 export function ScalingTable({
@@ -147,7 +148,7 @@ export function ScalingTable({
                   />
                 </td>
                 <td className="px-3 py-1 text-right font-mono text-xs tabular text-muted-foreground" data-numeric>
-                  {row.tier.allotment > 0 ? `${Math.round(row.sellThrough * 100)}%` : '—'}
+                  {row.tier.allotment > 0 ? `${Math.round(row.sellThrough * 100)}%` : '-'}
                 </td>
                 <td className="px-3 py-1 text-right font-mono tabular" data-numeric>
                   {formatMoney(row.gross, currency, 0)}
@@ -180,7 +181,7 @@ export function ScalingTable({
                 {formatNumber(totals.comps)}
               </td>
               <td className="px-3 py-2 text-right font-mono tabular" data-numeric>
-                {totals.allotment > 0 ? `${Math.round((totals.sold / totals.allotment) * 100)}%` : '—'}
+                {totals.allotment > 0 ? `${Math.round((totals.sold / totals.allotment) * 100)}%` : '-'}
               </td>
               <td className="px-3 py-2 text-right font-mono tabular" data-numeric>
                 {formatMoney(totals.gross, currency, 0)}

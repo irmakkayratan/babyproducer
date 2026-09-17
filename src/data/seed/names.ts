@@ -2,7 +2,8 @@
  * Fictional name generation.
  *
  * Given names are ordinary and international; surnames are assembled from
- * syllables so full names are invented rather than borrowed from real people.
+ * syllables, so every full name is invented and none is borrowed from a real
+ * person.
  * Everything is driven by the scenario's seeded RNG, so the demo is identical
  * on every machine.
  */
@@ -26,7 +27,7 @@ const SURNAME_SUFFIX = [
 ];
 
 const BRAND_FIRST = [
-  'Maison', 'Atelier', 'Studio', 'House of', 'Casa', 'Objet', 'Forme', 'Salon', 'Bureau', 'Cabinet',
+  'Maison', 'Studio', 'House of', 'Casa', 'Objet', 'Forme', 'Salon', 'Bureau', 'Cabinet',
 ];
 
 const BRAND_SECOND = [

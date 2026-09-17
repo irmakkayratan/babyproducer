@@ -14,12 +14,19 @@ import type { Event, ModuleKey } from '@/data/types';
 import { useStore } from '@/store';
 import { cn } from '@/lib/utils';
 
+/*
+  Ordered the way a show actually gets made.
+
+  Advancing comes first because it is where the job starts and where most of
+  the work is. Everything under it either feeds off the advance or happens on
+  the day, so the list reads forward in time from the top.
+*/
 const MODULE_NAV: Array<{ key: ModuleKey | 'overview'; to: string; label: string; icon: typeof Users }> = [
+  { key: 'advancing', to: 'advancing', label: 'Advancing', icon: ClipboardCheck },
   { key: 'overview', to: 'overview', label: 'Overview', icon: LayoutDashboard },
   { key: 'guests', to: 'guests', label: 'Guests', icon: Users },
   { key: 'seating', to: 'seating', label: 'Seating', icon: Armchair },
   { key: 'rundown', to: 'rundown', label: 'Run of Show', icon: ListOrdered },
-  { key: 'advancing', to: 'advancing', label: 'Advancing', icon: ClipboardCheck },
   { key: 'checkin', to: 'checkin', label: 'Check-in', icon: ScanLine },
   { key: 'command', to: 'command', label: 'Command', icon: BarChart3 },
   { key: 'metrics', to: 'recap', label: 'Recap', icon: FileText },
@@ -28,7 +35,7 @@ const MODULE_NAV: Array<{ key: ModuleKey | 'overview'; to: string; label: string
 
 /** Nav is derived from enabled modules: disabling one removes it everywhere. */
 export function EventNav({ event, collapsed }: { event: Event; collapsed: boolean }) {
-  // Subscribe to the data, not to the selector function: an action's identity
+  // Subscribe to the data itself. An action's identity
   // never changes, so selecting it would leave this nav stale after a change
   // in Studio.
   const enabledModules = useStore(

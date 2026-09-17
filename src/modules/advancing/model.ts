@@ -1,9 +1,9 @@
 /**
  * Advance readiness.
  *
- * The advance's whole job is to answer one question — what is still open, and
- * which of it matters — so that is what this file computes. Everything is
- * derived from the items on the sheet; nothing is stored.
+ * The advance's whole job is to answer one question: what is still open, and
+ * which of it matters. That is what this file computes. Everything is derived
+ * from the items on the sheet, and nothing is stored.
  */
 import type { AdvanceItem, AdvanceParty, AdvanceSheet, AdvanceStatus, Vocab } from '@/data/types';
 
@@ -32,13 +32,13 @@ export function isOverdue(item: AdvanceItem, now: number): boolean {
 
 export interface AdvanceSummary {
   total: number;
-  /** Items that still have to land — `na` is excluded from the denominator. */
+  /** Items that still have to land. `na` is excluded from the denominator. */
   applicable: number;
   confirmed: number;
   requested: number;
   missing: number;
   notNeeded: number;
-  /** 0–1. An advance with nothing on it is complete, not divided by zero. */
+  /** 0–1. An advance with nothing on it counts as complete. */
   readiness: number;
   /** Required and still open, worst deadline first: the actual to-do list. */
   blockers: AdvanceItem[];
@@ -92,8 +92,9 @@ export interface AdvanceSectionGroup {
 
 /**
  * Groups items under the workspace's section vocabulary. Items pointing at a
- * section that has since been renamed away keep their own heading rather than
- * vanishing — losing a line off an advance is not an acceptable failure mode.
+ * section that has since been renamed away keep their own heading, so they
+ * stay on the page. Losing a line off an advance is not an acceptable failure
+ * mode.
  */
 export function groupBySection(
   items: AdvanceItem[],
@@ -122,7 +123,7 @@ export function groupBySection(
 export interface ItineraryEntry {
   item: AdvanceItem;
   at: string;
-  /** `endsAt` where the item covers a span — a hotel stay, a rehearsal. */
+  /** `endsAt` where the item covers a span, a hotel stay, a rehearsal. */
   until?: string;
 }
 

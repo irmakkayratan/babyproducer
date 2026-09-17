@@ -1,12 +1,5 @@
 import { NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
-import {
-  CalendarDays,
-  ChevronsLeft,
-  ChevronsRight,
-  Moon,
-  Settings2,
-  Sun,
-} from 'lucide-react';
+import { CalendarDays, ChevronsLeft, ChevronsRight, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusChip } from '@/components/StatusChip';
 import { ThemeProvider } from './ThemeProvider';
@@ -21,18 +14,15 @@ export function AppShell() {
   const navigate = useNavigate();
   const collapsed = useStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useStore((s) => s.toggleSidebar);
-  const scheme = useStore((s) => s.scheme);
-  const setScheme = useStore((s) => s.setScheme);
   const workspaces = useStore((s) => s.workspaces);
   const events = useStore((s) => s.events);
   const activeEventId = useStore((s) => s.activeEventId);
 
   const workspace = workspaces.find((w) => w.id === workspaceId) ?? workspaces[0];
   const activeEvent = events.find((e) => e.id === activeEventId);
-  const accent = activeEvent?.theme?.accent ?? workspace?.brand.accent;
 
   return (
-    <ThemeProvider accent={accent}>
+    <ThemeProvider>
       <div className="flex min-h-dvh">
         <aside
           className={cn(
@@ -46,11 +36,11 @@ export function AppShell() {
               onClick={() => navigate('/')}
               className="flex min-w-0 items-center gap-2 rounded-md px-1.5 py-1 hover:bg-accent"
             >
-              <span className="grid size-7 shrink-0 place-items-center rounded-md bg-primary/15 font-display text-sm text-primary">
+              <span className="grid size-7 shrink-0 place-items-center rounded-md border border-border bg-foreground font-display text-sm text-background">
                 {(workspace?.brand.appName ?? 'A').slice(0, 1)}
               </span>
               {!collapsed && (
-                <span className="truncate font-display text-sm tracking-tight">{workspace?.name ?? 'Atelier'}</span>
+                <span className="truncate font-display text-sm tracking-tight">{workspace?.name ?? 'BabyProducer'}</span>
               )}
             </button>
           </div>
@@ -106,14 +96,6 @@ export function AppShell() {
             </div>
             <div className="flex items-center gap-2">
               <StatusChip />
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={scheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-                onClick={() => setScheme(scheme === 'light' ? 'dark' : 'light')}
-              >
-                {scheme === 'light' ? <Moon className="size-4" /> : <Sun className="size-4" />}
-              </Button>
             </div>
           </header>
           {workspace?.demo && <DemoBanner workspaceId={workspace.id} workspaceName={workspace.name} />}

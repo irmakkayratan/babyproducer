@@ -21,8 +21,8 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Atelier — Event Production OS',
-        short_name: 'Atelier',
+        name: 'BabyProducer: Event Production OS',
+        short_name: 'BabyProducer',
         description: 'Offline-first event production: guests, seating, run of show, onsite.',
         theme_color: '#0b0b0e',
         background_color: '#0b0b0e',

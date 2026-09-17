@@ -21,7 +21,7 @@ const STOPS: Stop[] = [
   },
   {
     title: 'Seat the politics',
-    body: 'Drag someone into a seat, or select a seat and pick a guest. Rules warn about who should not sit near whom — they never stop you.',
+    body: 'Drag someone into a seat, or select a seat and pick a guest. Rules will warn you about who should not sit near whom, and they never stop you doing it anyway.',
     route: (w, e) => `/w/${w}/events/${e}/seating`,
     action: 'Move someone',
   },
@@ -39,7 +39,7 @@ const STOPS: Stop[] = [
   },
   {
     title: 'Work the door',
-    body: 'Type a name — misspell it if you like. Check someone in and it appears instantly in any other tab, which then refuses the duplicate.',
+    body: 'Type a name, and misspell it if you like. Check someone in and it shows up straight away in any other tab, which will then refuse the duplicate.',
     route: (w, e) => `/w/${w}/events/${e}/checkin`,
     action: 'Check someone in',
   },
@@ -57,7 +57,7 @@ const STOPS: Stop[] = [
   },
   {
     title: 'Now make it yours',
-    body: 'Studio is where the vocabulary, fields, metric weights and modules live. Rename a voice and it changes everywhere — no rebuild.',
+    body: 'Studio is where the vocabulary, fields, metric weights and modules live. Rename a voice and it changes everywhere, with no rebuild.',
     route: (w) => `/w/${w}/studio`,
     action: 'Open Studio',
   },

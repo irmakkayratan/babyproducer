@@ -1,8 +1,8 @@
 /**
  * Guest and arrival persistence.
  *
- * Arrivals are append-only: an undo writes a new record rather than deleting
- * one, and the current state is a reduction over the log. That is what makes
+ * Arrivals are append-only. An undo writes a new record and deletes nothing,
+ * and the current state is a reduction over the log. That is what makes
  * two registration desks scanning at the same moment safe.
  */
 import { db } from './db';
@@ -79,9 +79,10 @@ export interface CheckInResult {
 /**
  * Check a guest in.
  *
- * The duplicate check reads inside the write transaction — not from the
- * in-memory store — so two tabs scanning the same badge at once produce one
- * arrival and one honest warning, rather than two arrivals or a lost one.
+ * The duplicate check reads inside the write transaction and not from the
+ * in-memory store. Two desks scanning the same badge at the same moment then
+ * produce one arrival and one honest warning, instead of two arrivals or a
+ * lost one.
  */
 export async function checkInGuest(
   guestId: string,
@@ -121,7 +122,7 @@ export async function checkInGuest(
   });
 }
 
-/** Undo appends a tombstone rather than deleting history. */
+/** Undo appends a tombstone. History is never deleted. */
 export async function undoCheckIn(guestId: string, eventId: string, previousStatusId?: string): Promise<void> {
   await db.transaction('rw', [db.guests, db.arrivals], async () => {
     const arrivals = await db.arrivals.where('[eventId+guestId]').equals([eventId, guestId]).toArray();

@@ -8,9 +8,9 @@ import { cn } from '@/lib/utils';
 const SWATCHES = ['tier-1', 'tier-2', 'tier-3', 'tier-4', 'tier-5', 'tier-6'];
 
 /**
- * Editor for one categorical axis — statuses, tiers, voices, cue types.
+ * Editor for one categorical axis. Statuses, tiers, voices, cue types.
  *
- * Entries archive rather than delete when they are in use, so renaming a tier
+ * An entry that is in use archives instead of deleting, so renaming a tier
  * never orphans the guests already carrying it.
  */
 export function VocabEditor({
@@ -106,7 +106,7 @@ export function VocabEditor({
                 size="icon-sm"
                 variant="ghost"
                 aria-label={used > 0 ? `Archive ${entry.label}` : `Delete ${entry.label}`}
-                title={used > 0 ? 'In use — archived rather than deleted' : 'Delete'}
+                title={used > 0 ? 'In use, so this archives it instead of deleting it' : 'Delete'}
                 onClick={() =>
                   used > 0
                     ? update(entry.id, { archived: !entry.archived })

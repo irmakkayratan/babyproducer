@@ -4,7 +4,7 @@
  * A finished advance is boring; an advance in progress is the one worth
  * showing. Statuses here are drawn against each item's own deadline, so a show
  * twelve days out has most of its early questions answered, a couple of things
- * chasing, and one or two lines properly late — which is exactly the state the
+ * chasing, and one or two lines properly late, which is exactly the state the
  * module exists to make visible.
  */
 import { checklistForEvent, instantiateChecklist } from '@/data/advancing';
@@ -63,8 +63,8 @@ function drawStatus(item: AdvanceItem, now: number, confidence: number, rng: Rng
   const due = item.dueAt ? new Date(item.dueAt).getTime() : now + 30 * 86_400_000;
   const daysLeft = (due - now) / 86_400_000;
 
-  // A deadline that has passed is usually — not always — done. The exceptions
-  // are the whole point of the "still missing" panel.
+  // A deadline that has passed usually means the item is done, though not
+  // always. The exceptions are the whole point of the "still missing" panel.
   const confirmChance =
     daysLeft < 0 ? 0.55 + confidence * 0.42 : daysLeft < 7 ? confidence * 0.8 : confidence * 0.45;
 

@@ -64,15 +64,27 @@ export function StageDisplay() {
         <p className="text-lg uppercase tracking-[0.2em] text-white/50 sm:text-2xl">
           {current?.label ?? 'Standing by'}
         </p>
+        {/*
+          Urgency without colour, read from the back of a room: comfortable time
+          is a softer white, the last minute goes to full white, and running over
+          inverts the block to black on white. Inverting is the loudest thing a
+          two-colour screen can do, and it is unmistakable at a glance.
+        */}
         <p
-          className={`font-mono text-[18vw] leading-none tabular-nums sm:text-[15vw] ${
-            remaining < 0 ? 'text-red-400' : remaining < 60 ? 'text-amber-300' : 'text-white'
+          className={`px-6 font-mono text-[18vw] leading-none tabular-nums sm:text-[15vw] ${
+            remaining < 0
+              ? 'bg-white text-black'
+              : remaining < 60
+                ? 'text-white'
+                : 'text-white/70'
           }`}
           data-numeric
         >
-          {current ? formatDuration(Math.abs(remaining)) : '—'}
+          {current ? formatDuration(Math.abs(remaining)) : '-'}
         </p>
-        {current && remaining < 0 && <p className="text-xl uppercase tracking-widest text-red-400">over</p>}
+        {current && remaining < 0 && (
+          <p className="bg-white px-4 text-xl uppercase tracking-widest text-black">over</p>
+        )}
         {next && <p className="text-base text-white/40 sm:text-xl">Next · {next.label}</p>}
       </div>
 

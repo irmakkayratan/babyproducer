@@ -28,7 +28,7 @@ export function ulid(now: number = Date.now(), random: () => number = Math.rando
  * A fixed timestamp for seeded data.
  *
  * Demo ids are derived entirely from the scenario seed, so a reset rebuilds
- * the same records in the same order — which is what makes screenshots and
+ * the same records in the same order, which is what makes screenshots and
  * tests stable.
  */
 export const SEED_EPOCH = Date.UTC(2027, 0, 1);
@@ -46,7 +46,7 @@ export function qrToken(random: () => number = Math.random): string {
 
 /** Per-browser identifier used for check-in audit trails. Never leaves the device. */
 export function deviceId(): string {
-  const key = 'atelier.deviceId';
+  const key = 'babyproducer.deviceId';
   try {
     const existing = localStorage.getItem(key);
     if (existing) return existing;

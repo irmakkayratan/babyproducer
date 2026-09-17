@@ -69,6 +69,10 @@ export const createGuestSlice: SliceCreator<GuestSlice> = (set, get) => ({
       guestRepo.listGuests(eventId),
       guestRepo.arrivedGuestIds(eventId),
     ]);
+    // Moving between events faster than IndexedDB answers means an earlier
+    // read can resolve last. Without this check it would drop one event's
+    // guest list into another event's page.
+    if (get().guestsEventId !== eventId) return;
     set((s) => {
       s.guests = guests;
       s.arrivedIds = [...arrived];
@@ -83,6 +87,7 @@ export const createGuestSlice: SliceCreator<GuestSlice> = (set, get) => ({
       guestRepo.listGuests(eventId),
       guestRepo.arrivedGuestIds(eventId),
     ]);
+    if (get().guestsEventId !== eventId) return;
     set((s) => {
       s.guests = guests;
       s.arrivedIds = [...arrived];
@@ -240,6 +245,7 @@ export const createGuestSlice: SliceCreator<GuestSlice> = (set, get) => ({
       Promise.all(guestIds.map((id) => guestRepo.getGuest(id))),
       guestRepo.arrivedGuestIds(eventId),
     ]);
+    if (get().guestsEventId !== eventId) return;
     set((s) => {
       for (const guest of fresh) {
         if (!guest || guest.eventId !== eventId) continue;

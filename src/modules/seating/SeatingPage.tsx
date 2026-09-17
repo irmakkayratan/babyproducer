@@ -51,7 +51,7 @@ export function SeatingPage() {
         return;
       }
       // A room is created from the event's template the first time seating is
-      // opened — an empty canvas would be a worse starting point than a plan.
+      // opened, an empty canvas would be a worse starting point than a plan.
       const preset = getTemplate(event.templateId ?? 'blank').seatingPreset ?? 'none';
       const created = buildPreset(preset, eventId, { capacity: event.capacity ?? undefined });
       if (created) {
@@ -101,7 +101,7 @@ export function SeatingPage() {
     [map, reloadGuests],
   );
 
-  /** Fill the room by tier, best seats first — a starting point, not a decision. */
+  /** Fill the room by tier, best seats first. It gives you a starting point. */
   async function autoSeat() {
     if (!map) return;
     const tierOrder = new Map((workspace?.schema.tiers ?? []).map((tier, index) => [tier.id, index]));
@@ -338,7 +338,7 @@ function UnseatedRow({
           {guest.name}
         </p>
         <p className="truncate text-xs text-muted-foreground">
-          {tierLabel ? <VocabDot vocab={tierLabel} /> : (guest.company ?? '—')}
+          {tierLabel ? <VocabDot vocab={tierLabel} /> : (guest.company ?? '-')}
         </p>
       </div>
       {canSeat && (

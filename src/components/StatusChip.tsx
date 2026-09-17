@@ -4,7 +4,7 @@ import { useStore } from '@/store';
 import { cn } from '@/lib/utils';
 
 /**
- * Offline is a state, not an error: nothing is blocked by it, so the chip is
+ * Offline is just a state here. Nothing is blocked by it, so the chip is
  * informational and quiet until the connection actually drops.
  */
 export function StatusChip({ className }: { className?: string }) {
@@ -29,7 +29,7 @@ export function StatusChip({ className }: { className?: string }) {
         online ? 'text-muted-foreground' : 'border-warning/40 bg-warning/10 text-warning',
         className,
       )}
-      title={online ? 'Connected. All data is stored on this device.' : 'Offline — everything still works; data is local.'}
+      title={online ? 'Connected. All data is stored on this device.' : 'Offline. Everything still works, because the data is on this device.'}
       data-testid="status-chip"
     >
       {online ? <Cloud className="size-3.5" /> : <CloudOff className="size-3.5" />}

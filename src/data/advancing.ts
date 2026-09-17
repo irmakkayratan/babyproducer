@@ -2,9 +2,9 @@
  * Advance sheets: the pre-production record.
  *
  * One row per event holding parties, contacts and the checklist. The whole
- * sheet is read-modify-written on every change, which is what an advance
- * actually is — a single document several people are editing over weeks — and
- * keeps a party rename from having to touch twenty item rows.
+ * sheet is read-modify-written on every change. That matches what an advance
+ * really is, which is one document several people edit over a few weeks, and
+ * it keeps a party rename from having to touch twenty item rows.
  */
 import { db } from './db';
 import { defaultAdvanceChecklist } from './defaults';
@@ -29,7 +29,7 @@ export function dueDateFor(startsAt: string, daysBefore?: number): string | unde
 
 /**
  * Expands checklist entries into items. A `perParty` entry becomes one item per
- * travelling party — and still one unassigned item when there are no parties
+ * travelling party, and still one unassigned item when there are no parties
  * yet, because the question does not disappear just because nobody is booked.
  */
 export function instantiateChecklist(
@@ -92,9 +92,9 @@ export async function getAdvanceSheet(eventId: string): Promise<AdvanceSheet | u
 }
 
 /**
- * Events created before this module existed — or imported from an older
- * export — have no sheet. Opening the module builds one rather than showing an
- * empty screen that looks broken.
+ * Events created before this module existed, or imported from an older export,
+ * have no sheet. Opening the module builds one, so nobody lands on an empty
+ * screen that looks broken.
  */
 export async function ensureAdvanceSheet(event: Event): Promise<AdvanceSheet> {
   const existing = await getAdvanceSheet(event.id);

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 /**
  * A cell that behaves the way producers expect a spreadsheet to behave:
  * type and it commits on Enter or blur, Escape restores the previous value.
- * A value that cannot be parsed is rejected rather than silently zeroed.
+ * A value that cannot be parsed is rejected, and the cell keeps what it had.
  */
 export function EditableCell({
   value,

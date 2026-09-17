@@ -2,8 +2,8 @@ import { Area, AreaChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YA
 import type { TelemetryPoint } from '@/data/types';
 
 /**
- * One series, drawn small. Thresholds are subtle bands rather than alarm
- * colours until they are actually crossed.
+ * One series, drawn small. A threshold stays a quiet band until it is actually
+ * crossed.
  */
 export default function Sparkline({
   points,

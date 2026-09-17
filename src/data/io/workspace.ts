@@ -1,8 +1,8 @@
 /**
  * Workspace import and export.
  *
- * This is the portability guarantee: everything a user has shaped — brand,
- * schema, metrics, templates and optionally the data itself — travels as one
+ * This is the portability guarantee. Everything a user has shaped (brand,
+ * schema, metrics, templates and optionally the data itself) travels as one
  * JSON file. It is also the backup story, and the migration path if a hosted
  * backend is ever added.
  */
@@ -21,7 +21,14 @@ import type {
 } from '@/data/types';
 import { ulid } from '@/lib/id';
 
-export const EXPORT_FORMAT = 'atelier.workspace';
+export const EXPORT_FORMAT = 'babyproducer.workspace';
+
+/**
+ * What exports were stamped with before the product was renamed. Files people
+ * already have on disk still have to open, so both are accepted on the way in
+ * and only the current one is written on the way out.
+ */
+const LEGACY_EXPORT_FORMATS = ['atelier.workspace'];
 export const EXPORT_VERSION = 2;
 
 export interface WorkspaceExport {
@@ -92,10 +99,37 @@ export async function exportWorkspace(
   };
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+/**
+ * A file picked off a disk is untrusted input, and the only thing standing
+ * between a truncated or hand-edited export and a raw `TypeError` in the
+ * middle of a Dexie transaction is this check, so it validates the shape the
+ * importer actually walks, all the way down.
+ */
 export function isWorkspaceExport(value: unknown): value is WorkspaceExport {
-  if (!value || typeof value !== 'object') return false;
-  const candidate = value as Partial<WorkspaceExport>;
-  return candidate.format === EXPORT_FORMAT && typeof candidate.version === 'number' && Boolean(candidate.workspace);
+  if (!isRecord(value)) return false;
+  if (value.format !== EXPORT_FORMAT && !LEGACY_EXPORT_FORMATS.includes(value.format as string)) return false;
+  if (typeof value.version !== 'number' || !Number.isFinite(value.version)) return false;
+
+  const workspace = value.workspace;
+  if (!isRecord(workspace) || typeof workspace.id !== 'string' || !workspace.id) return false;
+  if (!Array.isArray(value.events)) return false;
+  if (!value.events.every((event) => isRecord(event) && typeof event.id === 'string')) return false;
+
+  if (value.data !== undefined) {
+    if (!isRecord(value.data)) return false;
+    // Every collection the importer maps over has to be an array, including the
+    // ones a v1 export legitimately omits.
+    const required = ['guests', 'companies', 'seatingMaps', 'arrivals', 'telemetry', 'dashboards', 'rundowns'];
+    const optional = ['advanceSheets', 'settlements'];
+    for (const key of required) if (!Array.isArray(value.data[key])) return false;
+    for (const key of optional) {
+      if (value.data[key] !== undefined && !Array.isArray(value.data[key])) return false;
+    }
+  }
+  return true;
 }
 
 export interface ImportResult {
@@ -113,7 +147,7 @@ export async function importWorkspace(
   options: { mode?: 'new' | 'replace' } = {},
 ): Promise<ImportResult> {
   if (!isWorkspaceExport(payload)) {
-    throw new Error('That file is not an Atelier workspace export.');
+    throw new Error('That file is not a BabyProducer workspace export.');
   }
   if (payload.version > EXPORT_VERSION) {
     throw new Error('That export came from a newer version of the app.');
@@ -137,7 +171,8 @@ export async function importWorkspace(
     // An export written before a vocabulary list existed still has to open.
     schema: backfillSchema(payload.workspace.schema),
     id: workspaceId,
-    name: mode === 'new' ? `${payload.workspace.name} (imported)` : payload.workspace.name,
+    name:
+      mode === 'new' ? `${payload.workspace.name || 'Workspace'} (imported)` : payload.workspace.name || 'Workspace',
     demo: false,
     updatedAt: now,
   };
@@ -187,12 +222,12 @@ export async function importWorkspace(
           ...map,
           id: remap(map.id),
           eventId: remap(map.eventId),
-          elements: map.elements.map((element) =>
+          elements: (map.elements ?? []).map((element) =>
             'seats' in element
               ? {
                   ...element,
                   id: remap(element.id),
-                  seats: element.seats.map((seat) => ({
+                  seats: (element.seats ?? []).map((seat) => ({
                     ...seat,
                     id: remap(seat.id),
                     guestId: seat.guestId ? remap(seat.guestId) : undefined,
@@ -200,7 +235,7 @@ export async function importWorkspace(
                 }
               : { ...element, id: remap(element.id) },
           ),
-          rules: map.rules.map((rule) => ({ ...rule, subjects: rule.subjects.map(remap) })),
+          rules: (map.rules ?? []).map((rule) => ({ ...rule, subjects: (rule.subjects ?? []).map(remap) })),
         })),
       );
       await db.arrivals.bulkPut(
@@ -220,7 +255,9 @@ export async function importWorkspace(
       await db.rundowns.bulkPut(
         data.rundowns.map((doc) => ({
           eventId: remap(doc.eventId),
-          update: Uint8Array.from(doc.update),
+          // A hand-edited file can carry anything here; a non-byte would decode
+          // into a corrupt Yjs update, and fail quietly much later.
+          update: Uint8Array.from((doc.update ?? []).map((byte) => (Number.isFinite(byte) ? byte : 0))),
           updatedAt: now,
         })),
       );

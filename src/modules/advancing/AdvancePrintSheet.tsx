@@ -26,7 +26,7 @@ export function AdvancePrintSheet({
   return (
     <div className="hidden print:block print:text-black" data-testid="advance-print">
       <header className="mb-4 border-b border-black/20 pb-2">
-        <h1 className="text-xl font-semibold">{event.name} — Advance Sheet</h1>
+        <h1 className="text-xl font-semibold">{event.name} · Advance Sheet</h1>
         <p className="text-xs">
           {[event.venue.name, event.venue.address].filter(Boolean).join(' · ')}
           {event.venue.name ? ' · ' : ''}
@@ -102,7 +102,7 @@ export function AdvancePrintSheet({
                       </span>
                     )}
                   </td>
-                  <td className="py-1 pr-2">{item.detail || '—'}</td>
+                  <td className="py-1 pr-2">{item.detail || '-'}</td>
                   <td className="w-24 py-1 pr-2">{STATUS_LABEL[item.status]}</td>
                 </tr>
               ))}

@@ -4,8 +4,9 @@ import { cn } from '@/lib/utils';
 /**
  * Inputs that edit a record in place.
  *
- * They hold their own draft and commit on blur or Enter, rather than writing
- * on every keystroke: these sit over IndexedDB rows that several surfaces are
+ * They hold their own draft and commit on blur or Enter. Writing on every
+ * keystroke would be costly here: these sit over IndexedDB rows that several
+ * surfaces are
  * subscribed to, and a write per character would fight the user's cursor.
  * Escape abandons the edit, which is the only way back from a mistyped number
  * once the field has been cleared.

@@ -50,7 +50,7 @@ export function buildGuestColumns(metrics: MetricConfig[], fieldDefs: FieldDef[]
       width: 180,
       sortable: true,
       hideable: true,
-      render: (guest) => <span className="truncate text-muted-foreground">{guest.company ?? '—'}</span>,
+      render: (guest) => <span className="truncate text-muted-foreground">{guest.company ?? '-'}</span>,
     },
     {
       id: 'voiceId',
@@ -83,7 +83,7 @@ export function buildGuestColumns(metrics: MetricConfig[], fieldDefs: FieldDef[]
       align: 'right',
       sortable: true,
       hideable: true,
-      render: (guest) => <span data-numeric>{guest.plusOnes || '—'}</span>,
+      render: (guest) => <span data-numeric>{guest.plusOnes || '-'}</span>,
     },
     {
       id: 'followers',
@@ -93,7 +93,7 @@ export function buildGuestColumns(metrics: MetricConfig[], fieldDefs: FieldDef[]
       sortable: true,
       hideable: true,
       render: (guest) => (
-        <span data-numeric>{guest.audience?.followers ? compact(guest.audience.followers) : '—'}</span>
+        <span data-numeric>{guest.audience?.followers ? compact(guest.audience.followers) : '-'}</span>
       ),
     },
     {
@@ -105,7 +105,7 @@ export function buildGuestColumns(metrics: MetricConfig[], fieldDefs: FieldDef[]
       hideable: true,
       render: (guest) => (
         <span data-numeric>
-          {guest.audience?.avgEngagementRate ? `${(guest.audience.avgEngagementRate * 100).toFixed(1)}%` : '—'}
+          {guest.audience?.avgEngagementRate ? `${(guest.audience.avgEngagementRate * 100).toFixed(1)}%` : '-'}
         </span>
       ),
     },

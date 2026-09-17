@@ -20,7 +20,7 @@ import { totalHeadcount } from './model';
  *
  * A party is the unit the per-party questions repeat over, so adding one here
  * is what makes a second set of flights, rooms and transfers appear on the
- * checklist — the advance grows with the booking rather than being retyped.
+ * checklist, so the advance grows with the booking and nobody retypes it.
  */
 export function PartiesPanel({
   sheet,
@@ -92,7 +92,7 @@ export function PartiesPanel({
         {sheet.contacts.length === 0 ? (
           <EmptyState
             title="No contacts yet"
-            description="Venue production manager, local crew chief, tour manager — whoever picks up."
+            description="Venue production manager, local crew chief, tour manager. Whoever actually picks up the phone."
             className="mt-4"
           />
         ) : (
@@ -153,7 +153,7 @@ function PartyCard({ party, eventId, roles }: { party: AdvanceParty; eventId: st
             onChange={(e) => patch({ roleId: e.target.value || undefined })}
             className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-sm"
           >
-            <option value="">—</option>
+            <option value="">-</option>
             {roles.map((role) => (
               <option key={role.id} value={role.id}>
                 {role.label}

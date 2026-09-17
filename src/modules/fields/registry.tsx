@@ -3,7 +3,7 @@
  *
  * A field definition is data; this registry turns it into a table cell, a
  * detail row, a form control and a validation rule. Adding a new field kind is
- * one entry here — no module needs to know about it.
+ * one entry here, no module needs to know about it.
  */
 import { z } from 'zod';
 import type { FieldDef, FieldValue } from '@/data/types';
@@ -82,7 +82,7 @@ const percent: FieldRenderer = {
 const select: FieldRenderer = {
   Cell: ({ def, value }) => {
     const option = def.options?.find((o) => o.value === String(value));
-    if (!option) return <span className="text-muted-foreground">—</span>;
+    if (!option) return <span className="text-muted-foreground">-</span>;
     return (
       <Badge variant="muted" className="gap-1.5">
         {option.color && <span className="size-1.5 rounded-full" style={{ background: option.color }} />}
@@ -114,7 +114,7 @@ const select: FieldRenderer = {
 const multiselect: FieldRenderer = {
   Cell: ({ def, value }) => {
     const values = Array.isArray(value) ? value : [];
-    if (values.length === 0) return <span className="text-muted-foreground">—</span>;
+    if (values.length === 0) return <span className="text-muted-foreground">-</span>;
     return (
       <span className="flex flex-wrap gap-1">
         {values.map((entry) => (
@@ -230,7 +230,7 @@ export const FIELD_RENDERERS: Record<FieldDef['kind'], FieldRenderer> = {
   formula,
 };
 
-/** Validation is generated from the definitions — adding a field adds a rule. */
+/** Validation is generated from the definitions. Adding a field adds a rule. */
 export function fieldDefsToZod(defs: FieldDef[]): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const shape: Record<string, z.ZodTypeAny> = {};
   for (const def of defs) {

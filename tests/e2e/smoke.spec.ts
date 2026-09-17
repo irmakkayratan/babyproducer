@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 test.describe('foundation', () => {
   test('landing offers the three doors and shows local-only status', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Run the whole show');
+    // The headline leads on advancing, because that is what the product is for.
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Advance the show');
     await expect(page.getByRole('button', { name: /Explore the demo/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Start from a template/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Start blank/ })).toBeVisible();
@@ -27,7 +28,7 @@ test.describe('foundation', () => {
     await expect(page.getByText('Doors in')).toBeVisible();
   });
 
-  test('data survives a reload — the device holds the primary copy', async ({ page }) => {
+  test('data survives a reload: the device holds the primary copy', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Start blank/ }).click();
     await page.getByRole('button', { name: /Create your first event/ }).click();

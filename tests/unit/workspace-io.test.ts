@@ -95,7 +95,7 @@ describe('workspace import', () => {
 
     expect(advance?.items.length).toBeGreaterThan(0);
     expect(settlement).toBeDefined();
-    // The original keeps its own copies rather than having them moved.
+    // The original keeps its own copies, and nothing is moved out of it.
     expect(await db.advanceSheets.count()).toBe(2);
   });
 
@@ -126,10 +126,10 @@ describe('workspace import', () => {
   });
 
   it('rejects a file that is not a workspace export', async () => {
-    await expect(importWorkspace({ hello: 'world' })).rejects.toThrow('not an Atelier workspace');
+    await expect(importWorkspace({ hello: 'world' })).rejects.toThrow('not a BabyProducer workspace');
   });
 
-  it('rejects an export from a newer version rather than guessing', async () => {
+  it('rejects an export from a newer version of the app', async () => {
     const { workspace } = await seedWorkspace();
     const payload = { ...(await exportWorkspace(workspace.id)), version: 99 };
     await expect(importWorkspace(payload)).rejects.toThrow('newer version');

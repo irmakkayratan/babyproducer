@@ -49,7 +49,7 @@ describe('door matching', () => {
     expect(matchGuests(guests, 'fenrand')[0].guest.name).toBe('Anouk Fenrand');
   });
 
-  it('tolerates a typo rather than failing flat', () => {
+  it('tolerates a typo and still finds the guest', () => {
     const results = matchGuests(guests, 'valburg');
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].guest.name).toBe('Amara Valberg');

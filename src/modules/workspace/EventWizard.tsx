@@ -69,7 +69,7 @@ export function EventWizard({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/* The template list grows as templates are added, so the dialog is
-          capped to the viewport and the form scrolls inside it — the submit
+          capped to the viewport and the form scrolls inside it, the submit
           button never leaves the screen. */}
       <DialogContent className="flex max-h-[90vh] max-w-xl flex-col">
         <DialogHeader>
@@ -86,7 +86,7 @@ export function EventWizard({
               id="event-name"
               value={name}
               autoFocus
-              placeholder="AURELIA — SS27"
+              placeholder="AURELIA SS27"
               onChange={(e) => setName(e.target.value)}
             />
           </div>

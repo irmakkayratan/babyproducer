@@ -32,16 +32,20 @@ AvatarFallback.displayName = 'AvatarFallback';
 
 /**
  * Deterministic, locally generated avatar: the same name always produces the
- * same gradient. No network request, so it works offline and leaks nothing.
+ * same tile. No network request, so it works offline and leaks nothing.
+ *
+ * Two names are told apart by how light the tile is and which way the gradient
+ * runs, which is all the variation a 28px circle can carry anyway.
  */
 export function GeneratedAvatar({ name, className }: { name: string; className?: string }) {
-  const hue = hashSeed(name) % 360;
-  const hue2 = (hue + 48) % 360;
+  const seed = hashSeed(name);
+  const lift = 22 + (seed % 26);
+  const angle = seed % 360;
   return (
     <Avatar className={className}>
       <AvatarFallback
         style={{
-          background: `linear-gradient(135deg, hsl(${hue} 55% 42%), hsl(${hue2} 60% 28%))`,
+          background: `linear-gradient(${angle}deg, hsl(0 0% ${lift}%), hsl(0 0% ${Math.round(lift * 0.45)}%))`,
           color: 'hsl(0 0% 100% / 0.92)',
         }}
       >

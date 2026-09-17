@@ -22,8 +22,8 @@ export interface RundownState {
 
 /**
  * Subscribes a component to the shared rundown document. Every surface in this
- * tab — grid, caller, prompter, timer — shares one Y.Doc, so they stay in step
- * without any plumbing between them.
+ * tab (grid, caller, prompter, timer) shares one Y.Doc, so they stay in step
+ * with no plumbing between them.
  */
 export function useRundown(eventId: string | undefined, seed?: (doc: Y.Doc) => void) {
   const docRef = useRef<Y.Doc | null>(null);

@@ -5,7 +5,7 @@
 1. **Static hosting (GitHub Pages).** No server, no SSR, no database. All logic, storage and routing are client-side. The app is a JAMstack SPA.
 2. **Venue reality.** Conference Wi-Fi is saturated and cell networks jam. The app must be fully functional with the network off, and must not lose a keystroke when it drops mid-show.
 3. **Show-caller latency.** A producer advancing cues by the second cannot wait on a spinner. Local-first: every read and write hits local storage, never the network.
-4. **Multi-surface, same machine.** Registration desk laptops run several tabs; a producer runs the grid on one screen and the timer on another. Cross-tab consistency is a correctness requirement, not a nicety.
+4. **Multi-surface, same machine.** Registration desk laptops run several tabs; a producer runs the grid on one screen and the timer on another. Cross-tab consistency is a correctness requirement here.
 
 ## 2. Stack
 
@@ -18,7 +18,7 @@
 | Durable data | **Dexie (IndexedDB)** | Async, quota in the hundreds of MB, stores blobs (cover art, badge assets) and large guest lists; versioned migrations |
 | Collaboration | **Yjs** + `y-indexeddb` + `y-broadcastchannel` | CRDT merge for the rundown; offline edits reconcile without conflict UI |
 | Tables | **TanStack Virtual** + an in-repo column model | Virtualization is the only way to hit the perf budget; the column model is ~100 lines and avoids a second table abstraction |
-| Drag & drop | **Native HTML5 DnD** (seating), **react-grid-layout** (dashboard) | Native drag costs nothing at 1,200 seats; the keyboard path is written explicitly rather than inherited, and RGL is the industry answer for resizable widget grids |
+| Drag & drop | **Native HTML5 DnD** (seating), **react-grid-layout** (dashboard) | Native drag costs nothing at 1,200 seats; the keyboard path is written out explicitly, and RGL is the industry answer for resizable widget grids |
 | Charts | **Recharts** via the shadcn `Chart` wrapper | Token-driven colors flip with the theme, no conditional classnames |
 | Forms | **react-hook-form + Zod** | Zod schemas are generated from custom-field definitions at runtime |
 | Routing | **React Router 7** (data router) | Deep links, nested layouts, route-level code splitting |
@@ -30,7 +30,7 @@ Deliberately excluded: Redux (verbosity), React Context for app state (re-render
 
 **Two deviations from the original plan, both made while building.** TanStack Table was dropped: with saved views and custom fields the column model is ours anyway, and a headless table library on top added indirection without removing code. dnd-kit was dropped for seating: its selling point is keyboard accessibility, but the seating module needs an explicit keyboard path regardless (select a seat, press Enter, search a guest), and native drag handles a 1,200-seat room with no measurement pass.
 
-## 3. State architecture — slice pattern
+## 3. State architecture: slice pattern
 
 One bound store, composed from domain slices. Each slice owns its actions and nothing else touches its shape.
 
@@ -54,9 +54,9 @@ export const useStore = create<AppStore>()(
       /* ... */
     })),
     {
-      name: 'atelier',
+      name: 'babyproducer',
       // Only small, boring preferences persist here; every domain record
-      // lives in IndexedDB (data/db.ts), not in the store.
+      // lives in IndexedDB (data/db.ts). The store holds the working set.
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ scheme: s.scheme, sidebarCollapsed: s.sidebarCollapsed, activeEventId: s.activeEventId }),
       version: SCHEMA_VERSION,
@@ -69,9 +69,9 @@ export const useStore = create<AppStore>()(
 Rules:
 
 - **`immer` for nested writes.** Moving a guest between seats or re-ordering a cue is written as a mutation and stays immutable underneath.
-- **`partialize` is explicit.** UI transients (open drawers, hovered row, crossfades) are never persisted. Domain data is not persisted through Zustand at all — it lives in Dexie and the store holds the working set, so the persisted blob stays a few hundred bytes of preferences.
-- **Selectors, not whole-store subscriptions.** Components subscribe with `useStore(s => s.guests.byId[id])`; the guest table subscribes to ids only and rows subscribe individually.
-- **Derived values are computed, not stored.** Cue start times, MIV scores, and room capacity are pure functions of state, memoized — never duplicated into state where they can drift.
+- **`partialize` is explicit.** UI transients (open drawers, hovered row, crossfades) are never persisted. Domain data is not persisted through Zustand at all. It lives in Dexie and the store holds the working set, so the persisted blob stays a few hundred bytes of preferences.
+- **Selectors, always.** Components subscribe with `useStore(s => s.guests.byId[id])`; the guest table subscribes to ids only and rows subscribe individually.
+- **Derived values are computed on every read.** Cue start times, MIV scores and room capacity are pure functions of state, memoized, and they never get copied into state where they could drift.
 
 ## 4. Data flow
 
@@ -93,9 +93,9 @@ Rules:
 ## 5. Offline-first and the PWA
 
 - **App shell precached** at service-worker install: HTML, JS, CSS, fonts, icons. Navigation is served cache-first, so a cold offline load still boots.
-- **Stale-while-revalidate** for anything fetched (template gallery, docs) — paint from cache, refresh in the background.
-- **Offline is a first-class state, not an error.** A persistent status chip shows `Online · Offline · Syncing (n queued)`. No destructive action is blocked by being offline.
-- **Update flow:** a new deployment surfaces a non-blocking "New version ready — reload" toast. Never auto-reload: reloading mid-show is unacceptable.
+- **Stale-while-revalidate** for anything fetched (template gallery, docs), paint from cache, refresh in the background.
+- **Offline is a first-class state.** A persistent status chip shows `Online · Offline · Syncing (n queued)`. No destructive action is blocked by being offline.
+- **Update flow:** a new deployment surfaces a non-blocking "New version ready, reload" toast. Never auto-reload: reloading mid-show is unacceptable.
 - **Storage durability:** `navigator.storage.persist()` requested on first meaningful write; `navigator.storage.estimate()` drives a storage-health indicator in Settings and warns before quota.
 
 ## 6. Cross-tab consistency
@@ -116,12 +116,12 @@ Y.Doc
  └─ Y.Array<Y.Map> 'cues'        // ordered cue rows; Y.Array gives conflict-free reordering
      └─ Y.Map fields             // title, durationSec, anchor, notes, per-department cells
  └─ Y.Map 'meta'                 // showStart, columns[], callerCueId
- └─ Y.Text 'prompter:<cueId>'    // script bodies — character-level merge
+ └─ Y.Text 'prompter:<cueId>'    // script bodies, character-level merge
 ```
 
 Providers: `y-indexeddb` (durability + instant reload), `y-broadcastchannel` (cross-tab), and an optional `y-websocket`/`y-webrtc` provider for cross-device demos. Yjs awareness carries the show-caller position and each user's cursor, which is exactly the "Show Caller Tracking" behaviour Shoflo is known for.
 
-**Timing is derived, never stored.** Cue start times are computed from `showStart` + preceding durations, with **anchors** (a cue pinned to a wall-clock time) absorbing drift. So a duration edit is a one-field CRDT update and the cascade is a pure recomputation — no write amplification, no merge conflicts over derived data.
+**Timing is derived, never stored.** Cue start times are computed from `showStart` + preceding durations, with **anchors** (a cue pinned to a wall-clock time) absorbing drift. So a duration edit is a one-field CRDT update and the cascade is a pure recomputation, no write amplification, no merge conflicts over derived data.
 
 ## 8. Folder structure
 
@@ -152,11 +152,11 @@ tests/
 docs/                   these specifications
 ```
 
-Module boundaries are enforced: a module may import from `components/`, `lib/`, `store/`, and `data/` — never from another module's internals. Cross-module needs go through the store or a shared component.
+Module boundaries are enforced: a module may import from `components/`, `lib/`, `store/`, and `data/`, never from another module's internals. Cross-module needs go through the store or a shared component.
 
 ## 9. Optional sync adapter
 
-v1 ships local-only, but the seam exists from P0 so adding a backend is configuration, not surgery:
+v1 ships local-only, and the seam exists from P0 so adding a backend is a matter of configuration:
 
 ```ts
 export interface SyncProvider {
@@ -167,7 +167,7 @@ export interface SyncProvider {
 }
 ```
 
-`LocalOnlyProvider` (default) resolves immediately and keeps the queue drained. A future `SupabaseProvider` implements the same four methods; the mutation queue, optimistic UI, and offline banner are already built around it. Documented, not built.
+`LocalOnlyProvider` (default) resolves immediately and keeps the queue drained. A future `SupabaseProvider` implements the same four methods; the mutation queue, optimistic UI, and offline banner are already built around it. Documented here, and left unbuilt.
 
 ## 10. Performance strategy
 

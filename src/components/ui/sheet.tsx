@@ -49,7 +49,7 @@ export const SheetFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDi
   <div className={cn('mt-auto flex gap-2 border-t p-4', className)} {...props} />
 );
 
-/** Every sheet carries a title — visually hidden where the design has none. */
+/** Every sheet carries a title. Visually hidden where the design has none. */
 export const SheetTitle = React.forwardRef<
   React.ComponentRef<typeof SheetPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>

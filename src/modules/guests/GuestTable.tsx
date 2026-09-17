@@ -11,7 +11,7 @@ import { useStore } from '@/store';
 /**
  * The dense table is the product for a guest-list manager, so it is
  * virtualized: only the visible rows exist in the DOM, and each row subscribes
- * to nothing — the parent hands it the record it already has.
+ * to nothing, the parent hands it the record it already has.
  */
 export function GuestTable({
   guests,

@@ -14,7 +14,7 @@ describe('CSV parsing', () => {
     expect(parseCsv('Name\tEmail\nA\ta@example.com').headers).toEqual(['Name', 'Email']);
   });
 
-  it('skips blank lines rather than importing empty guests', () => {
+  it('skips blank lines so no empty guests are imported', () => {
     expect(parseCsv('Name\nA\n\n\nB').rows).toHaveLength(2);
   });
 

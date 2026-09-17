@@ -1,7 +1,7 @@
 /**
  * Demo cue stacks.
  *
- * Shapes, not transcripts: block structure, plausible durations per item type,
+ * Shapes, held loosely: block structure, plausible durations per item type,
  * and the couple of hard anchors every show has (doors, top of show). Generated
  * from the scenario seed so the sheet is identical on every machine.
  */
@@ -24,7 +24,7 @@ const SHOW_SHAPES: Record<string, BlockSpec[]> = {
       cues: [
         { label: 'Doors open', itemTypeId: 'segment', minSec: 1800, maxSec: 2400, cells: { music: 'Playlist A', lighting: 'House 70%' } },
         { label: 'Seating push', itemTypeId: 'segment', minSec: 600, maxSec: 900, cells: { music: 'Playlist A', lighting: 'House 50%' } },
-        { label: 'House to half', itemTypeId: 'lighting', minSec: 60, maxSec: 120, cells: { lighting: 'LX 3 — house 25%' } },
+        { label: 'House to half', itemTypeId: 'lighting', minSec: 60, maxSec: 120, cells: { lighting: 'LX 3, house 25%' } },
       ],
     },
     {
@@ -33,14 +33,14 @@ const SHOW_SHAPES: Record<string, BlockSpec[]> = {
       // what makes the drift cascade worth having.
       repeat: 34,
       cues: [
-        { label: 'Look', itemTypeId: 'walk', minSec: 26, maxSec: 46, cells: { camera: 'Cam 2 — runway' } },
+        { label: 'Look', itemTypeId: 'walk', minSec: 26, maxSec: 46, cells: { camera: 'Cam 2, runway' } },
       ],
     },
     {
       name: 'Finale',
       cues: [
-        { label: 'Finale walk', itemTypeId: 'finale', minSec: 90, maxSec: 150, cells: { music: 'Track 4 — finale', lighting: 'LX 22 full' } },
-        { label: 'Designer bow', itemTypeId: 'bow', minSec: 30, maxSec: 60, cells: { camera: 'Cam 1 — wide' } },
+        { label: 'Finale walk', itemTypeId: 'finale', minSec: 90, maxSec: 150, cells: { music: 'Track 4, finale', lighting: 'LX 22 full' } },
+        { label: 'Designer bow', itemTypeId: 'bow', minSec: 30, maxSec: 60, cells: { camera: 'Cam 1, wide' } },
         { label: 'House up / exit music', itemTypeId: 'segment', minSec: 300, maxSec: 600, cells: { music: 'Playlist B', lighting: 'House 100%' } },
       ],
     },
@@ -74,7 +74,7 @@ const SHOW_SHAPES: Record<string, BlockSpec[]> = {
       name: 'Day shape',
       cues: [
         { label: 'Staff briefing', minSec: 900, maxSec: 1200, cells: { staffing: 'Full team' } },
-        { label: 'Doors — public', minSec: 3600, maxSec: 5400, cells: { station: 'All stations live' } },
+        { label: 'Doors, public', minSec: 3600, maxSec: 5400, cells: { station: 'All stations live' } },
         { label: 'Creator hour', minSec: 3600, maxSec: 3600, cells: { station: 'Studio', content: 'Capture on' } },
         { label: 'Peak trading', minSec: 7200, maxSec: 9000, cells: { staffing: 'Surge cover' } },
         { label: 'Wind-down and reset', minSec: 1800, maxSec: 2700, cells: { staffing: 'Close team' } },
