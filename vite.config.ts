@@ -5,8 +5,12 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // `VITE_BASE` lets the same build serve from a GitHub Pages project path
-// (/Event-Production/) or from a custom domain root without code changes.
-const base = process.env.VITE_BASE ?? '/';
+// (/babyproducer/) or from a custom domain root without code changes.
+// actions/configure-pages reports the path without a trailing slash, and Vite
+// needs one at both ends, so normalise rather than trusting the caller.
+const rawBase = (process.env.VITE_BASE ?? '/').trim();
+const trimmedBase = rawBase.replace(/^\/+|\/+$/g, '');
+const base = trimmedBase ? `/${trimmedBase}/` : '/';
 
 export default defineConfig({
   base,
