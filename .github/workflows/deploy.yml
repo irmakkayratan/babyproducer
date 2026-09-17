@@ -12,7 +12,9 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # A cancelled deploy can leave Pages serving a half-published site, so let
+  # an in-flight run finish and queue behind it instead.
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -27,14 +29,44 @@ jobs:
 
       - run: npm ci
 
-      # Project pages are served from /<repo>/ — the same build works at a
-      # custom domain root by leaving VITE_BASE unset.
+      # Must run before the build: it reports the path the site will be served
+      # from, and `enablement` switches the repository off branch publishing.
+      # Branch publishing serves the repository tree as-is, so visitors get the
+      # source index.html, which asks the browser for /src/main.tsx and leaves
+      # them on a blank page.
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # base_path follows the real Pages configuration, so a project site, a
+      # user site and a custom domain all build correctly with no edit here.
       - name: Build
         run: npm run build
         env:
-          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_BASE: ${{ steps.pages.outputs.base_path || format('/{0}/', github.event.repository.name) }}
 
-      - uses: actions/configure-pages@v5
+      # The blank-page failure is silent: Pages happily publishes the wrong
+      # files. Fail here instead, where the reason is visible.
+      - name: Verify the artifact is a build, not the source tree
+        env:
+          EXPECTED_BASE: ${{ steps.pages.outputs.base_path || format('/{0}/', github.event.repository.name) }}
+        run: |
+          for f in dist/index.html dist/404.html; do
+            [ -f "$f" ] || { echo "::error::$f is missing — nothing usable to publish"; exit 1; }
+          done
+          if grep -q 'src="/src/main.tsx"' dist/index.html; then
+            echo "::error::dist/index.html still loads /src/main.tsx — this is the source tree, not a build"
+            exit 1
+          fi
+          if ! grep -qE '<script[^>]+src="[^"]*/assets/[^"]+\.js"' dist/index.html; then
+            echo "::error::dist/index.html references no built entry bundle"
+            exit 1
+          fi
+          echo "Publishing a build rooted at ${EXPECTED_BASE:-/}:"
+          grep -oE 'src="[^"]*/assets/[^"]+\.js"' dist/index.html | head -1
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

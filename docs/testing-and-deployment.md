@@ -46,14 +46,25 @@ These are the claims the product makes, so they are tested end to end:
 jobs: typecheck · lint · unit · build (bundle budget) · e2e (Playwright, Chromium) · axe
 
 # .github/workflows/deploy.yml   : push to the default branch
-jobs: build (VITE_BASE=/Event-Production/) → upload-pages-artifact → deploy-pages
+jobs: configure-pages → build (VITE_BASE from base_path) → verify → upload-pages-artifact → deploy-pages
 ```
+
+**The repository must publish Pages from GitHub Actions, not from a branch.**
+Branch publishing serves the repository tree as it is committed, so a visitor
+receives the source `index.html`, whose only script tag points at
+`/src/main.tsx`. No browser can run TypeScript, so the page stays blank and
+nothing in the build output is ever reached. `configure-pages` runs with
+`enablement: true` to correct the setting, and it has to run before the build
+because the build reads the serving path from its `base_path` output. A
+`verify` step then refuses to publish an artifact that is the source tree
+rather than a build, because Pages reports that mistake as a successful
+deployment.
 
 Notes: builds are reproducible (lockfile committed, pinned Node), the Playwright job reuses the preinstalled Chromium, and each deploy stamps a build id and commit SHA into the app footer and the service worker so a stale cache is diagnosable.
 
 ## 5. GitHub Pages specifics
 
-- **Base path.** Vite `base` is set from an env var so the app works at `/Event-Production/` and at a custom domain without a rebuild of routing assumptions.
+- **Base path.** Vite `base` comes from `VITE_BASE`, which the workflow fills from the `base_path` reported by `configure-pages`, so a project site (`/babyproducer/`), a user site and a custom domain all build correctly with no edit. `vite.config.ts` normalises the value, since `base_path` arrives without a trailing slash and Vite needs one at both ends.
 - **SPA fallback.** `404.html` is a copy of `index.html` so deep links (`/w/demo/events/x/rundown`) resolve. The router uses history mode, no hash URLs.
 - **Service worker scope** is the base path; `navigateFallback` points at the base `index.html`.
 - **Headers.** Pages cannot set custom headers, so nothing is designed to depend on them (no COOP/COEP-gated APIs, no SharedArrayBuffer).
