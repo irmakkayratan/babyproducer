@@ -1,16 +1,19 @@
 # BabyProducer
 
-**An advancing tool for people who put on shows.**
+**One place for everything an event needs.**
 
-Advancing is the job. It is the weeks before the day when you chase the rider, book the flights, confirm the
-hotel, get the local crew's phone number, agree the timings and find out what the venue actually has in the
-building. Get it right and the show day is calm. Get it wrong and you find out on site, in front of everyone,
-with no time to fix it.
+BabyProducer takes the work that fills the weeks before a show and holds it in one structure. Everything sits
+under the same show, from the rider to the travel for everyone coming in to the production contacts and the
+timings, and as things fall into place a checklist reads them back as a readiness number while a panel keeps
+whatever is still open in plain sight, so the advance is shared across the team from the first week onwards.
 
 Most teams run the advance out of a mail thread and a spreadsheet. The thread has the answers in it somewhere.
 The spreadsheet is on someone's laptop. Nobody can tell you, in one number, how ready the show is.
 
-BabyProducer gives the advance a home, and puts everything a show needs around it in the same place.
+Everything an event needs after the advance lives here too, which means the guest list and the artist +1s, the
+seating chart nobody wants to build twice, a run of show that shifts on its own when the opener runs long, and
+door check-in that carries on scanning while the venue Wi-Fi does whatever venue Wi-Fi does. At the end of the
+night you settle up in the same place, without carrying a pile of receipts home with you.
 
 **It all runs in your browser.** No server, no account, no analytics. Guest data is real personal information
 when this is used for real, and it never leaves the device.

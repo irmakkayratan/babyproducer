@@ -56,7 +56,7 @@ export function WorkspaceHome() {
         <EmptyState
           className="mt-10 rounded-lg border border-dashed"
           title="No events yet"
-          description="Create one from a template. Pick the shape of your event and the vocabulary, cue columns and dashboards come with it."
+          description="Create one from a template. Tell it what kind of event you’re running, and it comes back with the vocabulary, the cue columns, and the dashboards that suit it."
           action={
             <Button onClick={() => setWizardOpen(true)}>
               <Plus className="size-4" /> Create your first event
