@@ -47,6 +47,7 @@ function contentQualityFor(voiceId: string, rng: Rng): number {
   const bias: Record<string, number> = {
     celebrity: 0.78, influencer: 0.68, media: 0.82, buyer: 0.55, partner: 0.6, owned: 0.88,
     creator: 0.7, vip: 0.8, public: 0.38, analyst: 0.72, press: 0.8, customer: 0.45, internal: 0.66,
+    dj: 0.84, artist: 0.84, promoter: 0.62, production: 0.58, crew: 0.4, guest: 0.42,
   };
   const mean = bias[voiceId] ?? 0.6;
   return Math.max(0.05, Math.min(1, rng.normal(mean, 0.16)));
@@ -116,8 +117,8 @@ function generateGuests(
 }
 
 /**
- * Arrival times follow the curve the scenario describes: a runway show spikes
- * in the 40 minutes before doors, a pop-up trickles all day.
+ * Arrival times follow the curve the scenario describes: a club night spikes
+ * in the 40 minutes after doors, a festival trickles in all day.
  */
 function generateArrivals(spec: ScenarioSpec, guests: Guest[], doors: Date, rng: Rng, deviceId: string): Arrival[] {
   const arrivals: Arrival[] = [];
@@ -243,7 +244,7 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
   const workspace = await createWorkspace({
     name: DEMO_WORKSPACE_NAME,
     demo: true,
-    template: getTemplate('runway-show'),
+    template: getTemplate('club-night'),
   });
 
   // The demo is the product tour, so it runs every module. The subset its
@@ -263,6 +264,7 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
     const event = await createEvent({
       workspaceId: workspace.id,
       name: spec.name,
+      subtitle: spec.subtitle,
       templateId: spec.templateId,
       startsAt: start.toISOString(),
       endsAt: end.toISOString(),
@@ -278,7 +280,7 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
     const seating = generateSeating(
       spec,
       event.id,
-      (getTemplate(spec.templateId).seatingPreset ?? 'none') as 'runway' | 'theatre' | 'banquet' | 'open-floor' | 'none',
+      spec.seatingPreset ?? getTemplate(spec.templateId).seatingPreset ?? 'none',
       guests,
       rng,
     );
@@ -287,7 +289,7 @@ export async function seedDemoWorkspace(onProgress?: (progress: SeedProgress) =>
     // gets the window it will have, so the dashboard is never empty.
     const telemetry = generateTelemetry(
       event.id,
-      spec.id === 'lumen' ? ACTIVATION_SOURCES : SHOW_SOURCES,
+      spec.id === 'launch' ? ACTIVATION_SOURCES : SHOW_SOURCES,
       {
         start: doors,
         end,

@@ -33,7 +33,7 @@ import { DriftPill } from './DriftPill';
 import { CallerBar } from './CallerBar';
 import { PrintSheet } from './PrintSheet';
 import { seedRundown } from '@/data/seed/rundowns';
-import { getScenario } from '@/data/seed/scenarios';
+import { SCENARIOS } from '@/data/seed/scenarios';
 import { cn } from '@/lib/utils';
 
 export function RundownPage() {
@@ -59,9 +59,11 @@ export function RundownPage() {
       if (!event) return;
       const template = getTemplate(event.templateId ?? 'blank');
       const columns = template.rundownColumns ?? DEFAULT_RUNDOWN_COLUMNS;
-      const scenario = [...(workspace?.demo ? ['aurelia', 'lumen', 'nova'] : [])]
-        .map(getScenario)
-        .find((candidate) => candidate?.name === event.name);
+      // Matched by name against the scenario list itself, so renaming or
+      // reordering the demo never silently costs an event its cue stack.
+      const scenario = workspace?.demo
+        ? SCENARIOS.find((candidate) => candidate.name === event.name)
+        : undefined;
 
       seedRundown(doc, {
         eventId: event.id,

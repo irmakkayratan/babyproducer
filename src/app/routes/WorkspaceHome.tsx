@@ -100,7 +100,12 @@ function EventGrid({
             <EventCoverArt event={event} className={past ? 'aspect-[2/1] w-full' : 'aspect-square w-full'} />
             <div className="space-y-2 p-4">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-medium leading-snug">{event.name}</h3>
+                <div className="min-w-0">
+                  <h3 className="font-medium leading-snug">{event.name}</h3>
+                  {event.subtitle && (
+                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{event.subtitle}</p>
+                  )}
+                </div>
                 <Badge variant="muted">{past ? 'Complete' : event.kind}</Badge>
               </div>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">

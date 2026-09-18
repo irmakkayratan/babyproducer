@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { db } from '@/data/db';
+import { getTemplate } from '@/data/templates';
 import { useStore } from '@/store';
 import { listArrivals } from '@/data/guests';
 import { useRundown } from '@/modules/rundown/useRundown';
@@ -38,10 +39,10 @@ const DEFAULT_WIDGETS = [
   'alerts',
 ];
 
-function defaultLayout(): WidgetInstance[] {
+function defaultLayout(keys: string[] = DEFAULT_WIDGETS): WidgetInstance[] {
   let x = 0;
   let y = 0;
-  return DEFAULT_WIDGETS.flatMap((key) => {
+  return keys.flatMap((key) => {
     const definition = getWidget(key);
     if (!definition) return [];
     if (x + definition.defaultSize.w > COLUMNS) {
@@ -74,6 +75,8 @@ export function CommandPage() {
   const loadGuests = useStore((s) => s.loadGuests);
 
   const event = events.find((e) => e.id === eventId);
+  const eventLoaded = Boolean(event);
+  const templateId = event?.templateId;
   const workspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
@@ -102,8 +105,10 @@ export function CommandPage() {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
+  // The template decides what the dashboard opens with, so wait for the event
+  // rather than building a generic layout the template would never have chosen.
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || !eventLoaded) return;
     void (async () => {
       const [existing, arrivalRows, telemetryRows] = await Promise.all([
         db.dashboards.where('eventId').equals(eventId).first(),
@@ -122,7 +127,7 @@ export function CommandPage() {
         id: ulid(),
         eventId,
         name: 'Command Center',
-        widgets: defaultLayout(),
+        widgets: defaultLayout(getTemplate(templateId ?? 'blank').dashboardWidgets),
         createdAt: iso,
         updatedAt: iso,
         rev: 1,
@@ -130,7 +135,7 @@ export function CommandPage() {
       await db.dashboards.put(created);
       setDashboard(created);
     })();
-  }, [eventId]);
+  }, [eventId, eventLoaded, templateId]);
 
   const save = useCallback(async (next: Dashboard) => {
     const stamped = { ...next, updatedAt: new Date().toISOString(), rev: next.rev + 1 };
@@ -206,7 +211,11 @@ export function CommandPage() {
         <p className="mr-auto text-sm text-muted-foreground">
           {dashboard.name} · {dashboard.widgets.length} widgets · layout saved on this device
         </p>
-        <Button size="sm" variant="ghost" onClick={() => void save({ ...dashboard, widgets: defaultLayout() })}>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => void save({ ...dashboard, widgets: defaultLayout(getTemplate(event.templateId ?? 'blank').dashboardWidgets) })}
+        >
           <RotateCcw className="size-4" /> Reset layout
         </Button>
         <DropdownMenu>

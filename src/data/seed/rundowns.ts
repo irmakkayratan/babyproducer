@@ -18,6 +18,95 @@ interface BlockSpec {
 }
 
 const SHOW_SHAPES: Record<string, BlockSpec[]> = {
+  'club-night': [
+    {
+      name: 'Door',
+      cues: [
+        { label: 'Doors open', itemTypeId: 'doors', minSec: 1800, maxSec: 2700, cells: { audio: 'Warm-up playlist', lighting: 'House 60%' } },
+        { label: 'Room fills', itemTypeId: 'doors', minSec: 2700, maxSec: 3600, cells: { booth: 'Resident on', lighting: 'House 30%' } },
+      ],
+    },
+    {
+      name: 'Openers',
+      // Three sets before the headline, each with the changeover after it, so
+      // an opener running long pushes everything below and the curfew shows it.
+      repeat: 3,
+      cues: [
+        { label: 'Opening set', itemTypeId: 'opener', minSec: 3600, maxSec: 5400, cells: { booth: 'CDJ 1–2', visuals: 'Loop pack A' } },
+        { label: 'Changeover', itemTypeId: 'changeover', minSec: 300, maxSec: 600, cells: { audio: 'Booth feed down 6dB', booth: 'USB swap' } },
+      ],
+    },
+    {
+      name: 'Headline',
+      cues: [
+        { label: 'Headline set', itemTypeId: 'headliner', minSec: 7200, maxSec: 9000, cells: { audio: 'Limiter armed', lighting: 'Show look', visuals: 'Live feed' } },
+        { label: 'Changeover to close', itemTypeId: 'changeover', minSec: 300, maxSec: 600, cells: { booth: 'USB swap' } },
+        { label: 'Close-out set', itemTypeId: 'opener', minSec: 3600, maxSec: 5400, cells: { booth: 'Resident back on' } },
+      ],
+    },
+    {
+      name: 'Curfew',
+      cues: [
+        { label: 'Last track', itemTypeId: 'curfew', minSec: 300, maxSec: 480, cells: { audio: 'Hard out', lighting: 'House 100%' } },
+        { label: 'Room clear', itemTypeId: 'curfew', minSec: 900, maxSec: 1500, cells: { lighting: 'Work lights' } },
+      ],
+    },
+  ],
+  'festival-stage': [
+    {
+      name: 'Stage prep',
+      cues: [
+        { label: 'Line check', itemTypeId: 'line-check', minSec: 1800, maxSec: 2700, cells: { audio: 'FOH + monitors', patch: 'House split' } },
+        { label: 'Doors to the field', itemTypeId: 'line-check', minSec: 1800, maxSec: 2400, cells: { audio: 'Walk-in music' } },
+      ],
+    },
+    {
+      name: 'Day programme',
+      // A stage is the same shape over and over: a set, then the window the
+      // next act has to get on. Re-time one and everything after it moves.
+      repeat: 5,
+      cues: [
+        { label: 'Set', itemTypeId: 'set', minSec: 2400, maxSec: 3600, cells: { monitors: '6 mixes', backline: 'Shared kit' } },
+        { label: 'Changeover', itemTypeId: 'changeover', minSec: 900, maxSec: 1500, cells: { patch: 'Re-patch to next', backline: 'Risers roll' } },
+      ],
+    },
+    {
+      name: 'Headline',
+      cues: [
+        { label: 'Headline set', itemTypeId: 'set', minSec: 4200, maxSec: 5400, cells: { monitors: 'Own engineer', audio: 'Own control package' } },
+        { label: 'Hard stop', itemTypeId: 'hard-stop', minSec: 300, maxSec: 600, cells: { audio: 'Noise curfew', patch: 'Strike to store' } },
+      ],
+    },
+  ],
+  'live-show': [
+    {
+      name: 'Load-in',
+      cues: [
+        { label: 'Load-in', minSec: 5400, maxSec: 7200, cells: { backline: 'Trucks to the dock' } },
+        { label: 'Backline build and patch', minSec: 3600, maxSec: 5400, cells: { audio: 'Console file loaded', backline: 'Risers set' } },
+        { label: 'Soundcheck, headline', minSec: 2700, maxSec: 3600, cells: { audio: 'FOH and monitors', lighting: 'Focus check' } },
+        { label: 'Soundcheck, support', minSec: 900, maxSec: 1800, cells: { audio: 'Line check only' } },
+      ],
+    },
+    {
+      name: 'Show',
+      cues: [
+        { label: 'Doors open', itemTypeId: 'doors', minSec: 2700, maxSec: 3600, cells: { audio: 'Walk-in music', lighting: 'House 70%' } },
+        { label: 'Support set', itemTypeId: 'support', minSec: 1800, maxSec: 2400, cells: { audio: 'Support package' } },
+        { label: 'Changeover', itemTypeId: 'changeover', minSec: 1200, maxSec: 1800, cells: { backline: 'Reset to headline' } },
+        { label: 'Headline set', itemTypeId: 'set', minSec: 4800, maxSec: 6000, cells: { audio: 'Show file', lighting: 'Show look', video: 'IMAG live' } },
+        { label: 'Encore', itemTypeId: 'encore', minSec: 480, maxSec: 900, cells: { lighting: 'Encore look' } },
+        { label: 'Walk-out', itemTypeId: 'walkout', minSec: 600, maxSec: 1200, cells: { audio: 'Walk-out music', lighting: 'House 100%' } },
+      ],
+    },
+    {
+      name: 'Out',
+      cues: [
+        { label: 'Strike and load-out', minSec: 3600, maxSec: 5400, cells: { backline: 'Trucks loaded' } },
+        { label: 'Bus call', minSec: 600, maxSec: 900, cells: { notes: 'All aboard' } },
+      ],
+    },
+  ],
   'runway-show': [
     {
       name: 'Pre-show',
@@ -119,7 +208,7 @@ export function seedRundown(
           blockId: block.name,
         };
         // Every show has a couple of immovable wall-clock moments.
-        if (spec.label === 'Doors open' || spec.label === 'Doors and seating') {
+        if (spec.label === 'Doors open' || spec.label === 'Doors and seating' || spec.label === 'Line check') {
           cue.anchor = { at: options.doorsAt ?? options.showStart, mode: 'hard' };
         }
         if (spec.label === 'House to half' || spec.label === 'Countdown roll') {

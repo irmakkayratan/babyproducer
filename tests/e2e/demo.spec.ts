@@ -7,7 +7,7 @@ async function loadDemo(page: Page) {
 }
 
 async function firstGuestName(page: Page): Promise<string> {
-  await page.getByRole('link', { name: /AURELIA/ }).click();
+  await page.getByRole('link', { name: /Club Night/ }).click();
   await page.getByRole('link', { name: 'Guests', exact: true }).first().click();
   await expect(page.getByTestId('guest-table-scroll')).toBeVisible();
   return page.getByTestId('guest-row').first().getByTestId('guest-name').innerText();
@@ -20,6 +20,20 @@ test.describe('demo experience', () => {
     await expect(banner).toContainText('Demo data');
     await expect(banner.getByRole('button', { name: /Copy to my workspace/ })).toBeVisible();
     await expect(banner.getByRole('button', { name: 'Reset' })).toBeVisible();
+  });
+
+  test('each production is named for what it is, with the detail underneath', async ({ page }) => {
+    await loadDemo(page);
+    for (const [name, subtitle] of [
+      ['Club Night', 'Electronic, 700 cap'],
+      ['Festival Stage', 'Main stage, one day'],
+      ['Brand Launch', 'Keynote and reception'],
+      ['Tour Date', 'Two day load-in'],
+    ]) {
+      const card = page.getByRole('link', { name: new RegExp(name) });
+      await expect(card).toBeVisible();
+      await expect(card).toContainText(subtitle);
+    }
   });
 
   test('reset rebuilds byte-identical data from the same seed', async ({ page }) => {
@@ -40,7 +54,7 @@ test.describe('demo experience', () => {
     await page.getByTestId('demo-banner').getByRole('button', { name: /Copy to my workspace/ }).click();
     await expect(page.getByText('Copied into your own workspace')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('demo-banner')).toHaveCount(0);
-    await expect(page.getByRole('link', { name: /AURELIA/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Club Night/ })).toBeVisible();
   });
 
   test('the tour walks the product and can be finished', async ({ page }) => {

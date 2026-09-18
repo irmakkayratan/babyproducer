@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-async function openSettlement(page: Page, eventName = /ATLAS/) {
+async function openSettlement(page: Page, eventName = /Tour Date/) {
   await page.goto('/demo');
   await expect(page).toHaveURL(/\/w\/[A-Z0-9]+$/, { timeout: 30_000 });
   await page.getByRole('link', { name: eventName }).click();
@@ -87,7 +87,7 @@ test.describe('settlement', () => {
   });
 
   test('a project with no box office settles against its fee instead', async ({ page }) => {
-    await openSettlement(page, /LUMEN/);
+    await openSettlement(page, /Brand Launch/);
     await expect(page.getByTestId('settlement-scaling')).toContainText('No price bands yet');
 
     await page.getByRole('tab', { name: 'Statement' }).click();

@@ -51,11 +51,17 @@ export interface SettlementSpec {
 }
 
 export interface ScenarioSpec {
-  id: 'aurelia' | 'lumen' | 'nova' | 'atlas';
+  id: 'club-night' | 'festival' | 'launch' | 'tour';
   seed: string;
   name: string;
   kind: string;
   templateId: string;
+  /**
+   * Overrides the template's room. A template ships the shape its events
+   * usually take; a scenario occasionally runs a different one, the way a
+   * launch built on the activation template still seats a keynote.
+   */
+  seatingPreset?: 'runway' | 'theatre' | 'banquet' | 'open-floor' | 'none';
   accent: string;
   venue: { name: string; address?: string };
   /** Days from "now". Negative means the event has already happened. */
@@ -66,110 +72,159 @@ export interface ScenarioSpec {
   guests: GuestMix;
   arrivals: { curve: 'preshow-spike' | 'steady' | 'walk-in-heavy'; attendedRate: number; walkInRate: number };
   modules: ModuleKey[];
-  blurb: string;
+  /** The line of detail under the event name on its card. */
+  subtitle: string;
   advance?: AdvanceSpec;
   settlement?: SettlementSpec;
 }
 
 export const SCENARIOS: ScenarioSpec[] = [
   {
-    id: 'aurelia',
-    seed: 'aurelia-ss27',
-    name: 'AURELIA SS27',
-    kind: 'Runway Show',
-    templateId: 'runway-show',
+    id: 'club-night',
+    seed: 'club-night',
+    name: 'Club Night',
+    kind: 'Club Night',
+    templateId: 'club-night',
     accent: 'hsl(0 0% 100%)',
-    venue: { name: 'Palais de Tokyo', address: '13 Av. du Président Wilson, Paris' },
+    venue: { name: 'Säälchen', address: 'Holzmarktstraße 25, Berlin' },
     startsInDays: 12,
-    startHour: 19,
-    durationHours: 2,
-    capacity: 420,
-    blurb: 'Paris runway show with front-row politics and a 68-cue stack.',
+    startHour: 22,
+    durationHours: 6,
+    capacity: 700,
+    subtitle: 'Electronic, 700 cap',
     guests: {
-      count: 420,
-      voiceMix: { celebrity: 0.05, influencer: 0.24, media: 0.31, buyer: 0.24, partner: 0.11, owned: 0.05 },
-      tierMix: { 'a-list': 0.06, 'front-row': 0.18, press: 0.3, buyer: 0.26, standing: 0.2 },
-      rsvpConversion: { celebrity: 0.72, influencer: 0.84, media: 0.9, buyer: 0.93, partner: 0.88, owned: 0.98 },
-      reachMedian: { celebrity: 4_200_000, influencer: 240_000, media: 48_000, buyer: 9_000, partner: 26_000, owned: 130_000 },
-      platformMix: { instagram: 0.46, tiktok: 0.19, youtube: 0.07, x: 0.08, press: 0.2 },
-      companyCount: 64,
-      plusOneRate: 0.22,
+      count: 520,
+      voiceMix: { dj: 0.04, crew: 0.12, promoter: 0.08, press: 0.1, guest: 0.66 },
+      tierMix: { aaa: 0.06, 'artist-list': 0.14, 'guest-list': 0.34, presale: 0.3, door: 0.16 },
+      rsvpConversion: { dj: 0.99, crew: 0.97, promoter: 0.94, press: 0.78, guest: 0.72 },
+      reachMedian: { dj: 180_000, crew: 2_200, promoter: 12_000, press: 46_000, guest: 3_100 },
+      platformMix: { instagram: 0.44, tiktok: 0.2, youtube: 0.08, x: 0.08, press: 0.2 },
+      companyCount: 28,
+      plusOneRate: 0.3,
     },
-    arrivals: { curve: 'preshow-spike', attendedRate: 0.86, walkInRate: 0.02 },
-    modules: ['guests', 'seating', 'rundown', 'advancing', 'checkin', 'command', 'metrics'],
+    // A club fills late and takes money on the door all night.
+    arrivals: { curve: 'preshow-spike', attendedRate: 0.81, walkInRate: 0.14 },
+    modules: ['guests', 'rundown', 'advancing', 'checkin', 'command', 'settlement'],
     advance: {
       confidence: 0.62,
       parties: [
-        { name: 'Design studio', roleId: 'principal', headcount: 14, contactName: 'Studio production', contactPhone: '+33 6 12 44 90 21' },
-        { name: 'Casting and hair/make-up', roleId: 'crew', headcount: 38, contactName: 'Casting desk' },
-        { name: 'Show crew', roleId: 'crew', headcount: 22 },
+        { name: 'Headline DJ', roleId: 'headline', headcount: 3, contactName: 'Booking agent', contactPhone: '+49 30 5557 1180' },
+        { name: 'Opener', roleId: 'support', headcount: 2, contactName: 'Manager' },
+        { name: 'Promoter crew', roleId: 'promoter', headcount: 9 },
       ],
       contacts: [
-        { name: 'Camille Roux', role: 'Venue production manager', company: 'Palais de Tokyo', phone: '+33 1 47 23 54 01' },
-        { name: 'Ibrahim Sy', role: 'Head of security', company: 'Palais de Tokyo', phone: '+33 6 88 12 02 77' },
-        { name: 'Marta Oliveira', role: 'Show caller', company: 'Northlight Productions', phone: '+33 6 21 55 18 04' },
+        { name: 'Jonas Lehmann', role: 'Venue manager', company: 'Säälchen', phone: '+49 30 5557 1100' },
+        { name: 'Mina Hoffmann', role: 'Head of sound', company: 'Säälchen', phone: '+49 151 2244 8890' },
+        { name: 'Deniz Yilmaz', role: 'Head of door', company: 'Nachtwacht Security', phone: '+49 160 778 2245' },
       ],
     },
   },
   {
-    id: 'lumen',
-    seed: 'lumen-popup',
-    name: 'LUMEN Beauty Pop-Up',
+    id: 'festival',
+    seed: 'festival-stage',
+    name: 'Festival Stage',
+    kind: 'Festival Stage',
+    templateId: 'festival-stage',
+    accent: 'hsl(0 0% 70%)',
+    venue: { name: 'Victoria Park', address: 'Grove Rd, London' },
+    startsInDays: 34,
+    startHour: 13,
+    durationHours: 10,
+    capacity: 12_000,
+    subtitle: 'Main stage, one day',
+    guests: {
+      count: 620,
+      voiceMix: { artist: 0.1, crew: 0.28, production: 0.16, press: 0.14, guest: 0.32 },
+      tierMix: { aaa: 0.08, artist: 0.16, working: 0.36, photo: 0.1, wristband: 0.3 },
+      rsvpConversion: { artist: 0.97, crew: 0.98, production: 0.99, press: 0.83, guest: 0.74 },
+      reachMedian: { artist: 420_000, crew: 2_600, production: 4_200, press: 58_000, guest: 5_400 },
+      platformMix: { instagram: 0.42, tiktok: 0.18, youtube: 0.12, x: 0.08, press: 0.2 },
+      companyCount: 54,
+      plusOneRate: 0.18,
+    },
+    arrivals: { curve: 'steady', attendedRate: 0.84, walkInRate: 0.08 },
+    modules: ['guests', 'rundown', 'advancing', 'checkin', 'command', 'metrics'],
+    // Five weeks out with five acts to advance: most of the sheet is still
+    // open, which is the state the "still missing" panel exists for.
+    advance: {
+      confidence: 0.42,
+      parties: [
+        { name: 'Headline act', roleId: 'headline', headcount: 16, contactName: 'Tour manager', contactPhone: '+44 7700 900188' },
+        { name: 'Main support', roleId: 'support', headcount: 9, contactName: 'Day-to-day manager' },
+        { name: 'Early acts', roleId: 'support', headcount: 14 },
+        { name: 'Stage crew', roleId: 'local-crew', headcount: 22 },
+      ],
+      contacts: [
+        { name: 'Priya Nair', role: 'Stage manager', company: 'Victoria Park', phone: '+44 20 7946 0155' },
+        { name: 'Callum Reid', role: 'Site production', company: 'Fieldworks Production', phone: '+44 7700 900244' },
+        { name: 'Aoife Byrne', role: 'Artist liaison', company: 'Fieldworks Production', phone: '+44 7700 900319' },
+      ],
+    },
+  },
+  {
+    id: 'launch',
+    seed: 'brand-launch',
+    name: 'Brand Launch',
     kind: 'Activation',
     templateId: 'brand-activation',
+    // The activation template is open-floor, but this one seats a keynote
+    // before the room turns over for the reception.
+    seatingPreset: 'theatre',
     accent: 'hsl(0 0% 84%)',
     venue: { name: 'The Old Sorting Office', address: '21–31 New Oxford St, London' },
     startsInDays: -6,
-    startHour: 11,
-    durationHours: 8,
-    capacity: 1800,
-    blurb: 'Four-day retail activation: walk-in heavy, sensor telemetry, dwell time.',
+    startHour: 18,
+    durationHours: 5,
+    capacity: 520,
+    subtitle: 'Keynote and reception',
     guests: {
+      // Invited well over the room, the way a launch always is, so the chart
+      // keeps a real unseated queue rather than seating everybody.
       count: 640,
       voiceMix: { creator: 0.34, media: 0.12, vip: 0.06, public: 0.42, partner: 0.06 },
-      tierMix: { hosted: 0.18, rsvp: 0.42, 'walk-in': 0.4 },
+      tierMix: { hosted: 0.3, rsvp: 0.55, 'walk-in': 0.15 },
       rsvpConversion: { creator: 0.78, media: 0.85, vip: 0.7, public: 0.62, partner: 0.9 },
       reachMedian: { creator: 86_000, media: 40_000, vip: 900_000, public: 1_200, partner: 22_000 },
       platformMix: { instagram: 0.42, tiktok: 0.38, youtube: 0.08, x: 0.04, press: 0.08 },
       companyCount: 48,
       plusOneRate: 0.35,
     },
-    arrivals: { curve: 'walk-in-heavy', attendedRate: 0.71, walkInRate: 0.38 },
-    modules: ['guests', 'rundown', 'advancing', 'checkin', 'command', 'metrics', 'settlement'],
+    arrivals: { curve: 'steady', attendedRate: 0.74, walkInRate: 0.12 },
+    modules: ['guests', 'seating', 'rundown', 'advancing', 'checkin', 'command', 'metrics', 'settlement'],
     advance: {
       confidence: 0.97,
       parties: [
         { name: 'Brand team', roleId: 'principal', headcount: 8, contactName: 'Brand experience lead' },
         { name: 'Build crew', roleId: 'crew', headcount: 16 },
-        { name: 'Floor staff', roleId: 'crew', headcount: 24 },
+        { name: 'Hosts and floor staff', roleId: 'crew', headcount: 24 },
       ],
       contacts: [
         { name: 'Ruth Adeyemi', role: 'Landlord liaison', company: 'The Old Sorting Office', phone: '+44 20 7946 0102' },
         { name: 'Tom Hargreaves', role: 'Build lead', company: 'Northbank Scenic', phone: '+44 7700 900412' },
       ],
     },
-    // A brand activation has no box office: it is a fee against a budget, and
-    // the same statement handles it.
+    // A launch has no box office: it is a fee against a budget, and the same
+    // statement handles it.
     settlement: {
       currency: 'GBP',
       noBoxOffice: true,
       deductions: [],
       otherRevenue: [
         { label: 'Client production fee', basis: 'fixed', amount: 168_000 },
-        { label: 'Retail sales share', basis: 'fixed', amount: 21_400 },
+        { label: 'Content licensing share', basis: 'fixed', amount: 21_400 },
       ],
       expenses: [
-        { label: 'Space hire, four days', basis: 'fixed', amount: 38_000, categoryId: 'venue' },
+        { label: 'Venue hire and rooms', basis: 'fixed', amount: 38_000, categoryId: 'venue' },
         { label: 'Build and scenic', basis: 'fixed', amount: 52_500, categoryId: 'production' },
         { label: 'AV, lighting and sensors', basis: 'fixed', amount: 16_800, categoryId: 'production' },
-        { label: 'Floor staff and hosts', basis: 'fixed', amount: 19_200, categoryId: 'staffing' },
+        { label: 'Hosts and front of house', basis: 'fixed', amount: 19_200, categoryId: 'staffing' },
         { label: 'Content capture crew', basis: 'fixed', amount: 8400, categoryId: 'production' },
         { label: 'Catering and hospitality', basis: 'fixed', amount: 6100, categoryId: 'hospitality' },
         { label: 'Paid social and print', basis: 'fixed', amount: 11_500, categoryId: 'marketing' },
       ],
       parties: [
         {
-          name: 'Northlight Productions',
+          name: 'Production agency',
           roleId: 'principal',
           deal: { kind: 'percentage', guarantee: 0, percentage: 15, basis: 'gross', breakeven: 0 },
           deposit: 20_000,
@@ -178,46 +233,9 @@ export const SCENARIOS: ScenarioSpec[] = [
     },
   },
   {
-    id: 'nova',
-    seed: 'nova-launch',
-    name: 'NOVA Launch Keynote',
-    kind: 'Keynote',
-    templateId: 'product-launch',
-    accent: 'hsl(0 0% 70%)',
-    venue: { name: 'Kulturhuset Stadsteatern', address: 'Sergels torg, Stockholm' },
-    startsInDays: 34,
-    startHour: 10,
-    durationHours: 3,
-    capacity: 900,
-    blurb: 'Corporate launch: theatre seating, rehearsal blocks, teleprompter scripts.',
-    guests: {
-      count: 780,
-      voiceMix: { analyst: 0.12, press: 0.22, customer: 0.4, partner: 0.16, internal: 0.1 },
-      tierMix: { 'keynote-row': 0.08, reserved: 0.34, general: 0.58 },
-      rsvpConversion: { analyst: 0.88, press: 0.82, customer: 0.74, partner: 0.86, internal: 0.97 },
-      reachMedian: { analyst: 32_000, press: 60_000, customer: 3_400, partner: 18_000, internal: 5_000 },
-      platformMix: { x: 0.34, press: 0.3, youtube: 0.14, instagram: 0.14, tiktok: 0.08 },
-      companyCount: 120,
-      plusOneRate: 0.12,
-    },
-    arrivals: { curve: 'steady', attendedRate: 0.79, walkInRate: 0.05 },
-    modules: ['guests', 'seating', 'rundown', 'advancing', 'checkin', 'command', 'metrics'],
-    advance: {
-      confidence: 0.5,
-      parties: [
-        { name: 'Executive speakers', roleId: 'principal', headcount: 6, contactName: 'Comms lead' },
-        { name: 'Broadcast crew', roleId: 'crew', headcount: 18 },
-      ],
-      contacts: [
-        { name: 'Elin Bergström', role: 'Technical manager', company: 'Kulturhuset', phone: '+46 8 506 20 10' },
-        { name: 'Jonas Lind', role: 'Stream producer', company: 'Norrsken Broadcast', phone: '+46 70 555 21 88' },
-      ],
-    },
-  },
-  {
-    id: 'atlas',
-    seed: 'atlas-tour',
-    name: 'ATLAS Tour Date',
+    id: 'tour',
+    seed: 'tour-date',
+    name: 'Tour Date',
     kind: 'Live Show',
     templateId: 'live-show',
     accent: 'hsl(0 0% 56%)',
@@ -226,7 +244,7 @@ export const SCENARIOS: ScenarioSpec[] = [
     startHour: 20,
     durationHours: 4,
     capacity: 1500,
-    blurb: 'A touring date settled the night it happened: advance, box office, deal.',
+    subtitle: 'Two day load-in',
     guests: {
       count: 260,
       voiceMix: { artist: 0.12, crew: 0.24, promoter: 0.1, press: 0.18, guest: 0.36 },
@@ -242,8 +260,8 @@ export const SCENARIOS: ScenarioSpec[] = [
     advance: {
       confidence: 0.98,
       parties: [
-        { name: 'ATLAS', roleId: 'headline', headcount: 11, contactName: 'Nadia Faber', contactPhone: '+31 6 1188 4420' },
-        { name: 'Halveil', roleId: 'support', headcount: 5, contactName: 'Tour manager' },
+        { name: 'Headline act', roleId: 'headline', headcount: 11, contactName: 'Nadia Faber', contactPhone: '+31 6 1188 4420' },
+        { name: 'Support act', roleId: 'support', headcount: 5, contactName: 'Tour manager' },
         { name: 'Touring crew', roleId: 'touring-crew', headcount: 9 },
       ],
       contacts: [
@@ -270,7 +288,7 @@ export const SCENARIOS: ScenarioSpec[] = [
       ],
       parties: [
         {
-          name: 'ATLAS',
+          name: 'Headline act',
           roleId: 'headline',
           // The classic touring deal: a guarantee the artist is paid whatever
           // happens, against 85% of what is left once the show is paid for.
@@ -280,7 +298,7 @@ export const SCENARIOS: ScenarioSpec[] = [
           adjustments: [{ label: 'Rider buyout', basis: 'fixed', amount: 850 }],
         },
         {
-          name: 'Halveil',
+          name: 'Support act',
           roleId: 'support',
           deal: { kind: 'flat', guarantee: 1800, percentage: 0, basis: 'net', breakeven: 0 },
           deposit: 0,

@@ -25,10 +25,9 @@ npm install
 npm run dev     # then open the URL it prints and click "Explore the demo"
 ```
 
-The demo builds four complete productions on your machine in about a second: a Paris runway show, a four-day
-beauty pop-up, a corporate launch keynote, and a touring date that has already been played and settled. It
-comes from a fixed seed, so **Reset** rebuilds it exactly, and **Copy to my workspace** forks it into one you
-own.
+The demo builds four complete productions on your machine in about a second: a club night, a festival stage, a
+brand launch, and a tour date that has already been played and settled. It comes from a fixed seed, so
+**Reset** rebuilds it exactly, and **Copy to my workspace** forks it into one you own.
 
 ## Advancing
 

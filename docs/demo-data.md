@@ -19,19 +19,19 @@ Demo mode is explicit and reversible: a persistent banner reading **"Demo data. 
 
 Each is complete across every module (guests, seating, rundown, advancing, arrivals, telemetry, dashboards, recap and settlement), so every entry point lands on real data.
 
-### A. AURELIA: SS27 Runway (Paris)
-The FLB flagship. 420 guests across Celebrity / Influencer / Media / Buyer / Partner voices with plausible follower and engagement distributions (heavy-tailed). Front-row politics encoded as seating rules: two guests marked keep-apart, a celebrity pair marked seat-together, a tier-in-zone rule reserving the front row. A three-zone runway map (runway, front row, riser left/right) with 380 seats. A 68-cue rundown with Music, Lighting, Model Order, Camera and Notes columns, hard-anchored at doors and show start. Arrivals concentrated in a 40-minute pre-show spike. High MIV and moderate EMV, which illustrates the metric contrast the research describes.
+### A. Club Night (Berlin, 700 cap)
+The door case, twelve days out. 520 guests across DJ / Crew / Promoter / Press / Guest voices, tiered from All Access down to Door, with plausible follower and engagement distributions (heavy-tailed). Standing room rather than a seating chart. A thirteen-cue stack — doors, three opening sets each with the changeover after it, the headline set, a close-out and the curfew — hard-anchored at doors, so an opener running long pushes the curfew and the sheet says so. Arrivals concentrated in a spike after doors, with a real walk-in rate on the night.
 
-### B. LUMEN Beauty: Pop-Up Activation (4 days)
-The experiential case. Walk-in-heavy check-in, a retail floor map in place of seats, four days of telemetry: occupancy by zone, dwell time at an LED volume, RFID trigger counts at three stations, throughput at the entrance, plus one deliberate threshold breach on day 3 so alerting is visible. A creator content log feeding a running MIV total. Dashboard preconfigured with eight widgets.
+### B. Festival Stage (London, one day)
+The timing case, five weeks out. One stage on a site somebody else runs: published set times, a shared backline, a changeover window between every act and a hard stop nobody negotiates. 900 accredited people across Artist / Crew / Production / Press / Guest, tiered All Access down to Wristband. Its advance is deliberately the least finished of the four, four parties deep with the artist advance repeating per act, because a sheet with plenty still open is the one the "still missing" panel exists for.
 
-### C. NOVA: Product Launch Keynote
-The proof the app works well outside fashion. Corporate vocabulary (Analyst / Press / Customer / Partner / Internal), theatre seating with rows and an aisle, a rundown with Slides / Mics / Stream / Lower Thirds columns, teleprompter scripts on four cues, rehearsal blocks, and a custom "Sponsor Value" metric replacing MIV. It demonstrates that the metric engine is data you can edit.
+### C. Brand Launch (London)
+The seated case, six days in the past. A keynote for 900 in a theatre room before the room turns over for the reception — invited a thousand, the way a launch always is, so the chart has real gaps and a real unseated list. Seating politics encoded as rules: two guests marked keep-apart, a pair marked seat-together, a tier-in-zone rule holding the front for the top tier. Telemetry from an activation's sensors: occupancy by zone, dwell time, throughput at the entrance, plus a deliberate threshold breach so alerting is visible. It settles against a client fee, which is the same statement with no price bands in it.
 
-### D. ATLAS: Tour Date (Amsterdam)
-The advance-and-settle case, three days in the past. A 1,500-capacity room with four price bands, an advance at 98% with one line still chasing, three travelling parties with flights, hotel rooms and transfers on a day sheet, and a settlement that resolves the deal the industry actually writes down: €12,000 guaranteed against 70% of net after costs, with the percentage winning on the night. Deductions carry Dutch rates (9% VAT, ticketing, author's rights on the balance); the statement ends at a house result of about €4,300 on €63,000 of gross receipts.
+### D. Tour Date (Amsterdam)
+The advance-and-settle case, three days in the past. A 1,500-capacity room with four price bands, an advance at 98% with one line still chasing, three travelling parties with flights, hotel rooms and transfers on a day sheet, and a settlement that resolves the deal the industry actually writes down: €12,000 guaranteed against 70% of net after costs, with the percentage winning on the night. Deductions carry Dutch rates (9% VAT, ticketing, author's rights on the balance).
 
-Advancing and settlement are seeded across the other three as well: the upcoming productions carry an advance in progress, some lines confirmed, some chasing, one or two genuinely late, because a finished advance shows nothing, and an advance with three open questions shows the whole point. LUMEN settles against a client fee, which is the same statement with no price bands in it.
+Advancing and settlement are seeded across all four: the upcoming productions carry an advance in progress, some lines confirmed, some chasing, one or two genuinely late, because a finished advance shows nothing, and an advance with three open questions shows the whole point.
 
 ## 3. Generation strategy
 
@@ -43,7 +43,7 @@ Advancing and settlement are seeded across the other three as well: the upcoming
 ```ts
 // data/seed/scenario.ts
 export interface ScenarioSpec {
-  id: 'aurelia' | 'lumen' | 'nova';
+  id: 'club-night' | 'festival' | 'launch' | 'tour';
   seed: number;
   template: EventTemplateRef;
   guests: { count: number; voiceMix: Record<string, number>; tierMix: Record<string, number>;

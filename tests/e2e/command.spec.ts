@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-async function openDemoCommand(page: Page, eventName = /LUMEN/) {
+async function openDemoCommand(page: Page, eventName = /Brand Launch/) {
   await page.goto('/demo');
   await expect(page).toHaveURL(/\/w\/[A-Z0-9]+$/, { timeout: 30_000 });
   await page.getByRole('link', { name: eventName }).click();

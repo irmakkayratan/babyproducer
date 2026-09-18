@@ -9,7 +9,7 @@ async function openStudio(page: Page) {
 
 async function openGuests(page: Page) {
   await page.getByRole('link', { name: 'Events' }).click();
-  await page.getByRole('link', { name: /AURELIA/ }).click();
+  await page.getByRole('link', { name: /Club Night/ }).click();
   await page.getByRole('link', { name: 'Guests', exact: true }).first().click();
   await expect(page.getByTestId('guest-table-scroll')).toBeVisible();
 }
@@ -17,14 +17,14 @@ async function openGuests(page: Page) {
 test.describe('studio: customization', () => {
   test('renaming a voice renames it everywhere', async ({ page }) => {
     await openStudio(page);
-    const field = page.getByLabel('Label for celebrity');
+    const field = page.getByLabel('Label for dj');
     await field.fill('Talent');
     await field.blur();
 
     await openGuests(page);
     await page.getByTestId('filter-voiceId').click();
     await expect(page.getByRole('menuitemcheckbox', { name: /Talent/ })).toBeVisible();
-    await expect(page.getByRole('menuitemcheckbox', { name: /Celebrity/ })).toHaveCount(0);
+    await expect(page.getByRole('menuitemcheckbox', { name: /^DJ$/ })).toHaveCount(0);
   });
 
   test('a new custom field reaches the table and the detail sheet', async ({ page }) => {
@@ -56,10 +56,10 @@ test.describe('studio: customization', () => {
 
   test('an in-use entry archives instead of vanishing', async ({ page }) => {
     await openStudio(page);
-    const row = page.getByTestId('vocab-row').filter({ has: page.getByLabel('Label for celebrity') });
+    const row = page.getByTestId('vocab-row').filter({ has: page.getByLabel('Label for dj') });
     await expect(row).toContainText('in use');
     await row.getByRole('button', { name: /^Archive/ }).click();
-    await expect(page.getByLabel('Label for celebrity')).toBeVisible();
+    await expect(page.getByLabel('Label for dj')).toBeVisible();
   });
 
   test('editing a metric weight moves the scores it feeds', async ({ page }) => {
@@ -92,7 +92,7 @@ test.describe('studio: customization', () => {
     await page.getByLabel('Seating module').click();
 
     await page.getByRole('link', { name: 'Events' }).click();
-    await page.getByRole('link', { name: /AURELIA/ }).click();
+    await page.getByRole('link', { name: /Club Night/ }).click();
     // Gone from the sidebar and from the overview's quick links.
     await expect(page.getByRole('link', { name: 'Seating', exact: true })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Guests', exact: true })).toHaveCount(1);

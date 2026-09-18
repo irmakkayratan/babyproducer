@@ -38,7 +38,7 @@ export function EventWizard({
   const navigate = useNavigate();
   const createEvent = useStore((s) => s.createEvent);
   const [name, setName] = useState('');
-  const [templateId, setTemplateId] = useState(initialTemplateId ?? 'runway-show');
+  const [templateId, setTemplateId] = useState(initialTemplateId ?? 'club-night');
   const [startsAt, setStartsAt] = useState(defaultStart);
   const [venue, setVenue] = useState('');
   const [capacity, setCapacity] = useState('');
@@ -86,7 +86,7 @@ export function EventWizard({
               id="event-name"
               value={name}
               autoFocus
-              placeholder="AURELIA SS27"
+              placeholder="Friday Club Night"
               onChange={(e) => setName(e.target.value)}
             />
           </div>

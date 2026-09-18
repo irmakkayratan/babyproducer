@@ -189,6 +189,8 @@ export interface Event extends Timestamped {
   id: ULID;
   workspaceId: ULID;
   name: string;
+  /** A line of detail under the name: "Electronic, 700 cap", "Two day load-in". */
+  subtitle?: string;
   kind: string;
   statusId: string;
   startsAt: ISODate;
@@ -604,6 +606,11 @@ export interface EventTemplate {
   /** Seeds weight-table entries: { metricId: { tableId: { key: weight } } }. */
   metricWeights?: Record<string, Record<string, Record<string, number>>>;
   seatingPreset?: 'runway' | 'theatre' | 'banquet' | 'open-floor' | 'none';
+  /**
+   * Widget keys the command center opens with, in order. A dashboard is still
+   * the user's to rearrange; this only decides what is on it the first time.
+   */
+  dashboardWidgets?: string[];
   /** Extra checklist entries, appended to the neutral default advance. */
   advanceChecklist?: AdvanceChecklistEntry[];
   /** The settlement scaffold: scaling, standing costs and the default deal. */

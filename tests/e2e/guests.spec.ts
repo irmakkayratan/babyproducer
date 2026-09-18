@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 async function openDemoGuests(page: Page) {
   await page.goto('/demo');
   await expect(page).toHaveURL(/\/w\/[A-Z0-9]+$/, { timeout: 30_000 });
-  await page.getByRole('link', { name: /AURELIA/ }).click();
+  await page.getByRole('link', { name: /Club Night/ }).click();
   await page.getByRole('link', { name: 'Guests' }).click();
   await expect(page.getByTestId('guest-table-scroll')).toBeVisible();
 }
@@ -11,7 +11,7 @@ async function openDemoGuests(page: Page) {
 test.describe('guest & talent CRM', () => {
   test('the demo loads a populated guest list', async ({ page }) => {
     await openDemoGuests(page);
-    await expect(page.getByText(/of 420 guests/)).toBeVisible();
+    await expect(page.getByText(/of 520 guests/)).toBeVisible();
     // Virtualized: only the visible slice is in the DOM.
     const rows = await page.getByTestId('guest-row').count();
     expect(rows).toBeGreaterThan(5);
@@ -27,10 +27,10 @@ test.describe('guest & talent CRM', () => {
 
     await page.getByLabel('Search guests').fill('');
     await page.getByTestId('filter-voiceId').click();
-    await page.getByRole('menuitemcheckbox', { name: /Celebrity/ }).click();
+    await page.getByRole('menuitemcheckbox', { name: /Promoter/ }).click();
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('filter-voiceId')).toContainText('1');
-    await expect(page.getByText(/of 420 guests/)).toBeVisible();
+    await expect(page.getByText(/of 520 guests/)).toBeVisible();
   });
 
   test('a guest sheet shows the media-value breakdown', async ({ page }) => {
@@ -54,7 +54,10 @@ test.describe('guest & talent CRM', () => {
     await expect(page.getByText(`${targetName} checked in`)).toBeVisible();
 
     // The other desk sees it without a reload…
-    await expect(second.getByTestId('guest-row').first().getByText('In')).toBeVisible({ timeout: 5_000 });
+    // Exact: "In" as a substring also matches any company with "in" in it.
+    await expect(second.getByTestId('guest-row').first().getByText('In', { exact: true })).toBeVisible({
+      timeout: 5_000,
+    });
 
     // ...and a second scan there is refused, so nobody is counted twice.
     await second.getByLabel('Search guests').fill(targetName);

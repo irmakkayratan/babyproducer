@@ -36,9 +36,16 @@ const SCHEDULE_OFFSET_HOURS: Record<string, { start: number; end?: number }> = {
   'Load-in time': { start: -8 },
   'Rehearsal / line check': { start: -4.5 },
   Soundcheck: { start: -3.5, end: -2 },
+  'Line check window': { start: -2.5, end: -1 },
   Doors: { start: 0 },
   'Start time': { start: 1 },
+  'Set times published': { start: 1 },
+  'Changeover window between acts': { start: 2, end: 2.25 },
+  'Changeover between DJs': { start: 2, end: 2.25 },
+  'Headline set time': { start: 3 },
   'Hard out / curfew': { start: 5 },
+  'Hard stop and noise curfew': { start: 5 },
+  'Bus call': { start: 6 },
 };
 
 const GENERIC_ANSWERS = [

@@ -3,7 +3,8 @@ import { expect, test, type Page } from '@playwright/test';
 async function openDemoSeating(page: Page) {
   await page.goto('/demo');
   await expect(page).toHaveURL(/\/w\/[A-Z0-9]+$/, { timeout: 30_000 });
-  await page.getByRole('link', { name: /AURELIA/ }).click();
+  // The brand launch is the demo's seated room: a keynote before the reception.
+  await page.getByRole('link', { name: /Brand Launch/ }).click();
   await page.getByRole('link', { name: 'Seating', exact: true }).first().click();
   await expect(page.getByTestId('seating-canvas')).toBeVisible();
 }

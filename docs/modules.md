@@ -134,7 +134,7 @@ Each module lists functionality, the interaction design, the technical mechanism
 **Technical.** Everything writes to `SchemaConfig` / `BrandTokens` / `MetricConfig[]` on the workspace and takes effect immediately through the token and registry layers. A destructive operation archives the record and offers a JSON export first.
 
 **Acceptance**
-- [ ] A user converts the fashion demo into a corporate-keynote tool. Renaming voices, swapping rundown columns, replacing MIV with a custom metric, disabling Seating, without code.
+- [ ] A user converts the club-night demo into a corporate-keynote tool. Renaming voices, swapping rundown columns, replacing MIV with a custom metric, disabling Seating, without code.
 - [ ] Export a workspace, import it into a fresh browser profile, and get an identical app.
 - [ ] Archiving a field preserves existing data and hides it everywhere.
 - [ ] A test asserts the blank-workspace default schema contains no fashion-specific vocabulary.

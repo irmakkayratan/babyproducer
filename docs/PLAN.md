@@ -92,7 +92,7 @@ Each module is specified with data model, interactions, and acceptance criteria 
 | M5 | **Check-in / Kiosk** | QR scan, fuzzy search, plus-ones, walk-ins, offline queue, badge print | Check in with the network disabled; a second tab reflects it in <200ms and blocks a duplicate |
 | M6 | **Command Center** | Resizable widget grid, simulated sensor telemetry, thresholds/alerts | Rearranged layout survives reload; widget registry is extensible without touching the grid |
 | M7 | **Metrics & Recap** | MIV/EMV engines with editable weights, formula builder, export | Change a voice-authority weight and every score, chart and report updates consistently |
-| M8 | **Studio (customization)** | Custom fields, statuses, tiers, rundown columns, brand tokens, module toggles, import/export | A user turns the fashion demo into a corporate keynote tool without writing code |
+| M8 | **Studio (customization)** | Custom fields, statuses, tiers, rundown columns, brand tokens, module toggles, import/export | A user turns the club-night demo into a corporate keynote tool without writing code |
 | M9 | **Advancing** | Pre-production checklist with readiness, parties, structured logistics, day sheet, printable advance sheet | What is still missing is answered before the checklist is; confirming a line moves readiness everywhere |
 | M10 | **Settlement** | Box office, deductions, costs and deal terms resolved into payouts and a printable statement | Change one ticket count and every derived figure follows, on screen and in the PDF |
 
@@ -102,9 +102,9 @@ Each module is specified with data model, interactions, and acceptance criteria 
 
 Detailed in [demo-data.md](./demo-data.md). In short, four complete and deterministic sample productions:
 
-1. **"AURELIA SS27 Runway"**: a Paris fashion show. 420 guests across Celebrity/Influencer/Media/Buyer/Partner voices, front-row politics, RFID-style check-in, 68-cue rundown with music and lighting departments, seated in a 3-zone runway map.
-2. **"LUMEN Beauty Pop-Up Activation"**: a 4-day retail activation. Foot-traffic telemetry, dwell time, LED volume and RFID trigger widgets, walk-in-heavy check-in, creator content log.
-3. **"NOVA Product Launch Keynote"**: a corporate and tech tone. Proves the app is not fashion-only: theatre seating, speaker rehearsal blocks, teleprompter scripts, press embargo tracking.
+1. **"Club Night"**: 700-cap room, twelve days out. DJ/Crew/Promoter/Press/Guest voices, standing room, a cue stack that runs doors → openers → changeovers → headliner → curfew, walk-ins on the door.
+2. **"Festival Stage"**: one stage on somebody else's site, five weeks out. Published set times, shared backline, a changeover window between every act, a hard stop, and the least finished advance of the four.
+3. **"Brand Launch"**: the seated and corporate tone. Proves the app is not live-music-only: a theatre room for the keynote, an over-invited list with a real unseated queue, sensor telemetry, and a settlement against a client fee rather than a box office.
 
 Plus: a guided tour, a visible **Demo Mode** banner, one-click **Reset demo data**, **Fork demo into my workspace**, and **Simulate live** (a clock-driven simulator that runs the show, moves the caller, fires check-ins and pushes sensor data so the Command Center is alive on first open). All seeded from a fixed PRNG so screenshots and tests are reproducible.
 

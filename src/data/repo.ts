@@ -157,6 +157,7 @@ export async function getEvent(id: string): Promise<Event | undefined> {
 export interface CreateEventInput {
   workspaceId: string;
   name: string;
+  subtitle?: string;
   templateId?: string;
   startsAt: string;
   endsAt?: string;
@@ -180,6 +181,7 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
     id: ulid(),
     workspaceId: input.workspaceId,
     name: input.name,
+    subtitle: input.subtitle,
     kind: template.kind,
     statusId: 'planning',
     startsAt,

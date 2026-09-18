@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-async function openAdvancing(page: Page, eventName = /AURELIA/) {
+async function openAdvancing(page: Page, eventName = /Club Night/) {
   await page.goto('/demo');
   await expect(page).toHaveURL(/\/w\/[A-Z0-9]+$/, { timeout: 30_000 });
   await page.getByRole('link', { name: eventName }).click();
@@ -94,7 +94,7 @@ test.describe('advancing', () => {
   });
 
   test('the day sheet puts the timed items in order', async ({ page }) => {
-    await openAdvancing(page, /ATLAS/);
+    await openAdvancing(page, /Tour Date/);
     await page.getByRole('tab', { name: 'Day sheet' }).click();
 
     const times = page.getByRole('tabpanel').locator('.font-mono');

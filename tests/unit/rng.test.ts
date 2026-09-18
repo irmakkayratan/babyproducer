@@ -13,13 +13,13 @@ describe('seeded randomness', () => {
   });
 
   it('hashes a scenario name to a stable seed', () => {
-    expect(hashSeed('aurelia')).toBe(hashSeed('aurelia'));
-    expect(hashSeed('aurelia')).not.toBe(hashSeed('lumen'));
+    expect(hashSeed('club-night')).toBe(hashSeed('club-night'));
+    expect(hashSeed('club-night')).not.toBe(hashSeed('festival-stage'));
   });
 
   it('gives a stable demo: the same seed rebuilds the same records', () => {
     const build = () => {
-      const rng = createRng('aurelia');
+      const rng = createRng('club-night');
       return Array.from({ length: 50 }, () => ({
         followers: Math.round(rng.logNormal(80_000, 1.4)),
         tier: rng.weighted({ 'a-list': 0.1, 'front-row': 0.3, press: 0.6 }),

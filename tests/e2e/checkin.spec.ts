@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 async function openDemoCheckin(page: Page) {
   await page.goto('/demo');
   await expect(page).toHaveURL(/\/w\/[A-Z0-9]+$/, { timeout: 30_000 });
-  await page.getByRole('link', { name: /AURELIA/ }).click();
+  await page.getByRole('link', { name: /Club Night/ }).click();
   await page.getByRole('link', { name: 'Check-in', exact: true }).first().click();
   await expect(page.getByTestId('checkin')).toBeVisible();
 }
