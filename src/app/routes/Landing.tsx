@@ -7,11 +7,11 @@ import { BUILTIN_TEMPLATES } from '@/data/templates';
 
 /** What the advance actually covers, in the words a producer would use. */
 const ADVANCE_POINTS = [
-  'One checklist per show, turning the whole advance into a number that’s easy to read',
-  'A panel that surfaces what’s still open while there’s plenty of time to sort it',
-  'Flights, hotels and transfers for everyone travelling in, all in one place',
-  'Production contacts ready to hand the second somebody needs them on site',
-  'A day sheet built from the answers already given, ready to print',
+  'One checklist per show, with a number on it for how ready you are',
+  'A panel that answers "what is still missing" before you have to ask',
+  'Flights, hotels and transfers for everyone travelling in',
+  'Production contacts, so nobody hunts through a mail thread at 2am',
+  'A day sheet built from the answers, ready to print',
 ];
 
 const DOORS = [
@@ -19,14 +19,14 @@ const DOORS = [
     id: 'demo',
     icon: PlayCircle,
     title: 'Explore the demo',
-    body: 'There are four productions to open and pull apart, including a club night, a festival stage, a brand launch and a tour date that has already been settled.',
+    body: 'Four productions to open and pull apart: a runway show, a pop-up, a launch keynote and a tour date that has already been settled.',
     cta: 'Open the demo',
   },
   {
     id: 'template',
     icon: LayoutTemplate,
     title: 'Start from a template',
-    body: 'Tell it what kind of event you’re running, and it comes back with the vocabulary, the cue columns, and the dashboards that suit it.',
+    body: 'Pick the shape of your event and get the vocabulary, cue columns and dashboards that suit it.',
     cta: 'Browse templates',
   },
   {
@@ -80,15 +80,10 @@ export function Landing() {
           <br />
           without the mail thread.
         </h1>
-        <p className="mt-6 max-w-xl font-display text-xl tracking-tight text-foreground sm:text-2xl">
-          One place for everything an event needs.
-        </p>
-        <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
-          BabyProducer takes the work that fills the weeks before a show and holds it in one structure.
-          Everything sits under the same show, from the rider to the travel for everyone coming in to the
-          production contacts and the timings, and as things fall into place a checklist reads them back as a
-          readiness number while a panel keeps whatever is still open in plain sight, so the advance is shared
-          across the team from the first week onwards.
+        <p className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
+          Advancing is the job. It is the weeks of chasing riders, travel, contacts and timings that decide
+          whether the day goes well, and it is the part that usually lives in somebody&rsquo;s inbox and a
+          spreadsheet nobody else can find. BabyProducer gives it a home.
         </p>
 
         <ul className="mt-8 grid max-w-2xl gap-2.5 text-sm text-muted-foreground sm:text-base">
@@ -101,11 +96,9 @@ export function Landing() {
         </ul>
 
         <p className="mt-8 max-w-xl text-sm text-muted-foreground">
-          Everything an event needs after the advance lives here too, which means the guest list and the
-          artist +1s, the seating chart nobody wants to build twice, a run of show that shifts on its own when
-          the opener runs long, and door check-in that carries on scanning while the venue Wi-Fi does whatever
-          venue Wi-Fi does. At the end of the night you settle up in the same place, without carrying a pile of
-          receipts home with you.
+          Everything a show needs around the advance is here too: guest lists, seating, a run of show that
+          re-times itself, door check-in that works when the venue Wi-Fi does not, and a settlement at the end
+          of the night. All of it on your device, with no account and no server.
         </p>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-3">

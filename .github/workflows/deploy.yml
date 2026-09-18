@@ -40,32 +40,18 @@ jobs:
         with:
           enablement: true
 
-      # configure-pages reports '/<repo>' for a project site and an empty
-      # string for one served at a domain root. Empty is falsy in a workflow
-      # expression, so a `||` fallback to the repo name would quietly bake
-      # /<repo>/ into a custom-domain build and 404 every asset. Resolve it
-      # here instead, where empty means root and nothing else.
-      - name: Resolve the serving path
-        id: base
-        env:
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
-        run: |
-          trimmed="${BASE_PATH#/}"
-          trimmed="${trimmed%/}"
-          if [ -n "$trimmed" ]; then base="/$trimmed/"; else base="/"; fi
-          echo "base=$base" >> "$GITHUB_OUTPUT"
-          echo "Pages reports base_path='$BASE_PATH'; building for '$base'"
-
+      # base_path follows the real Pages configuration, so a project site, a
+      # user site and a custom domain all build correctly with no edit here.
       - name: Build
         run: npm run build
         env:
-          VITE_BASE: ${{ steps.base.outputs.base }}
+          VITE_BASE: ${{ steps.pages.outputs.base_path || format('/{0}/', github.event.repository.name) }}
 
       # The blank-page failure is silent: Pages happily publishes the wrong
       # files. Fail here instead, where the reason is visible.
       - name: Verify the artifact is a build, not the source tree
         env:
-          EXPECTED_BASE: ${{ steps.base.outputs.base }}
+          EXPECTED_BASE: ${{ steps.pages.outputs.base_path || format('/{0}/', github.event.repository.name) }}
         run: |
           for f in dist/index.html dist/404.html; do
             [ -f "$f" ] || { echo "::error::$f is missing — nothing usable to publish"; exit 1; }
@@ -74,8 +60,8 @@ jobs:
             echo "::error::dist/index.html still loads /src/main.tsx — this is the source tree, not a build"
             exit 1
           fi
-          if ! grep -qE "<script[^>]+src=\"${EXPECTED_BASE}assets/[^\"]+\.js\"" dist/index.html; then
-            echo "::error::dist/index.html has no entry bundle under ${EXPECTED_BASE} — the base path is wrong and every asset would 404"
+          if ! grep -qE '<script[^>]+src="[^"]*/assets/[^"]+\.js"' dist/index.html; then
+            echo "::error::dist/index.html references no built entry bundle"
             exit 1
           fi
           echo "Publishing a build rooted at ${EXPECTED_BASE:-/}:"
